@@ -116,6 +116,7 @@ export interface TableProps {
   deleteUrl: string | null;
   deletable?: boolean;
   deleteConfirmMessage: string | null;
+  deletionBlockerType?: string | null;
   bulkDeleteUrl: string | null;
   bulkDeleteConfirmMessage: string | null;
   bulkActions: BulkActionDescriptor[];

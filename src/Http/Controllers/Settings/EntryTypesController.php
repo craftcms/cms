@@ -100,7 +100,8 @@ class EntryTypesController
             ->unless($this->readOnly, fn (Table $table) => $table
                 ->createAction(t('New entry type'), route('craft.cp.settings.entry-types.create'))
                 ->createActionInPageHeader()
-                ->deletable());
+                ->deletable()
+                ->deletionBlockers('entry-type'));
 
         return new CpScreenResponse()
             ->title(t('Entry Types'))
@@ -169,9 +170,10 @@ class EntryTypesController
                         'body' => [
                             'redirect' => Crypt::encrypt(action([EntryTypesController::class, 'index'])),
                         ],
-                        'confirm' => t('Are you sure you want to delete “{name}”?', [
-                            'name' => $entryTypeData->name,
+                        'confirm' => t('Are you sure you want to delete “{name}” and all entries of that type?', [
+                            'name' => $entryTypeData->getUiLabel(),
                         ]),
+                        'deletionBlockers' => ['type' => 'entry-type', 'id' => $entryTypeData->id],
                     ],
                 ]);
             }

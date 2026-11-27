@@ -36,6 +36,7 @@ use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Http\Controllers\DeletionBlockersController;
 use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityMentionSuggestionsController;
@@ -265,6 +266,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('delete-elements/replace-relations', [DeleteElementsController::class, 'replaceRelations']);
         Route::any('delete-elements/replace-references-modal', [DeleteElementsController::class, 'replaceReferencesModal']);
         Route::post('delete-elements/replace-references', [DeleteElementsController::class, 'replaceReferences']);
+        Route::post('deletion-blockers', DeletionBlockersController::class);
 
         Route::post('elements/create', CreateElementController::class);
         Route::any('elements/edit', EditElementController::class);
@@ -335,6 +337,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('entries/save-entry', StoreEntryController::class);
         Route::post('entries/move-to-section-modal-data', [MoveEntryToSectionController::class, 'showModal']);
         Route::post('entries/move-to-section', [MoveEntryToSectionController::class, 'move']);
+        Route::post('entries/section-entry-ids', [MoveEntryToSectionController::class, 'sectionEntryIds']);
         Route::any('entries/reassign-modal', [ReassignEntriesModalController::class, 'show']);
         Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 

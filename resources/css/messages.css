@@ -407,6 +407,6 @@
   }
 }
 
-body:not(:has(.cp-messages .notification)) [data-messages-skip-link] {
+:root:not([data-cp-messages]) [data-messages-skip-link] {
   display: none;
 }

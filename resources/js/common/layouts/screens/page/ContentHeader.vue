@@ -42,10 +42,13 @@
 </template>
 
 <style scoped>
-  /* Gone while there's nothing in it, so the row doesn't leave a gap for it. */
-  .content-header__actions:not(
-    :has(> :not([data-layout-slot]), > [data-layout-slot][style*='contents'])
-  ) {
+  /*
+    Gone while there's nothing in it, so the row doesn't leave a gap for it.
+    Matches on data-empty rather than the outlet's inline style: a style
+    attribute test inside :has() makes Chromium recheck it on every inline
+    style change in the document.
+  */
+  .content-header__actions:has(> [data-layout-slot][data-empty]:only-child) {
     display: none;
   }
 </style>

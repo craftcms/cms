@@ -119,7 +119,7 @@ it('asFailure puts validation messages in the error bag and keeps its summary me
     post('/test-flash/failure-with-errors')
         ->assertRedirect()
         ->assertSessionHasErrors(['name' => 'Name is required'])
-        ->assertMessage('error', 'Failure message');
+        ->assertCpMessage('error', 'Failure message');
 });
 
 it('asSuccess with custom redirect uses the redirect URL', function () {
@@ -170,15 +170,10 @@ it('returns the message in the body of control panel JSON responses without flas
 
     $response = postJson('/test-flash/cp-success')
         ->assertOk()
-        ->assertJson([
-            'message' => 'Success message',
-            'messages' => [[
-                'type' => 'success',
-                'message' => 'Success message',
-            ]],
-        ]);
+        ->assertJson(['message' => 'Success message'])
+        ->assertCpMessage('success', 'Success message');
 
-    expect($response->json('notificationSettings.id'))->toBe($response->json('messages.0.id'))
+    expect($response->json('notificationSettings.id'))->toBe($response->cpMessages()[0]['id'])
         ->and(session()->get(Flash::SESSION_KEY))->toBeNull();
 });
 
@@ -192,5 +187,5 @@ it('flashes control panel messages to the message list', function () {
     post('/test-flash/cp-redirect')
         ->assertRedirect()
         ->assertSessionMissing('success')
-        ->assertMessage('success', 'Success message');
+        ->assertCpMessage('success', 'Success message');
 });

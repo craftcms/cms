@@ -59,6 +59,7 @@ export class CpMessages extends HTMLElement {
     }
 
     this.#render();
+    this.updateStack();
     this.#listen();
     this.#connectLegacyNotifier();
   }
@@ -162,6 +163,11 @@ export class CpMessages extends HTMLElement {
     this.querySelector('#cp-notification-heading')?.classList.toggle(
       'hidden',
       notifications.length === 0
+    );
+    // Shows the "Skip to messages" link (see messages.css).
+    document.documentElement.toggleAttribute(
+      'data-cp-messages',
+      notifications.length > 0
     );
 
     this.#updateExpanded();

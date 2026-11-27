@@ -4,6 +4,7 @@ import {cdp} from 'vite-plus/test/browser';
 import type CraftButton from './button.js';
 import './button.js';
 import {contrast, loadTokens} from '../../../test/contrast';
+import {whenIdle} from '@src/utilities/idle';
 
 interface FrameTree {
   frame: {id: string};
@@ -22,6 +23,11 @@ beforeEach(() => {
 
 function isFlagged(button: CraftButton): boolean {
   return !!button.shadowRoot?.querySelector('.a11y-error');
+}
+
+/** Resolves after the name checks the buttons queued for when the browser is idle. */
+function idle(): Promise<void> {
+  return new Promise((resolve) => whenIdle(() => resolve()));
 }
 
 /** The name the button last computed for itself, which it keeps internal. */
@@ -53,9 +59,9 @@ async function mountHidden(label: string | null): Promise<{
   document.body.append(container);
   await button.updateComplete;
 
-  // The name is computed asynchronously after the first render. An empty
-  // string rather than undefined proves the check ran while still hidden.
-  await vi.waitFor(() => expect(computedName(button)).toBe(''));
+  // The name is checked once the browser is idle after the first render.
+  await idle();
+  expect(computedName(button)).toBe('');
 
   return {button, container};
 }
@@ -89,8 +95,9 @@ it('flags an unnamed button that is visible from the start', async () => {
   button.setAttribute('icon', 'image-landscape');
   document.body.append(button);
   await button.updateComplete;
+  await idle();
 
-  await vi.waitFor(() => expect(isFlagged(button)).toBe(true));
+  expect(isFlagged(button)).toBe(true);
 });
 
 it.each([
@@ -115,11 +122,14 @@ it.each([
     button.setAttribute('icon', 'image-landscape');
     document.body.append(button);
     await button.updateComplete;
-    await vi.waitFor(() => expect(isFlagged(button)).toBe(true));
+    await idle();
+    expect(isFlagged(button)).toBe(true);
 
     name(button);
+    await button.updateComplete;
+    await idle();
 
-    await vi.waitFor(() => expect(isFlagged(button)).toBe(false));
+    expect(isFlagged(button)).toBe(false);
     expect(computedName(button)).toBe('Search');
   }
 );

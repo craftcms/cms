@@ -406,9 +406,8 @@ it('shares the success flash with the profile screen after a CP save', function 
 
     get(cp_url('myaccount'))
         ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('users/Edit')
-            ->where('flash.success', t('{type} saved.', ['type' => User::displayName()])));
+        ->assertInertia(fn (AssertableInertia $page) => $page->component('users/Edit'))
+        ->assertCpMessage('success', t('{type} saved.', ['type' => User::displayName()]));
 });
 
 it('shows validation errors on the profile screen after a failed CP save', function () {

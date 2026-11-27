@@ -242,6 +242,45 @@ describe('PageScreen', () => {
     });
   });
 
+  it('shows the alerts the server shares with the page', async () => {
+    stubViewport(true);
+    pageProps.alerts = [
+      {
+        content: 'A critical update is available. <a href="/updates">Go</a>',
+        showIcon: true,
+      },
+      {
+        title: 'License purchase required.',
+        content: '<p>Buy it.</p>',
+        showIcon: false,
+      },
+    ];
+
+    const container = document.createElement('div');
+    document.body.append(container);
+    const app = createApp({render: () => h(PageScreen)});
+    app.mount(container);
+    teardown = () => {
+      app.unmount();
+      container.remove();
+    };
+    await nextTick();
+
+    const alerts = [...container.querySelectorAll('craft-callout')];
+    const [first, second] = alerts;
+    expect(
+      alerts.map((alert) =>
+        alert.querySelector('.cp-alerts__content')?.textContent?.trim()
+      )
+    ).toEqual(['A critical update is available. Go', 'Buy it.']);
+    expect(first?.querySelector('a')?.getAttribute('href')).toBe('/updates');
+    expect(first?.querySelector('craft-icon')).toHaveProperty('label', 'Error');
+    expect(second?.querySelector('[slot="title"]')?.textContent?.trim()).toBe(
+      'License purchase required.'
+    );
+    expect(second?.querySelector('craft-icon')).toBeNull();
+  });
+
   it('hides the content header while it has nothing to show', async () => {
     stubViewport(true);
 
