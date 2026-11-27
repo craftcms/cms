@@ -406,7 +406,6 @@ export function useUiValues(initial: UiPayload) {
     return result;
   }
 
-  /** Serializes a scope's values the way change detection compares them. */
   /**
    * Whether `value` differs from `before`, as {@link groupCanonical} would
    * compare them, checking only `behaviors`, the ones within `path`. A change
@@ -458,6 +457,7 @@ export function useUiValues(initial: UiPayload) {
     return groups;
   }
 
+  /** Serializes a scope's values the way change detection compares them. */
   function groupCanonical(value: UiValue, path: string[]): string {
     const comparisons: UiValue[] = [];
     for (const {path: controlPath, behavior} of controlBehaviors.values()) {
