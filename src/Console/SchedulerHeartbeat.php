@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Date;
 /**
  * Tracks whether Laravel’s scheduler is running.
  *
+ * @internal
+ *
  * @since 6.0.0
  */
 class SchedulerHeartbeat
