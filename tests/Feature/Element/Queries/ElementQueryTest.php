@@ -428,6 +428,21 @@ it('sources concrete element queries from their element tables first', function 
     'contentblocks' => [fn () => new ContentBlockQuery()->getQuery(), 'contentblocks'],
 ]);
 
+it('reads elements first on MySQL only when draft or revision IDs are required', function (Closure $query, string $firstTable) {
+    expect($query()->toSql())->toStartWith('select ')->toMatch('/ from `'.$firstTable.'`(?: as `\w+`)? straight_join /');
+})->skip(fn () => ! DB::isMysql(), 'Only MySQL straight-joins elements.')->with([
+    'drafts of an element' => [fn () => Entry::find()->draftOf(5)->status(null), 'elements'],
+    'revisions of an element' => [fn () => Entry::find()->revisionOf(5)->status(null), 'elements'],
+    'draft ID' => [fn () => Entry::find()->draftId(5), 'elements'],
+    'revision ID' => [fn () => Entry::find()->revisionId(5), 'elements'],
+    'nested revision ID' => [fn () => Entry::find()->where(fn (Builder $q) => $q->where('elements.revisionId', 5))->revisions(null), 'elements'],
+    'section listing' => [fn () => Entry::find()->sectionId(1)->orderByDesc('postDate')->limit(100), 'entries'],
+    'element IDs' => [fn () => Entry::find()->id([5, 6]), 'entries'],
+    'any draft' => [fn () => Entry::find()->drafts(), 'entries'],
+    'canonical ID or section' => [fn () => Entry::find()->revisions(null)->where('elements.canonicalId', 5)->orWhere('entries.sectionId', 1), 'entries'],
+    'not a draft ID' => [fn () => Entry::find()->drafts(null)->whereNot(fn (Builder $q) => $q->where('elements.draftId', 5)), 'entries'],
+]);
+
 it('does not duplicate pending before query callbacks when cloned while preparing', function () {
     $query = new ElementQuery;
     $clone = null;
