@@ -71,6 +71,7 @@ class VolumesController extends BaseAssetSettingsController
                 ->createAction(t('New volume'), route('craft.cp.settings.assets.volumes.create'))
                 ->createActionInPageHeader()
                 ->deletable()
+                ->deletionBlockers('volume')
                 ->reorderable(route('craft.actions.volumes.reorder')));
 
         return new CpScreenResponse()

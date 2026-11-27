@@ -31,6 +31,16 @@ describe('interpolate', function () {
         expect($grid)->toHaveCount(9)->each->toBe(array_fill(0, 12, '#3a6ea5'));
     });
 
+    it('keeps the colors placeholders and BlurHashes were made with', function () {
+        // Asset placeholders and BlurHashes are built from these colors, so they shouldn't shift by even one step
+        expect(ColorGrid::interpolate([['#000000', '#ff8000'], ['#3a6ea580', '#ffffff']], 2))->toBe([
+            ['#000000', '#7b2e00', '#e66300', '#ff7300fe'],
+            ['#000030e3', '#82584fea', '#e99774fa', '#ffa97f'],
+            ['#001e7693', '#999aacae', '#f0e0ddea', '#fff0ea'],
+            ['#00359b6e', '#a7bad493', '#f3fbffe3', '#ffffff'],
+        ]);
+    });
+
     it('keeps transparent regions transparent', function () {
         $row = ColorGrid::interpolate([['#3a6ea5', '#3a6ea500']], 2)[0];
 

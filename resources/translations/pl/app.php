@@ -2156,7 +2156,7 @@ return [
     'List all tabs' => 'Wyświetl listę wszystkich kart',
     'List empty folders' => 'Wyświetl listę pustych folderów',
     'List' => 'Lista',
-    'Live' => 'Online',
+    'Live' => 'Opublikowane',
     'Load this template' => 'Załaduj ten szablon',
     'Loaded Project Config Data' => 'Załadowane dane konfiguracji projektu',
     'Loading Plugin Store…' => 'Ładowanie Plugin Store…',

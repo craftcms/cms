@@ -79,7 +79,7 @@ class Money extends Field implements DefaultableFieldInterface, InlineEditableFi
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s', MoneyLibrary::class);
+        return sprintf('\\%s|null', MoneyLibrary::class);
     }
 
     /**

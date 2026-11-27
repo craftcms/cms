@@ -7,6 +7,7 @@ import {
   ScreenPropsStoreKey,
   ScreenShellKey,
 } from '@/common/composables/screen';
+import {UiFieldIdScope} from '@/modules/ui/runtime';
 import {
   SlideoutControllerKey,
   type SlideoutController,
@@ -29,6 +30,11 @@ export function provideSlideoutScreen(
   // Without this the shell would read its chrome off `usePage()` — the page
   // *behind* the slideout — and show that screen's title and edit URL.
   provide(ScreenPagePropsKey, () => instance().props);
+
+  // Stacked slideouts can show the same screen, or ones sharing field paths
+  // and tab uids, so each prefixes its field and tab panel ids with its own.
+  // Without this, a slideout's tabs drive the first matching panel on the page.
+  provide(UiFieldIdScope, instance().containerId);
 
   provide(SlideoutControllerKey, {
     get instance() {

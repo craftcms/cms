@@ -56,6 +56,12 @@ export interface CommandPaletteItem {
   elementActions?: ElementActionMenuItem[];
   keywords?: string | null;
   variant?: string | null;
+  /**
+   * The keyboard shortcut that does the same outside the palette, as
+   * `registerShortcut()` takes it, such as `Mod+Shift+S`. Shown beside the
+   * item. Client items only.
+   */
+  shortcut?: string | null;
 }
 
 export interface CommandPaletteProvider {

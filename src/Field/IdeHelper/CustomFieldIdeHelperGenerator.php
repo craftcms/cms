@@ -314,7 +314,7 @@ readonly class CustomFieldIdeHelperGenerator
             ->implode('|');
 
         return sprintf(
-            '\\%s<%s>|\\%s<%s>',
+            '\\%s<%s>|\\%s<int, %s>',
             EntryQuery::class,
             $entryTypeClasses,
             ElementCollection::class,

@@ -2,9 +2,9 @@
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import {actionClient, t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
-  import {onBeforeUnmount, shallowRef, watch} from 'vue';
+  import {inject, onBeforeUnmount, shallowRef, watch} from 'vue';
   import type {UiControlPayload, UiPayload, UiValue, UiValues} from './types';
-  import {inputName} from './runtime';
+  import {inputName, UiFieldIdScope} from './runtime';
   import {useOutlets} from './outlets';
   import {useServerRenderedControl} from './useServerRenderedControl';
   import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
@@ -27,6 +27,9 @@
   const emit = defineEmits<{
     (event: 'update:value', value: UiValues, kind: 'discrete'): void;
   }>();
+  // Keeps the designer's ids apart from those of a designer in another form
+  // with the same layout, such as an entry type slideout stacked on another.
+  const idNamespace = inject(UiFieldIdScope, undefined);
   const outlets = useOutlets();
   // The card view designer holds the Appearance tab's outlet. Groups bound
   // for it wait for the first render rather than render in place and jump.
@@ -51,6 +54,7 @@
             withCardViewDesigner: props.control.props.withCardViewDesigner,
             cardViewDesignerOutlet:
               props.control.props.cardViewDesignerOutlet ?? null,
+            idNamespace: idNamespace ?? null,
           })
           .catch((error: unknown) => {
             releasePendingOutlets();

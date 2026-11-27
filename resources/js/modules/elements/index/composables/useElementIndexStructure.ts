@@ -1,8 +1,10 @@
 import type {RowSelectionState} from '@tanstack/vue-table';
 import {computed, ref, type Ref} from 'vue';
-import type {
-  IndexVisitor,
-  IndexRestore,
+import {
+  queryHasParam,
+  type IndexQueryParams,
+  type IndexVisitor,
+  type IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 
@@ -529,14 +531,25 @@ export function useElementIndexStructure(
   // the persisted view state — so a restored collapsed set needs re-requesting.
   // The page folds this into one mount-time restore visit alongside the
   // sort/column/view-mode restores (see `useElementIndex`).
-  function restore(): IndexRestore | null {
-    const params = new URLSearchParams(window.location.search);
-    const hasInUrl = [...params.keys()].some(
-      (key) =>
-        key === 'collapsedElementIds' || key.startsWith('collapsedElementIds[')
-    );
+  //
+  // `query` holds the params the link named. The URL can also hold collapsed
+  // IDs the server filled in from the session, which the rows were rendered
+  // for, so only a set that differs from them is requested.
+  function restore(
+    query: IndexQueryParams = visitor.currentQuery()
+  ): IndexRestore | null {
+    if (queryHasParam(query, 'collapsedElementIds') || !isStructure.value) {
+      return null;
+    }
 
-    if (hasInUrl || !isStructure.value || collapsedIds.value.length === 0) {
+    const rendered = Object.entries(visitor.currentQuery())
+      .filter(([key]) => key.startsWith('collapsedElementIds['))
+      .map(([, id]) => id as string);
+
+    if (
+      [...rendered].sort().join() ===
+      collapsedIds.value.map(String).sort().join()
+    ) {
       return null;
     }
 

@@ -667,6 +667,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
   }
 
   /* Add a rule to the first cells, unless the header row's border already does */
+  /* stylelint-disable craft/has-subject-only -- anchored on one table */
   &:not(:has(> thead)) tr:first-child {
     th,
     td {
@@ -674,6 +675,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
         color-mix(var(--c-color-neutral-border-quiet) 60%, transparent);
     }
   }
+  /* stylelint-enable craft/has-subject-only */
 
   textarea,
   /*
@@ -744,6 +746,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     background-color: var(--c-surface-sunken);
   }
 
+  /* stylelint-disable-next-line craft/has-subject-only -- anchored on one table head */
   thead:not(:last-child):not(:has(~ :is(tbody, tfoot) > tr))
     tr:last-child
     > :is(th, td) {
@@ -854,6 +857,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     :has(craft-input):not(:has(craft-input[hidden-input]))
   ) {
     /* Set on the controls themselves too, since prefixed inputs (money) set their own */
+    /* stylelint-disable-next-line craft/has-subject-only -- anchored on one cell */
     &,
     & :is(input, textarea, select, .form-control) {
       --c-focus-outline-style: none;
@@ -875,19 +879,19 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     its border and padding so its value follows the swatch, and the cell draws
     the field's focus ring. The swatch keeps its own pointer and focus ring.
   */
+  td craft-input-color {
+    --c-input-border-width: 0px;
+    --c-input-radius: 0px;
+    --c-input-shadow: none;
+    --c-input-spacing-inline: var(--c-spacing-xs);
+  }
+
+  td craft-input-color > input[slot='input'] {
+    --c-focus-outline-style: none;
+  }
+
   td:has(craft-input-color) {
     cursor: text;
-
-    craft-input-color {
-      --c-input-border-width: 0px;
-      --c-input-radius: 0px;
-      --c-input-shadow: none;
-      --c-input-spacing-inline: var(--c-spacing-xs);
-    }
-
-    craft-input-color > input[slot='input'] {
-      --c-focus-outline-style: none;
-    }
 
     &:has(craft-input-color > input[slot='input']:focus-visible) {
       outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);

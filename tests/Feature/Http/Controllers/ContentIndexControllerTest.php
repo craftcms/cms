@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
@@ -15,8 +18,13 @@ use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Users;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexViewStateController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
@@ -25,6 +33,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -33,10 +42,12 @@ use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 use Mockery\MockInterface;
 use Symfony\Component\DomCrawler\Crawler;
@@ -73,6 +84,40 @@ it('includes table-row capabilities for page bulk actions', function () {
             ->where('data.0.capabilities.deletable', false)
         );
 });
+
+it('checks each row’s capabilities once for the row and its chip or card', function (string $viewMode, string $htmlKey) {
+    $section = Section::factory()->create();
+    $denied = EntryModel::factory()->forSection($section)->title('Denied')->createElement();
+    $allowed = EntryModel::factory()->forSection($section)->title('Allowed')->createElement();
+
+    Gate::before(fn ($user, string $ability, array $arguments): ?bool => $ability === 'delete' && ($arguments[0]->id ?? null) === $denied->id ? false : null);
+
+    $deleteChecks = [];
+    Gate::after(function ($user, string $ability, $result, array $arguments) use (&$deleteChecks): void {
+        if ($ability === 'delete' && isset($arguments[0]->id)) {
+            $deleteChecks[$arguments[0]->id] = ($deleteChecks[$arguments[0]->id] ?? 0) + 1;
+        }
+    });
+
+    $rows = collect(get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'sectionHandle' => $section->handle,
+        'viewMode' => $viewMode,
+    ]), ['X-Inertia' => 'true'])->assertOk()->json('props.data'))->keyBy('id');
+
+    $deletable = fn (array $row): bool => $htmlKey === 'title'
+        ? new Crawler($row['title'])->filter('craft-chip')->attr('data-deletable') !== null
+        : ! empty($row['cardAttributes']['data']['deletable']);
+
+    expect($rows[$denied->id]['capabilities']['deletable'])->toBeFalse()
+        ->and($deletable($rows[$denied->id]))->toBeFalse()
+        ->and($rows[$allowed->id]['capabilities']['deletable'])->toBeTrue()
+        ->and($deletable($rows[$allowed->id]))->toBeTrue()
+        ->and($deleteChecks)->toEqual([$denied->id => 1, $allowed->id => 1]);
+})->with([
+    'table' => ['table', 'title'],
+    'cards' => ['cards', 'cardAttributes'],
+]);
 
 it('includes the field layout IDs of table rows that can be compared', function () {
     $fixture = EntryModel::factory()
@@ -170,6 +215,79 @@ it('selects fit for index tiles and inline cards', function (string $viewMode, s
     'inline cards' => ['cards', 'cardThumbHtml', 'fit', 120],
 ]);
 
+it('preloads the thumbnail indexes for the images that entries’ thumbnails show', function (string $viewMode, string $cardThumbStyle, int $width, array $transforms, int $expectedQueries) {
+    $assetIds = createIndexThumbnailImages($width, $transforms);
+
+    $entry = EntryModel::factory()->withField('photo', Assets::class, value: [$assetIds[0]])
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    $layout->setCardThumbStyle($cardThumbStyle);
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    foreach (array_slice($assetIds, 1) as $assetId) {
+        $other = EntryModel::factory()->createElement(['sectionId' => $entry->sectionId, 'typeId' => $entry->typeId]);
+        $other->setFieldValue('photo', [$assetId]);
+        expect(app(Elements::class)->saveElement($other))->toBeTrue();
+    }
+
+    $queries = listenForTransformIndexSelects();
+
+    get(route('craft.cp.content.index', ['page' => 'entries', 'viewMode' => $viewMode]), ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonCount(3, 'props.data');
+
+    expect($queries)->toHaveCount($expectedQueries)
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(3 * count($transforms));
+})->with([
+    'table' => ['table', 'normal', 800, [[30, 30, 'fit'], [60, 60, 'fit']], 2],
+    'cards with the cover style' => ['cards', 'cover', 400, [[120, 120, 'fit'], [240, 240, 'fit'], [800, 600, 'crop']], 3],
+    'cards with the normal style' => ['cards', 'normal', 800, [[120, 120, 'fit'], [240, 240, 'fit']], 2],
+]);
+
+it('preloads the cropped thumbnail indexes for users’ photos', function () {
+    foreach (createIndexThumbnailImages(800, [[30, 30, 'crop'], [60, 60, 'crop']]) as $photoId) {
+        UserModel::factory()->create(['photoId' => $photoId]);
+    }
+
+    $queries = listenForTransformIndexSelects();
+
+    get("/{$this->cpTrigger}/users/all?viewMode=table", ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonCount(4, 'props.data');
+
+    expect($queries)->toHaveCount(2)
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(6);
+});
+
+it('preloads the cropped thumbnail indexes for the user photos that entries’ thumbnails show', function () {
+    $userIds = array_map(
+        fn (int $photoId): int => UserModel::factory()->create(['photoId' => $photoId])->id,
+        createIndexThumbnailImages(800, [[30, 30, 'crop'], [60, 60, 'crop']]),
+    );
+
+    $entry = EntryModel::factory()->withField('people', Users::class, value: [$userIds[0]])
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    foreach (array_slice($userIds, 1) as $userId) {
+        $other = EntryModel::factory()->createElement(['sectionId' => $entry->sectionId, 'typeId' => $entry->typeId]);
+        $other->setFieldValue('people', [$userId]);
+        expect(app(Elements::class)->saveElement($other))->toBeTrue();
+    }
+
+    $queries = listenForTransformIndexSelects();
+
+    get(route('craft.cp.content.index', ['page' => 'entries', 'viewMode' => 'table']), ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonCount(3, 'props.data');
+
+    expect($queries)->toHaveCount(2)
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(6);
+});
+
 it('tells the placeholders whether the source’s entries have thumbnails', function () {
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
         ->createElementWithFields()->element;
@@ -262,6 +380,111 @@ it('leaves the rows out of a page load that names no view mode until they are re
         ->assertOk()
         ->assertJsonCount(2, 'props.data')
         ->assertJsonPath('props.pagination.total', 2);
+});
+
+it('renders a page load that names no view mode for the view state the browser pushed this session', function (array $sourceState, array $expectedQuery, array $requestQuery = []) {
+    EntryModel::factory()->count(2)->create();
+    $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
+
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => $sourceState]]],
+        'all' => true,
+    ])->assertNoContent();
+
+    $response = get("/{$this->cpTrigger}/content/entries".($requestQuery ? '?'.http_build_query($requestQuery) : ''))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('data', 2)
+            ->where('viewState.mode', $expectedQuery['viewMode'])
+            ->where('pagination.per_page', (int) ($expectedQuery['per_page'] ?? 50))
+            ->where('sessionViewStateParams', array_keys(array_diff_key($expectedQuery, $requestQuery)))
+        );
+    parse_str((string) parse_url($response->viewData('page')['url'], PHP_URL_QUERY), $query);
+
+    expect($query)->toEqual($expectedQuery);
+})->with([
+    'saved settings' => [
+        [
+            'mode' => 'cards',
+            'thumbSizes' => ['table' => 'lg'],
+            'visible' => ['postDate'],
+            'sort' => [['field' => 'score', 'direction' => 'desc'], ['field' => 'title', 'direction' => 'desc']],
+            'pageSize' => 7,
+        ],
+        [
+            'viewMode' => 'cards',
+            'columns' => ['postDate'],
+            'sort' => [['field' => 'title', 'direction' => 'desc']],
+            'per_page' => '7',
+        ],
+    ],
+    'a mode the source does not offer' => [
+        ['mode' => 'structure', 'thumbSizes' => ['table' => 'lg', 'thumbs' => 'xl']],
+        ['viewMode' => 'table', 'thumbSize' => 'lg'],
+    ],
+    'nothing saved for the source' => [
+        [],
+        ['viewMode' => 'table'],
+    ],
+    'params the URL names' => [
+        ['mode' => 'cards', 'pageSize' => 7],
+        ['per_page' => '25', 'viewMode' => 'cards'],
+        ['per_page' => '25'],
+    ],
+]);
+
+it('waits for every view state before rendering page loads for them', function () {
+    $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
+
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
+    ])->assertNoContent();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.currentUser.elementIndexViewStatesSynced', false)
+            ->missing('data')
+        );
+});
+
+it('keeps rendering page loads for the view states for as long as the session is active', function () {
+    EntryModel::factory()->count(2)->create();
+    $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
+    $lifetime = (int) config('session.lifetime');
+
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
+        'all' => true,
+    ])->assertNoContent();
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.User::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
+    ])->assertNoContent();
+
+    $this->travel($lifetime - 1)->minutes();
+    get("/{$this->cpTrigger}/content/entries")->assertOk();
+    $this->travel($lifetime - 1)->minutes();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.currentUser.elementIndexViewStatesSynced', true)
+            ->where('viewState.mode', 'cards')
+            ->has('data', 2)
+        );
+
+    // A push renews every view state too.
+    $this->travel($lifetime - 1)->minutes();
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'table']]]],
+    ])->assertNoContent();
+    $this->travel($lifetime - 1)->minutes();
+
+    // An index not visited in that time keeps its view state.
+    Edition::set(Edition::Pro);
+    get("/{$this->cpTrigger}/users/all")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('viewState.mode', 'cards'));
 });
 
 it('includes the active source exporters in the page payload', function () {
@@ -1618,4 +1841,52 @@ function saveUnpublishedEntryDraft(EntryElement $sibling): EntryElement
     app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
 
     return $draft;
+}
+
+/**
+ * @param  list<array{int, int, string}>  $transforms  The widths, heights, and modes of the transform indexes each image already has
+ * @return list<int> The images' asset IDs
+ */
+function createIndexThumbnailImages(int $width, array $transforms): array
+{
+    Queue::fake();
+    config()->set('filesystems.disks.test-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/content-index-controller-test/test-disk'),
+    ]);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $folder = Folders::getRootFolderByVolumeId($volume->id);
+    $imageTransformer = new ImageTransformer;
+
+    return array_map(function (int $number) use ($volume, $folder, $width, $transforms, $imageTransformer): int {
+        $asset = Asset::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => "image-{$number}.jpg",
+            'width' => $width,
+            'height' => $width * 3 / 4,
+            'dateModified' => now()->subMinute(),
+        ]);
+
+        foreach ($transforms as [$transformWidth, $transformHeight, $mode]) {
+            $imageTransformer->getTransformIndex($asset, new ImageTransform(['width' => $transformWidth, 'height' => $transformHeight, 'mode' => $mode]));
+        }
+
+        return $asset->id;
+    }, range(1, 3));
+}
+
+/**
+ * @return ArrayObject<int, QueryExecuted> The transform index lookups made from now on
+ */
+function listenForTransformIndexSelects(): ArrayObject
+{
+    $queries = new ArrayObject;
+    DB::listen(function (QueryExecuted $query) use ($queries): void {
+        if (str_starts_with($query->sql, 'select') && str_contains($query->sql, Table::IMAGETRANSFORMINDEX)) {
+            $queries[] = $query;
+        }
+    });
+
+    return $queries;
 }

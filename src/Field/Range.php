@@ -75,7 +75,7 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
     #[Override]
     public static function phpType(): string
     {
-        return 'int|null';
+        return 'int|float|null';
     }
 
     #[Override]
@@ -187,7 +187,7 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
             }
         }
 
-        return $value;
+        return is_int($value) || is_float($value) ? $value : null;
     }
 
     /** @return list<string> */
