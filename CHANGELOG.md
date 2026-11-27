@@ -50,6 +50,7 @@
 - Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))
 - `CraftCms\Cms\Element\Queries\AssetQuery` now has a template type for the asset class it returns, like `EntryQuery`, so static analysis can type queries for asset subclasses. ([#21138](https://github.com/craftcms/cms/pull/21138))
 - Fixed a bug where macros imported within `{% namespace %}` tags weren’t available after the closing tag. ([#21117](https://github.com/craftcms/cms/pull/21117))
+- Fixed a bug where dismissible tips’ and warnings’ dismiss buttons were gray filled buttons rather than plain icons in the tip’s color. ([#21127](https://github.com/craftcms/cms/pull/21127))
 - Fixed a bug where Number fields’ inputs didn’t format their values for the user’s formatting locale. ([#21080](https://github.com/craftcms/cms/issues/21080), [#21107](https://github.com/craftcms/cms/pull/21107))
 - Fixed bugs where Markdown fields’ character counters covered the text and weren’t fully announced by screen readers. ([#21069](https://github.com/craftcms/cms/issues/21069))
 - Fixed a bug where shared caches could store responses to token and site token requests. ([#20953](https://github.com/craftcms/cms/pull/20953))

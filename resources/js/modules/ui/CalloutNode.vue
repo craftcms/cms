@@ -51,8 +51,9 @@
       v-if="node.props.dismissible"
       slot="action"
       type="button"
-      appearance="plain"
+      variant="plain"
       size="small"
+      inherit
       icon="xmark-large"
       :aria-label="t('Dismiss')"
       @click="dismiss"
