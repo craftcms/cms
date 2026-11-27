@@ -1343,6 +1343,7 @@
     border: 0;
     background: none;
     box-shadow: none !important;
+    outline: none !important;
   }
 
   .assistant-chat__message-box :deep(.comment-field__header) {

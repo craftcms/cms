@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Stringable;
@@ -31,6 +32,7 @@ class Textarea extends ViewComponent
 {
     use HasDisabled;
     use HasId;
+    use HasSize;
 
     protected ?string $name = null;
 
@@ -163,8 +165,8 @@ class Textarea extends ViewComponent
     }
 
     /**
-     * Marks the textarea for the legacy chars-left counter JS. Unlike
-     * {@see Input}, no padding is added to make room for the counter.
+     * Shows how many characters are left before the `maxlength`, at the end of
+     * the textarea.
      */
     public function showCharsLeft(bool $showCharsLeft = true): static
     {
@@ -202,6 +204,9 @@ class Textarea extends ViewComponent
     {
         return [
             'monospace' => $this->monospace,
+            'size' => $this->getSize(),
+            'maxlength' => $this->maxlength,
+            'show-chars-left' => $this->showCharsLeft,
             // The component pushes the host properties it's given onto the
             // slotted textarea, and styles itself from them. The native
             // textarea keeps them too, for pre-upgrade correctness (form

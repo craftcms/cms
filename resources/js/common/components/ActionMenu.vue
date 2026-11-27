@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {computed, useTemplateRef, watch} from 'vue';
+  import {computed, onMounted, ref, useTemplateRef, watch} from 'vue';
   import ActionList from '@/common/components/ActionList.vue';
   import type {ActionItem} from '@/common/types';
+  import {PAGE_ACTIONS_ATTRIBUTE} from '@/modules/command-palette/sources/on-page-actions';
 
   export type ActionItems = Array<ActionItem>;
 
@@ -18,6 +19,11 @@
       flush?: boolean | string;
       /** Passed to the invoker; see `craft-button`'s `inherit`. */
       inherit?: boolean;
+      /**
+       * Waits to render the items until the menu first opens. For menus a page
+       * repeats many times, such as each field's.
+       */
+      lazy?: boolean;
     }>(),
     {
       icon: 'ellipsis',
@@ -26,6 +32,7 @@
       searchable: false,
       flush: true,
       inherit: true,
+      lazy: false,
     }
   );
 
@@ -60,6 +67,25 @@
       }
     }
   );
+
+  /**
+   * Whether the items have been rendered. A lazy menu renders them once the
+   * pointer or focus reaches it, ahead of the click or key that opens it, so
+   * opening doesn't wait for them. Opening renders them too:
+   * `craft-before-show` fires before the menu renders and focuses its items,
+   * and Vue's update runs first. `craft-show` covers a menu opened by setting
+   * `open`, which skips the cancelable event.
+   *
+   * The command palette reads the page's own menus from the DOM, so those
+   * render their items straight away.
+   */
+  const itemsRendered = ref(!props.lazy);
+  const menu = useTemplateRef<HTMLElement>('menu');
+  onMounted(() => {
+    if (menu.value?.closest(`[${PAGE_ACTIONS_ATTRIBUTE}]`)) {
+      itemsRendered.value = true;
+    }
+  });
 
   function isDanger(action: ActionItem): boolean {
     return 'variant' in action && action.variant === 'danger';
@@ -96,9 +122,14 @@
 
 <template>
   <craft-action-menu
+    ref="menu"
     :icon="icon"
     :label="label ?? undefined"
     .searchable="searchable"
+    @pointerover.once="itemsRendered = true"
+    @focusin.once="itemsRendered = true"
+    @craft-before-show="itemsRendered = true"
+    @craft-show="itemsRendered = true"
   >
     <slot v-once name="invoker" :label="label" :attributes="{slot: 'invoker'}">
       <craft-button
@@ -115,7 +146,11 @@
       </craft-button>
     </slot>
     <div slot="content">
-      <ActionList :actions="sorted" as="craft-action-item" />
+      <ActionList
+        v-if="itemsRendered"
+        :actions="sorted"
+        as="craft-action-item"
+      />
       <slot name="actions"></slot>
     </div>
   </craft-action-menu>

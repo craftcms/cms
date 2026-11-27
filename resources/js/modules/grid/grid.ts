@@ -7,6 +7,16 @@ import {startSide} from '@/common/craft/direction';
 import {contentSize, resolveElement, type ElementArg} from '@/common/utils/dom';
 import {jq} from '@/common/utils/jquery';
 
+/** The padding and border a `height` includes under `box-sizing: border-box`. */
+function borderBoxHeightExtra(style: CSSStyleDeclaration): number {
+  return style.boxSizing === 'border-box'
+    ? parseFloat(style.paddingTop || '0') +
+        parseFloat(style.paddingBottom || '0') +
+        parseFloat(style.borderTopWidth || '0') +
+        parseFloat(style.borderBottomWidth || '0')
+    : 0;
+}
+
 /** Sets the content height, accounting for `box-sizing`, like jQuery's `height(value)`. */
 function setContentHeight(el: HTMLElement, height: number | 'auto'): void {
   if (height === 'auto') {
@@ -14,15 +24,7 @@ function setContentHeight(el: HTMLElement, height: number | 'auto'): void {
     return;
   }
 
-  const style = getComputedStyle(el);
-  const extra =
-    style.boxSizing === 'border-box'
-      ? parseFloat(style.paddingTop || '0') +
-        parseFloat(style.paddingBottom || '0') +
-        parseFloat(style.borderTopWidth || '0') +
-        parseFloat(style.borderBottomWidth || '0')
-      : 0;
-  el.style.height = `${height + extra}px`;
+  el.style.height = `${height + borderBoxHeightExtra(getComputedStyle(el))}px`;
 }
 
 function show(el: HTMLElement): void {
@@ -113,6 +115,7 @@ export class Grid extends Base<GridSettings> {
   #refreshingCols = false;
   #refreshColsAfterRefresh = false;
   #forceRefreshColsAfterRefresh = false;
+  #queuedRefreshForce: boolean | null = null;
 
   constructor(container?: ElementArg, settings?: Partial<GridSettings>) {
     super();
@@ -174,6 +177,28 @@ export class Grid extends Base<GridSettings> {
     this.items = Array.from(new Set(toElements(items))).sort((a, b) =>
       a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
     );
+  }
+
+  /**
+   * Refreshes the columns once the current task's synchronous work is done
+   * (before the next paint), with one refresh for every call made until then.
+   * For callers that may fire many times at once, such as resize listeners on
+   * each item.
+   */
+  queueRefreshCols(force = false): void {
+    if (this.#queuedRefreshForce !== null) {
+      this.#queuedRefreshForce ||= force;
+      return;
+    }
+
+    this.#queuedRefreshForce = force;
+    queueMicrotask(() => {
+      const queuedForce = this.#queuedRefreshForce ?? false;
+      this.#queuedRefreshForce = null;
+      if (this.container && grids.get(this.container) === this) {
+        this.refreshCols(queuedForce);
+      }
+    });
   }
 
   refreshCols(force = false): void {
@@ -257,27 +282,30 @@ export class Grid extends Base<GridSettings> {
     this.onRefreshCols();
   }
 
-  /** `fillMode: 'grid'` — equalize each row's items to the tallest item. */
+  /**
+   * `fillMode: 'grid'` — equalize each row's items to the tallest item.
+   *
+   * Every item is reset, then measured, then sized, so the whole layout costs
+   * one style recalculation rather than one or two per item.
+   */
   #layoutGridFill(totalCols: number): void {
     const settings = this.settings!;
-    let itemIndex = 0;
 
-    while (itemIndex < this.items.length) {
-      // Append the next X items and figure out which one is the tallest
-      let tallestItemHeight = -1;
+    for (const item of this.items) {
+      setContentHeight(item, 'auto');
+    }
 
-      for (
-        let i = itemIndex;
-        i < itemIndex + totalCols && i < this.items.length;
-        i++
-      ) {
-        const item = this.items[i]!;
-        setContentHeight(item, 'auto');
-        const itemHeight = contentSize(item).height;
-        if (itemHeight > tallestItemHeight) {
-          tallestItemHeight = itemHeight;
-        }
-      }
+    const measured = this.items.map((item) => {
+      const style = getComputedStyle(item);
+      return {
+        height: contentSize(item, style).height,
+        extra: borderBoxHeightExtra(style),
+      };
+    });
+
+    for (let start = 0; start < this.items.length; start += totalCols) {
+      const row = measured.slice(start, start + totalCols);
+      let tallestItemHeight = Math.max(-1, ...row.map((item) => item.height));
 
       if (settings.snapToGrid) {
         const remainder = tallestItemHeight % settings.snapToGrid;
@@ -286,16 +314,10 @@ export class Grid extends Base<GridSettings> {
         }
       }
 
-      // Now set their heights to the tallest one
-      for (
-        let i = itemIndex;
-        i < itemIndex + totalCols && i < this.items.length;
-        i++
-      ) {
-        setContentHeight(this.items[i]!, tallestItemHeight);
-      }
-
-      itemIndex += totalCols;
+      row.forEach((item, i) => {
+        this.items[start + i]!.style.height =
+          `${tallestItemHeight + item.extra}px`;
+      });
     }
   }
 

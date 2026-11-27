@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Matrix;
@@ -27,7 +28,10 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
 use CraftCms\Cms\Release\Releases;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Conditions\EmailConditionRule;
 use CraftCms\Cms\User\Conditions\UserCondition;
@@ -35,6 +39,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -181,6 +186,48 @@ it('saves inline-edited elements in a batch', function () {
 
     expect(Entry::find()->id($firstEntry->id)->status(null)->one()?->title)->toBe('First After Save')
         ->and(Entry::find()->id($secondEntry->id)->status(null)->one()?->title)->toBe('Second After Save');
+});
+
+it('saves inline-edited Content Block fields under the block’s handle', function () {
+    $headline = Field::factory()->create(['handle' => 'headline', 'type' => PlainText::class]);
+    FieldsFacade::refreshFields();
+    $headlineUid = Str::uuid()->toString();
+    $entry = EntryModel::factory()->withField('hero', ContentBlock::class, [
+        'fieldLayouts' => [
+            Str::uuid()->toString() => [
+                'tabs' => [[
+                    'name' => 'Content',
+                    'elements' => [[
+                        'uid' => $headlineUid,
+                        'type' => CustomField::class,
+                        'fieldUid' => $headline->uid,
+                    ]],
+                ]],
+            ],
+        ],
+    ], value: ['fields' => ['headline' => 'Old headline']])->createElementWithFields()->element;
+    $heroUid = $entry->getFieldLayout()->getCustomFieldElements()[0]->uid;
+
+    // Render the input the way the element index does, and post to the path it names
+    $html = InputNamespace::with('inline', fn () => InputNamespace::namespaceInputs(
+        fn () => $entry->getInlineAttributeInputHtml("contentBlock:$heroUid.field:$headline->uid"),
+        "element-$entry->id[fields]",
+    ));
+    $payload = Json::decode(new Crawler($html)->filter('craft-inline-attribute-ui')->attr('data-payload'));
+    $path = $payload['nodes'][0]['control']['path'];
+
+    expect($path)->toBe(['inline', "element-$entry->id", 'fields', 'hero', 'fields', 'headline']);
+
+    ($this->postSaveElements)([
+        'siteId' => $entry->siteId,
+        'namespace' => 'inline',
+        'modifiedDeltaNames' => ["inline[element-$entry->id]"],
+        ...Arr::undot([implode('.', $path) => 'New headline']),
+    ])->assertOk();
+
+    $saved = Entry::find()->id($entry->id)->status(null)->one();
+
+    expect($saved->getFieldValue('hero')->getFieldValue('headline'))->toBe('New headline');
 });
 
 it('saves embedded inline fields on an owner-specific clone without locked fields', function () {

@@ -86,6 +86,13 @@ class AssetIndexViewModel extends ContentIndexViewModel
             && $this->request->boolean('includeSubfolders');
     }
 
+    /** @return array<string, mixed> */
+    #[Override]
+    public function queryCriteria(): array
+    {
+        return $this->includeSubfolders() ? ['includeSubfolders' => true] : [];
+    }
+
     public function canSearchSubfolders(): bool
     {
         return ($this->subfolder() ?? $this->rootFolder())?->getHasChildren() ?? false;
@@ -585,7 +592,9 @@ class AssetIndexViewModel extends ContentIndexViewModel
 
     /**
      * Uploads land in the folder on screen, which is the subfolder named in the
-     * path rather than the volume's root.
+     * path rather than the volume's root. The subfolder's key path is what the
+     * page posts to element actions and exports, so the server finds the
+     * assets in that folder rather than the volume's root.
      *
      * @return array<string, mixed>|null
      */
@@ -595,9 +604,15 @@ class AssetIndexViewModel extends ContentIndexViewModel
         $source = parent::source();
         $subfolder = $this->subfolder();
 
-        if ($source !== null && $subfolder !== null && isset($source['data']['folder-id'])) {
+        if ($source === null || $subfolder === null) {
+            return $source;
+        }
+
+        if (isset($source['data']['folder-id'])) {
             $source['data']['folder-id'] = $subfolder->id;
         }
+
+        $source['keyPath'] = "{$source['key']}/folder:{$subfolder->uid}";
 
         return $source;
     }

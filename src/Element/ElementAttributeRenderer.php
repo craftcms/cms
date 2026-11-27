@@ -94,9 +94,12 @@ readonly class ElementAttributeRenderer
         $field = null;
 
         if (str_starts_with($attribute, 'contentBlock:')) {
-            [$block, $nestedAttribute] = $this->resolveContentBlockAttribute($element, $attribute);
+            [$block, $nestedAttribute, $field] = $this->resolveContentBlockAttribute($element, $attribute);
 
-            return $block ? $this->renderInlineInput($block, $nestedAttribute) : '';
+            return $block ? InputNamespace::namespaceInputs(
+                fn () => $this->renderInlineInput($block, $nestedAttribute),
+                "$field->handle[fields]",
+            ) : '';
         }
 
         if (preg_match('/^field:(.+)/', $attribute, $matches)) {
@@ -423,7 +426,7 @@ readonly class ElementAttributeRenderer
      * Resolves a `contentBlock:` table attribute key to the referenced Content Block and its own
      * (relative) attribute key.
      *
-     * @return array{0: ContentBlockElement|null, 1: string}
+     * @return array{0: ContentBlockElement|null, 1: string, 2: ContentBlockField|null}
      */
     private function resolveContentBlockAttribute(ElementInterface $element, string $attribute): array
     {
@@ -444,12 +447,12 @@ readonly class ElementAttributeRenderer
         }
 
         if (! $field instanceof ContentBlockField) {
-            return [null, ''];
+            return [null, '', null];
         }
 
         $block = $element->getFieldValue($field->handle);
 
-        return [$block, implode('.', $parts)];
+        return [$block, implode('.', $parts), $field];
     }
 
     /**

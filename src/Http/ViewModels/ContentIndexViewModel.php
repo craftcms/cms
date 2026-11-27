@@ -196,6 +196,18 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->request->input('search');
     }
 
+    /**
+     * Criteria the index's query adds beyond its source, search, and status
+     * menu, which requests that rebuild the query on the server, such as
+     * element actions and exports, post along with them.
+     *
+     * @return array<string, mixed>
+     */
+    public function queryCriteria(): array
+    {
+        return [];
+    }
+
     /** @return array<string, mixed>|null */
     public function source(): ?array
     {
@@ -1667,7 +1679,6 @@ abstract class ContentIndexViewModel extends ViewModel
                 'autoReload' => false,
                 'selectable' => false,
                 'sortable' => false,
-                'showStatus' => true,
                 ...$this->cardConfig($element),
             ];
 

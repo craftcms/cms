@@ -26,6 +26,7 @@
     "check:format": "vp fmt --check ./src",
     "check:exports": "attw --pack .",
     "check:types": "tsc --noEmit",
+    "check:palette": "vp run generate:colors && git diff --exit-code -- src/styles/shared/color-palette.css src/styles/shared/colorable.css",
     "prestorybook": "pnpm run build:manifest",
     "watch:manifest": "pnpm run build:manifest --watch",
     "storybook": "run-p -l watch:manifest storybook:dev",

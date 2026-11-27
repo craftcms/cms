@@ -4,30 +4,27 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
-use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\Http\Middleware\AuthenticateAccessToken;
 use CraftCms\Cms\Http\Responses\GqlResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SiteSites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User as OAuthUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use ValueError;
 
-use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
@@ -43,7 +40,6 @@ readonly class ApiController extends GqlController
         private GeneralConfig $generalConfig,
         private Gql $gql,
         private SiteSites $sites,
-        private OAuthResources $oauthResources,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -208,16 +204,12 @@ readonly class ApiController extends GqlController
             return $schema;
         }
 
-        // Passport access tokens are JWTs, whereas GraphQL tokens never contain dots
-        $bearerToken = $request->bearerToken();
+        // AuthenticateAccessToken authenticated the request’s access token, if it has one. When an X-Craft-Gql-Token
+        // header is present, its token determines the schema, so the access token only logs the user in.
+        $oauthUser = $request->attributes->get(AuthenticateAccessToken::USER_ATTRIBUTE);
 
-        if ($bearerToken && substr_count($bearerToken, '.') === 2) {
-            if (! $requestHeaders->has(self::GQL_TOKEN_HEADER)) {
-                return $this->resolveUserSchema($request);
-            }
-
-            // The X-Craft-Gql-Token header’s token determines the schema, so the access token only logs the user in
-            $this->authenticateUser($request);
+        if ($oauthUser instanceof OAuthUser && ! $requestHeaders->has(self::GQL_TOKEN_HEADER)) {
+            return $this->gql->getSchemaForUser($oauthUser->asElement(), $oauthUser->tokenCan(Gql::SCOPE_WRITE));
         }
 
         $token = $this->resolveToken($request, $this->gql);
@@ -241,43 +233,6 @@ readonly class ApiController extends GqlController
         }
 
         return $token->getSchema();
-    }
-
-    /**
-     * Authenticates the request’s Passport access token, and returns a schema for the user it was issued to.
-     */
-    private function resolveUserSchema(Request $request): GqlSchema
-    {
-        $user = $this->authenticateUser($request);
-
-        return $this->gql->getSchemaForUser($user->asElement(), $user->tokenCan(Gql::SCOPE_WRITE));
-    }
-
-    /**
-     * Authenticates the request’s Passport access token, and acts as the user it was issued to for the rest of the
-     * request.
-     */
-    private function authenticateUser(Request $request): OAuthUser
-    {
-        $user = $request->user(Gql::AUTH_GUARD);
-
-        $resource = $this->oauthResources->get('graphql');
-
-        if (
-            ! $user instanceof OAuthUser ||
-            $user->asElement()->getStatus() !== UserElement::STATUS_ACTIVE ||
-            ! $resource ||
-            ! array_any($resource->scopes(), $user->tokenCan(...))
-        ) {
-            throw new HttpException(401, 'Invalid access token.', headers: [
-                'WWW-Authenticate' => $resource?->challenge('invalid_token') ?? 'Bearer error="invalid_token"',
-            ]);
-        }
-
-        // Act as the user for the rest of the request, so permission checks and element queries apply to them
-        craftAuth()->setUser($user);
-
-        return $user;
     }
 
     private function resolveToken(Request $request, Gql $gqlService): ?GqlToken

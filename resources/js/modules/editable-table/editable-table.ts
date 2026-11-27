@@ -1035,7 +1035,12 @@ export class Row extends Base {
           {tdIndex: i, type: col.type},
           'handleKeypress'
         );
-        this.addListener($input, 'input', {type: col.type}, 'validateValue');
+        this.addListener(
+          $input,
+          'input',
+          {type: col.type, localized: !!col.locale},
+          'validateValue'
+        );
         $input.each((_: number, el: HTMLElement) => {
           el.dispatchEvent(new Event('input', {bubbles: true}));
         });
@@ -1324,7 +1329,7 @@ export class Row extends Base {
     }
 
     if (ev.data.type === 'number') {
-      Craft.filterNumberInputVal(ev.currentTarget);
+      Craft.filterNumberInputVal(ev.currentTarget, ev.data.localized);
       return;
     }
 

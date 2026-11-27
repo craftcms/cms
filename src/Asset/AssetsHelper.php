@@ -279,7 +279,7 @@ class AssetsHelper
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
-                Folders::createFolder($folder);
+                Folders::createFolderForMove($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }

@@ -106,6 +106,7 @@
 
   const {
     autosave,
+    errorPaths,
     errors,
     form,
     onMutation,
@@ -302,7 +303,11 @@
 
 <template>
   <LayoutSlot v-if="form.hasErrors" name="error-summary">
-    <ErrorSummary :errors="form.errors" :title="t('Couldn’t save changes')" />
+    <ErrorSummary
+      :errors="form.errors"
+      :error-paths="errorPaths"
+      :title="t('Couldn’t save changes')"
+    />
   </LayoutSlot>
 
   <!-- The notices' target is a live region, there before they are, so they're announced. -->

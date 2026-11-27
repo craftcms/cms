@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Collection;
 use Override;
@@ -309,6 +311,20 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
         return $this->selectableSites()->first()->id ?? $siteIds[0];
     }
 
+    /**
+     * Resolves the actions with the site it lists as the requested site, since element types can define them for it,
+     * and the page's `?site=` names another site or none.
+     */
+    #[Override]
+    public function actions(): ?array
+    {
+        $site = Sites::getSiteById($this->siteId(), true);
+
+        return $site !== null
+            ? app(RequestedSite::class)->using($site, fn (): ?array => parent::actions())
+            : parent::actions();
+    }
+
     #[Override]
     public function showSiteMenu(): bool
     {
@@ -377,7 +393,6 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
             'attributes' => ['data' => ['cp-url' => $this->editUrl($element)]],
             'hyperlink' => ! $element->trashed,
             'autoReload' => $this->mode() !== ElementIndexViewMode::Cards->value,
-            'showStatus' => true,
             'showActionMenu' => ! $element->trashed,
             'showNestedActions' => $nestedActions,
             'nestedActionEvents' => $nestedActions,

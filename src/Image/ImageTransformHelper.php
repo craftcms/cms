@@ -441,4 +441,32 @@ class ImageTransformHelper
 
         return $tempPath;
     }
+
+    /**
+     * Returns the width and height an asset will have after a transform, or `null`s when the asset’s own size is unknown.
+     *
+     * @return array{?int, ?int}
+     */
+    public static function transformedDimensions(Asset $asset, ImageTransform $transform): array
+    {
+        $source = clone $asset;
+        if (method_exists($source, 'setTransform')) {
+            $source->setTransform(null);
+        }
+        $sourceWidth = $source->getWidth();
+        $sourceHeight = $source->getHeight();
+
+        if (! $sourceWidth || ! $sourceHeight) {
+            return [null, null];
+        }
+
+        return ImageHelper::targetDimensions(
+            $sourceWidth,
+            $sourceHeight,
+            $transform->width !== null ? (int) $transform->width : null,
+            $transform->height !== null ? (int) $transform->height : null,
+            $transform->mode,
+            $transform->upscale,
+        );
+    }
 }

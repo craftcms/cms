@@ -90,3 +90,13 @@ it('shows or suppresses an explicit field status', function (bool $showStatus, b
     expect($field->attr('status'))->toBe($showStatus ? 'modified' : null)
         ->and($field->attr('status-label'))->toBe($showStatus ? 'Title changed' : null);
 })->with([false, true])->with(['field' => false, 'group' => true]);
+
+it('renders field errors without the emphasis markers around a field name', function () {
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([Field::make('Date', Text::make('date'))]),
+        new UiContext(errors: ['date' => ['The *Date* field is required.']]),
+    );
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+
+    expect($crawler->filter('craft-field .error-list li')->text())->toBe('The Date field is required.');
+});

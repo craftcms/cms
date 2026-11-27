@@ -22,6 +22,7 @@ CP Styles
 @import './cvd.css';
 @import './global-sidebar.css';
 @import './matrix.css';
+@import './range.css' layer(cp);
 @import './content-block.css';
 @import './messages.css';
 @import './slideout.css';
@@ -575,7 +576,9 @@ Form controls
 
 /* Native selects draw the same chevron as craft-select, rather than the
    browser's own, which sits flush against the border. */
-.cp-select:has(> .cp-form-control--select:not([multiple])) {
+.cp-select:has(> .cp-form-control--select):not(
+  :has(> .cp-form-control--select[multiple])
+) {
   position: relative;
 
   &::after {

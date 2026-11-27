@@ -7,6 +7,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
@@ -36,6 +37,7 @@ use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
@@ -500,3 +502,21 @@ class ThrowingMockQuery extends BaseQuery
         ];
     }
 }
+
+it('does not read or write cached results with pending invalidations', function () {
+    $gql = app(Gql::class);
+    $tag = 'element::'.EntryElement::class;
+    $gql->setCachedResult('pendingInvalidationResult', ['data' => 'cached'], new TagDependency([$tag]));
+
+    expect($gql->getCachedResult('pendingInvalidationResult'))->toBe(['data' => 'cached']);
+
+    ElementCaches::deferInvalidations(function () use ($gql, $tag) {
+        ElementCaches::invalidateForElementType(EntryElement::class);
+
+        expect($gql->getCachedResult('pendingInvalidationResult'))->toBeNull();
+
+        $gql->setCachedResult('newPendingInvalidationResult', ['data' => 'new'], new TagDependency([$tag]));
+
+        expect(DependencyCache::get('newPendingInvalidationResult'))->toBeNull();
+    });
+});

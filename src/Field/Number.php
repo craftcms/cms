@@ -120,12 +120,37 @@ class Number extends Field implements DefaultableFieldInterface, InlineEditableF
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        return NumberControl::make($context->path)
+        $control = NumberControl::make($context->path)
             ->min($this->min)
             ->max($this->max)
             ->step($this->step)
             ->size($this->size)
-            ->value($context->value);
+            ->prefix($this->prefix === null ? null : t($this->prefix, category: 'site'))
+            ->suffix($this->suffix === null ? null : t($this->suffix, category: 'site'));
+
+        $value = $context->value;
+        $formatter = I18N::getFormatter();
+
+        // Fields with a step, and numbers that formatting would misrepresent, keep a native number input holding the raw value.
+        if ($this->step || (! is_numeric($value) && $value !== null) || $formatter->willBeMisrepresented($value)) {
+            return $control->value($value);
+        }
+
+        $locale = I18N::getFormattingLocale();
+
+        if ($value !== null) {
+            if ($this->previewFormat !== self::FORMAT_NONE) {
+                $value = $formatter->asDecimal($value, $this->decimals);
+            } elseif ($this->decimals !== 0) {
+                $value = number_format((float) $value, $this->decimals, $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR), '');
+            }
+        }
+
+        return $control
+            ->inputType('text')
+            ->inputMode($this->decimals ? 'decimal' : 'numeric')
+            ->locale($locale->id)
+            ->value(['value' => $value, 'locale' => $locale->id]);
     }
 
     /**

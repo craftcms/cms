@@ -11,7 +11,6 @@ use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\BrowserTestCase;
 use CraftCms\Cms\Tests\TestCase;
@@ -25,7 +24,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Testing\TestResponse;
 use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Playwright\Playwright;
 use Pest\Browser\Playwright\Servers\PlaywrightNpmServer;
@@ -99,33 +97,6 @@ function enableMcp(array $settings = []): void
     app(UrlGenerator::class)->setRoutes($routes);
     app(RouteRegistrar::class)->register();
 }
-
-/**
- * Asserts the response flashed a message of the given type, and optionally
- * text, to the next page — as a control panel message or,
- * on site requests, the plain session key.
- *
- *     post('/admin/settings/sites')->assertMessage('success', 'Site saved.');
- */
-TestResponse::macro('assertMessage', function (string $type, ?string $message = null): TestResponse {
-    /** @var TestResponse $this */
-    $messages = array_column(array_filter(
-        session()->get(Flash::SESSION_KEY, []),
-        fn (array $flashed): bool => $flashed['type'] === $type,
-    ), 'message');
-
-    if (is_string($plain = session()->get($type))) {
-        $messages[] = $plain;
-    }
-
-    Assert::assertNotEmpty($messages, "No [$type] message was flashed.");
-
-    if ($message !== null) {
-        Assert::assertContains($message, $messages, "No [$type] message with the expected text was flashed.");
-    }
-
-    return $this;
-});
 
 $tia = pest()->tia()
     ->defaultBranch('6.x')
@@ -252,6 +223,10 @@ function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
  * `$outsideLandmarks` names popups that legacy code attaches to `<body>`, outside every landmark, such as the field
  * layout designer's field library. The landmark check skips them; every other rule still checks them.
  *
+ * The landmark check always skips the global skip links. Axe only exempts a skip link that comes before the page's
+ * first other link, and can't place a link inside a shadow root, such as a `craft-button` in a control panel alert,
+ * so it reports the skip links whenever one of those comes first. The `skip-link` rule still checks their targets.
+ *
  * @param  list<string>  $outsideLandmarks
  */
 function assertNoAccessibilityIssues(AwaitableWebpage $page, array $outsideLandmarks = []): AwaitableWebpage
@@ -263,12 +238,10 @@ function assertNoAccessibilityIssues(AwaitableWebpage $page, array $outsideLandm
                 ...axe.getRules(['best-practice'])
                     .filter(rule => ! bestPractices.includes(rule.ruleId))
                     .map(rule => ({id: rule.ruleId, enabled: false})),
-                ...outsideLandmarks.length
-                    ? [{id: 'region', selector: `body *:not(${outsideLandmarks.map(s => `${s}, ${s} *`).join(', ')})`}]
-                    : [],
+                {id: 'region', selector: `body *:not(${outsideLandmarks.map(s => `${s}, ${s} *`).join(', ')})`},
             ],
         }))(['heading-order', 'region', 'landmark-one-main', 'page-has-heading-one', 'skip-link'], %s)
-        JS, Json::encode($outsideLandmarks)));
+        JS, Json::encode(['.skip-link--global', ...$outsideLandmarks])));
     $page->script(<<<'JS'
         Promise.all(document.getAnimations()
             .filter(animation => (animation instanceof CSSTransition || animation instanceof CSSAnimation)

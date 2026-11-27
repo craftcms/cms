@@ -81,3 +81,9 @@
     ></cp-queue-indicator>
   </craft-nav-list>
 </template>
+
+<style scoped>
+  :deep(craft-nav-item::part(toggle-icon)) {
+    color: color-mix(in srgb, currentcolor 75%, transparent);
+  }
+</style>

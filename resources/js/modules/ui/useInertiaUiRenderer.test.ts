@@ -37,6 +37,7 @@ const rootPayload: UiPayload = {
 
 interface TestIntegration {
   advanceBaseline(): void;
+  errorPath(key: string): string[] | null;
   errors: ComputedRef<Array<{path: string[]; messages: string[]}>>;
   onMutation(mutation: UiValues): boolean;
   renderer: ShallowRef<{
@@ -233,6 +234,7 @@ describe('useInertiaUiRenderer', () => {
     expect(integration.errors.value).toEqual([
       {path: ['fields', 'assets'], messages: ['Choose a valid asset.']},
     ]);
+    expect(integration.errorPath('assets')).toEqual(['fields', 'assets']);
   });
 
   it('resolves an error key through structural children and Control-owned UI definitions', async () => {

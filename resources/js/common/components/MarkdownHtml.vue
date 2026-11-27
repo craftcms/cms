@@ -36,6 +36,11 @@
     overflow-wrap: anywhere;
   }
 
+  /* The flex gap spaces blocks here, instead of `.prose`'s sibling margins. */
+  .markdown-html > :deep(*) {
+    margin-block: 0;
+  }
+
   .markdown-html :deep(:is(h1, h2)) {
     margin: 0;
     font-size: var(--c-text-lg);

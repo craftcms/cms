@@ -252,3 +252,62 @@ it('eases its size to new content, but takes a resize at once', async () => {
   await vi.waitFor(() => expect(box.offsetHeight).toBeLessThan(before + 300));
   expect(box.getAnimations()).toHaveLength(0);
 });
+
+it('opens at the size another modal with its storage key was resized to', async () => {
+  localStorage.clear();
+  const open = () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const app = createApp(
+      defineComponent({
+        setup: () => () =>
+          h(
+            Modal,
+            {
+              isActive: true,
+              label: 'Trace',
+              resizable: true,
+              storageKey: 'Test.size',
+            },
+            () => h('div', {style: {height: '300px'}}, 'Body')
+          ),
+      })
+    );
+    app.mount(host);
+    teardown = () => app.unmount();
+
+    return app;
+  };
+
+  const settle = async () => {
+    const dialog = page.getByRole('dialog', {name: 'Trace', exact: true});
+    await expect.element(dialog).toBeVisible();
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+    );
+    await Promise.all(
+      dialog
+        .element()
+        .getAnimations({subtree: true})
+        .map((animation) => animation.finished)
+    );
+  };
+
+  const first = open();
+  await settle();
+  const box = () =>
+    document.querySelector<HTMLElement>('.cp-modal > .content')!;
+  const width = box().offsetWidth;
+  const height = box().offsetHeight;
+  page.getByRole('button', {name: 'Resize', exact: true}).element().focus();
+  await userEvent.keyboard('{ArrowLeft}{ArrowDown}');
+  await vi.waitFor(() => expect(box().offsetWidth).toBe(width - 16));
+  first.unmount();
+  document.body.innerHTML = '';
+
+  open();
+  await settle();
+  expect(box().offsetWidth).toBe(width - 16);
+  expect(box().offsetHeight).toBe(height + 16);
+  localStorage.clear();
+});

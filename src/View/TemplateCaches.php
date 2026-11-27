@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
@@ -39,6 +40,7 @@ class TemplateCaches
     public function __construct(
         private readonly DependencyCollector $dependencyCollector,
         private readonly TemplateCacheCollectors $cacheCollectors,
+        private readonly ElementCaches $elementCaches,
     ) {}
 
     public function getTemplateCache(string $key, bool $global, bool $registerResources = false): ?string
@@ -50,7 +52,7 @@ class TemplateCaches
         $context = $this->context($key, $global, $registerResources);
         $data = $this->normalizeCachedValue(DependencyCache::get($context->cacheKey));
 
-        if ($data === null) {
+        if ($data === null || $this->elementCaches->hasPendingInvalidations($data['cacheInfo']['tags'])) {
             return null;
         }
 
@@ -141,7 +143,7 @@ class TemplateCaches
         $duration = $this->normalizeDuration($duration, $expiration);
         $maxDuration = $this->durationFromCacheInfo($cacheInfo);
 
-        if ($maxDuration === 0) {
+        if ($maxDuration === 0 || $this->elementCaches->hasPendingInvalidations($cacheInfo['tags'])) {
             return;
         }
 

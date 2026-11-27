@@ -76,6 +76,8 @@ trait QueriesAffiliatedSite
      *
      * @param  mixed  $value  The property value
      *
+     * @phpstan-return static
+     *
      * @uses $affiliatedSiteId
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Determines which site(s) the users should be affiliated with.')]
@@ -146,6 +148,8 @@ trait QueriesAffiliatedSite
      *  ```
      *
      * @param  mixed  $value  The property value
+     *
+     * @phpstan-return static
      *
      * @uses $affiliatedSiteId
      */

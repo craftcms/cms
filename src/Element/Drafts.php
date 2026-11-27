@@ -266,6 +266,41 @@ readonly class Drafts
     }
 
     /**
+     * Saves a draft as it will be published, before it’s applied.
+     *
+     * An enabled draft is validated in the live scenario, which also sets defaults
+     * such as an entry’s post date. When the save fails, the draft keeps its errors
+     * and the flags set for applying it.
+     *
+     * @return bool Whether the draft was saved
+     */
+    public function saveDraftForApplying(ElementInterface $draft, bool $crossSiteValidate, bool $saveContent = false): bool
+    {
+        if ($draft->enabled && $draft->getEnabledForSite()) {
+            $draft->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        }
+
+        if ($draft->getIsUnpublishedDraft()) {
+            $draft->propagateRequired = true;
+        }
+
+        $draft->applyingDraft = true;
+
+        if (! $this->elements->saveElement(
+            element: $draft,
+            crossSiteValidate: $crossSiteValidate,
+            saveContent: $saveContent,
+        )) {
+            return false;
+        }
+
+        $draft->applyingDraft = false;
+        $draft->propagateRequired = false;
+
+        return true;
+    }
+
+    /**
      * Applies a draft to its canonical element, and deletes the draft.
      *
      * If an unpublished draft is passed, its draft data will simply be removed from it.

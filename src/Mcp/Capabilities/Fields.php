@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields as FieldService;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\Schema\ConditionSchema;
 use CraftCms\Cms\Mcp\SensitiveValues;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
@@ -31,6 +33,7 @@ readonly class Fields
     public function __construct(
         private FieldService $fields,
         private SensitiveValues $sensitiveValues,
+        private ConditionSchema $conditions,
     ) {}
 
     /** @return array{count: int, fields: list<array<string, mixed>>} */
@@ -86,6 +89,10 @@ readonly class Fields
             throw new ToolCallException('Field type is invalid or unavailable.');
         }
 
+        $settings = $this->sensitiveValues->restore(ProjectConfigHelper::unpackAssociativeArrays($settings), []);
+        // Fields build their selection condition as they're created, so it's set once it's been checked
+        $selectionCondition = is_a($type, BaseRelationField::class, true) ? Arr::pull($settings, 'selectionCondition') : null;
+
         $field = $this->fields->createField([
             'type' => $type,
             'name' => $name,
@@ -94,8 +101,12 @@ readonly class Fields
             'searchable' => $searchable,
             'translationMethod' => $translationMethod,
             'translationKeyFormat' => $translationKeyFormat,
-            'settings' => $this->sensitiveValues->restore(ProjectConfigHelper::unpackAssociativeArrays($settings), []),
+            'settings' => $settings,
         ]);
+
+        if ($field instanceof BaseRelationField) {
+            $field->setSelectionCondition($this->selectionCondition($field, $selectionCondition));
+        }
 
         return ['field' => $this->save($field)];
     }
@@ -146,7 +157,13 @@ readonly class Fields
         ], $request->arguments);
 
         if (array_key_exists('settings', $request->arguments)) {
-            $attributes = [...array_replace($field->getSettings(), $this->sensitiveValues->restore(ProjectConfigHelper::unpackAssociativeArrays($settings), $field->getSettings())), ...$attributes];
+            $settings = $this->sensitiveValues->restore(ProjectConfigHelper::unpackAssociativeArrays($settings), $field->getSettings());
+
+            if ($field instanceof BaseRelationField && array_key_exists('selectionCondition', $settings)) {
+                $settings['selectionCondition'] = $this->selectionCondition($field, $settings['selectionCondition']);
+            }
+
+            $attributes = [...array_replace($field->getSettings(), $settings), ...$attributes];
         }
 
         Typecast::configure($field, $attributes);
@@ -227,6 +244,22 @@ readonly class Fields
         };
     }
 
+    /**
+     * Normalizes a relation field’s selection condition, rejecting rules Craft would drop.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function selectionCondition(BaseRelationField $field, mixed $condition): ?array
+    {
+        if ($condition === null) {
+            return null;
+        }
+
+        $config = $this->conditions->normalize($this->conditions->forRelationSelection($field), $condition, 'settings.selectionCondition');
+
+        return $this->conditions->hasRules($config) ? $config : null;
+    }
+
     /** @return array<string, mixed> */
     private function save(FieldInterface $field): array
     {
@@ -243,7 +276,7 @@ readonly class Fields
         $config = $this->fields->createFieldConfig($field);
 
         if (isset($config['settings'])) {
-            $config['settings'] = $this->sensitiveValues->redact($config['settings']);
+            $config['settings'] = $this->sensitiveValues->redact(ProjectConfigHelper::unpackAssociativeArrays($config['settings']));
         }
 
         return [

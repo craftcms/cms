@@ -185,10 +185,14 @@ fieldset {
 
 /* Text attributes stack like lines of text. A chip with a border and fill
    gets room from the attributes beside it; a plain one reads as text. */
-.card-attribute-preview:has(craft-chip:not([appearance~='plain']))
+.card-attribute-preview:has(craft-chip):not(
+    :has(craft-chip[appearance~='plain'])
+  )
   + .card-attribute-preview,
 .card-attribute-preview
-  + .card-attribute-preview:has(craft-chip:not([appearance~='plain'])) {
+  + .card-attribute-preview:has(craft-chip):not(
+    :has(craft-chip[appearance~='plain'])
+  ) {
   margin-block-start: var(--c-spacing-sm);
 }
 
@@ -366,6 +370,10 @@ Previously `.readable`
 .prose {
   > *:first-child {
     margin-block-start: 0;
+  }
+
+  > * + * {
+    margin-block-start: 1em;
   }
 
   h1,
@@ -637,10 +645,8 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     text-overflow: ellipsis;
     width: 0;
 
-    &:has(
-      .cp-table-input:not([type='checkbox']):not([type='radio']):not(
-        craft-switch
-      )
+    &:has(.cp-table-input):not(
+      :has(.cp-table-input:is([type='checkbox'], [type='radio'], craft-switch))
     ) {
       padding: 0;
     }
@@ -766,18 +772,20 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
   td:where(
     :not(
       :has(
-        craft-input:not([hidden-input]),
         craft-input-handle,
         craft-input-money,
         craft-textarea,
         craft-select,
         craft-combobox,
         > textarea,
-        > input:not([type='checkbox'], [type='radio'], [type='hidden']),
         > select,
         > .select,
         > .datewrapper,
         > .timewrapper
+      ),
+      :has(craft-input):not(:has(craft-input[hidden-input])),
+      :has(> input):not(
+        :has(> input:is([type='checkbox'], [type='radio'], [type='hidden']))
       )
     )
   ) {
@@ -832,21 +840,18 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     clicking anywhere in the cell focuses its control (in TableControl.vue), and
     the cell draws the focus ring so it spans the full row height.
   */
-  td:has(
-    craft-input:not([hidden-input], [type='date'], [type='time']),
-    craft-input-money,
-    craft-textarea,
-    craft-combobox
+  td:is(
+    :has(craft-input-money, craft-textarea, craft-combobox),
+    :has(craft-input):not(
+      :has(craft-input:is([hidden-input], [type='date'], [type='time']))
+    )
   ) {
     cursor: text;
   }
 
-  td:has(
-    craft-input:not([hidden-input]),
-    craft-input-money,
-    craft-textarea,
-    craft-select,
-    craft-combobox
+  td:is(
+    :has(craft-input-money, craft-textarea, craft-select, craft-combobox),
+    :has(craft-input):not(:has(craft-input[hidden-input]))
   ) {
     /* Set on the controls themselves too, since prefixed inputs (money) set their own */
     &,

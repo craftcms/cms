@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
+use Closure;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Json;
 use CraftCms\DependencyAwareCache\Dependency\Dependency;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Expression;
 
@@ -74,5 +77,34 @@ trait CachesQueries
     protected function getCacheDependency(): Dependency
     {
         return $this->queryCacheDependency ?? new TagDependency($this->getCacheTags());
+    }
+
+    /**
+     * Returns the cached result for the query, or runs the callback and caches its result.
+     *
+     * The cache is bypassed while any of the query’s cache tags are waiting to be invalidated, so code that runs
+     * during an element operation, such as an `ElementSaved` listener, reads the element’s new state. Queries cached
+     * with a dependency other than a `TagDependency` are bypassed while any tags are pending.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    protected function rememberQueryResult(string $key, Closure $callback): mixed
+    {
+        $dependency = $this->getCacheDependency();
+        $elementCaches = app(ElementCaches::class);
+
+        // Other dependencies, such as an AnyDependency, don't expose their tags, so they're bypassed while any are pending
+        $bypass = $dependency instanceof TagDependency
+            ? $elementCaches->hasPendingInvalidations($dependency->tags)
+            : $elementCaches->hasAnyPendingInvalidations();
+
+        if ($bypass) {
+            return $callback();
+        }
+
+        return DependencyCache::remember($key, $this->queryCacheDuration, $callback, $dependency);
     }
 }

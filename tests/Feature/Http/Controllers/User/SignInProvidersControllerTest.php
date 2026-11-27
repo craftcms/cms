@@ -232,7 +232,7 @@ it('connects a provider to the current user', function () {
         'email' => 'provider-user-1@example.com',
     ])
         ->assertRedirect(cp_url('myaccount/sign-in-providers'))
-        ->assertMessage('success');
+        ->assertCpMessage('success');
 
     expect(Auth::id())->toBe($user->id)
         ->and(signInProviderHasIdentity('provider-user-1', $user->id))->toBeTrue();
@@ -250,7 +250,7 @@ it('does not duplicate an already connected provider identity', function () {
         'email' => 'provider-user-1@example.com',
     ])
         ->assertRedirect(cp_url('myaccount/sign-in-providers'))
-        ->assertMessage('success');
+        ->assertCpMessage('success');
 
     expect(signInProviderIdentityCount('provider-user-1'))->toBe(1);
 });
@@ -272,7 +272,7 @@ it('does not connect an identity that belongs to another user', function () {
         'email' => 'provider-user-1@example.com',
     ])
         ->assertRedirect(cp_url('myaccount/sign-in-providers'))
-        ->assertMessage('error');
+        ->assertCpMessage('error');
 
     expect(signInProviderHasIdentity('provider-user-1', $otherUser->id))->toBeTrue()
         ->and(signInProviderHasIdentity('provider-user-1', $user->id))->toBeFalse();
@@ -290,7 +290,7 @@ it('does not replace a different identity for the same provider', function () {
         'email' => 'provider-user-2@example.com',
     ])
         ->assertRedirect(cp_url('myaccount/sign-in-providers'))
-        ->assertMessage('error');
+        ->assertCpMessage('error');
 
     expect(signInProviderHasIdentity('provider-user-1', $user->id))->toBeTrue()
         ->and(signInProviderHasIdentity('provider-user-2', $user->id))->toBeFalse();
@@ -320,7 +320,7 @@ it('disconnects only the current user provider identity', function () {
 
     delete(cp_url('myaccount/sign-in-providers/test'))
         ->assertRedirect(cp_url('myaccount/sign-in-providers'))
-        ->assertMessage('success');
+        ->assertCpMessage('success');
 
     expect(signInProviderHasIdentity('provider-user-1', $user->id))->toBeFalse()
         ->and(signInProviderHasIdentity('provider-user-2', $otherUser->id))->toBeTrue();
@@ -340,7 +340,7 @@ it('does not disconnect the last sign in method', function () {
             ->where('providers.0.disabledReason', fn (?string $reason) => str_contains($reason ?? '', 'only way to sign in')));
 
     delete(cp_url('myaccount/sign-in-providers/test'))
-        ->assertMessage('error');
+        ->assertCpMessage('error');
 
     expect(signInProviderHasIdentity('provider-user-1', $user->id))->toBeTrue();
 });
@@ -362,7 +362,7 @@ it('disconnects the last provider when the user has a passkey', function () {
 
     delete(cp_url('myaccount/sign-in-providers/test'))
         ->assertRedirect(cp_url('myaccount/sign-in-providers'))
-        ->assertMessage('success');
+        ->assertCpMessage('success');
 
     expect(signInProviderHasIdentity('provider-user-1', $user->id))->toBeFalse();
 });

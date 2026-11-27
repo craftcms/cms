@@ -13,6 +13,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -76,6 +77,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
@@ -399,7 +401,10 @@ class Gql
     {
         $data = DependencyCache::get($cacheKey);
 
-        if (! isset($data['result'], $data['cacheInfo']['tags'])) {
+        if (
+            ! isset($data['result'], $data['cacheInfo']['tags']) ||
+            $this->elementCaches->hasPendingInvalidations($data['cacheInfo']['tags'])
+        ) {
             return null;
         }
 
@@ -445,6 +450,10 @@ class Gql
 
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
+
+        if ($this->elementCaches->hasPendingInvalidations($dependency->tags)) {
+            return;
+        }
 
         $cacheInfo = [
             'tags' => $dependency->tags,
@@ -540,6 +549,16 @@ class Gql
         $label = t('Users');
         [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
 
+        // Eloquent elements
+        foreach (app(EloquentElements::class)->types() as $elementType) {
+            $label = $elementType::pluralDisplayName();
+            $queries[$label]["{$elementType::gqlScope()}:read"] = [
+                'label' => t('Query for {type}', ['type' => $elementType::pluralLowerDisplayName()]),
+                'authenticated' => fn (User $user): bool => $elementType::canViewIndex($user),
+            ];
+            $mutations[$label] ??= [];
+        }
+
         event($event = new GqlSchemaComponentsResolving(
             queries: $queries,
             mutations: $mutations,
@@ -625,11 +644,19 @@ class Gql
     }
 
     /**
-     * Returns a hash of a user’s current permissions.
+     * Returns a hash of a user’s current permissions, including whether the model policies of Eloquent element types
+     * let them view the type’s index, as a policy can base that on anything.
      */
     private function userPermissionsHash(User $user): string
     {
         $permissions = $user->admin ? ['*'] : app(UserPermissions::class)->getPermissionsByUserId($user->id)->all();
+
+        foreach (app(EloquentElements::class)->types() as $elementType) {
+            if (Gate::getPolicyFor($elementType::modelClass()) !== null) {
+                $permissions[] = "policy:{$elementType::gqlScope()}:".($elementType::canViewIndex($user) ? 'allow' : 'deny');
+            }
+        }
+
         sort($permissions);
 
         return md5(implode(',', $permissions));

@@ -97,10 +97,7 @@ it('sends requests to a shared endpoint by whether they carry a bearer token', f
     config()->set('passport.private_key', $privateKey);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     enableMcp(['publicEnabled' => true, 'publicRoute' => '/mcp', 'publicTools' => ['craft_context_get']]);
-    $tools = fn (array $headers = []): array => array_column(
-        postJson('/mcp', McpRequest::payload('tools/list'), [...McpRequest::headers('tools/list'), ...$headers])->assertOk()->json('result.tools'),
-        'name',
-    );
+    $tools = fn (array $headers = []): array => array_column(McpRequest::tools($this, $headers), 'name');
 
     expect($tools())->toBe(['craft_context_get']);
 
@@ -113,7 +110,6 @@ it('sends requests to a shared endpoint by whether they carry a bearer token', f
     postJson('/mcp/auth', McpRequest::payload('tools/list'), McpRequest::headers('tools/list'))->assertUnauthorized();
 
     Passport::actingAs(UserModel::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
-    Route::getRoutes()->getByName('craft.mcp.server')->flushController();
     expect($tools(['Authorization' => 'Bearer token']))->toContain('elements_list')->not->toContain('craft_context_get');
 });
 

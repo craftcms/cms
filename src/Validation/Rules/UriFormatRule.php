@@ -7,15 +7,19 @@ namespace CraftCms\Cms\Validation\Rules;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Validation\Concerns\LabelsAttributes;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\ValidatorAwareRule;
 
 use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
  */
-class UriFormatRule implements ValidationRule
+class UriFormatRule implements ValidationRule, ValidatorAwareRule
 {
+    use LabelsAttributes;
+
     public function __construct(
         /**
          * @var bool Whether we should ensure that "{slug}" is used within the URI format.
@@ -30,13 +34,15 @@ class UriFormatRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        $label = $this->attributeLabel($attribute);
+
         if (is_string($value)) {
             $value = trim($value, '/');
         }
 
         if ($this->requireSlug && ! ElementHelper::doesUriFormatHaveSlugTag($value)) {
             $fail(t('{attribute} must contain “{slug}”', [
-                'attribute' => $attribute,
+                'attribute' => $label,
             ]));
 
             return;
@@ -51,7 +57,7 @@ class UriFormatRule implements ValidationRule
 
         if ($firstSeg === $generalConfig->routing->actionTrigger) {
             $fail(t('{attribute} cannot start with the {setting} config setting.', [
-                'attribute' => $attribute,
+                'attribute' => $label,
                 'setting' => 'actionTrigger',
             ]));
 
@@ -60,7 +66,7 @@ class UriFormatRule implements ValidationRule
 
         if ($generalConfig->routing->cpTrigger && $firstSeg === $generalConfig->routing->cpTrigger) {
             $fail(t('{attribute} cannot start with the {setting} config setting.', [
-                'attribute' => $attribute,
+                'attribute' => $label,
                 'setting' => 'cpTrigger',
             ]));
         }

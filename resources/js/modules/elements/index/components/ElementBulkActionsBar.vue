@@ -196,7 +196,9 @@
    * spinner, and feedback — no bespoke code here.
    *
    * `event` actions run client-side instead: the selection merges into the
-   * event detail, and a listener (e.g. `craft:copy-elements`) handles it.
+   * event detail, and a listener (e.g. `craft:copy-elements`) handles it. The
+   * detail's `indexParams` are the ones `http` actions post, so a listener can
+   * send its own request to the perform endpoint within the index's scope.
    */
   const menuActions = computed<Array<ActionItem>>(() =>
     menuItems.value.map((item): ActionItem => {
@@ -257,6 +259,7 @@
               ...item.action.detail,
               elementType: props.elementType,
               elementIds: props.selectedIds,
+              indexParams: requestParams(),
             },
           },
         } satisfies ActionItem;
