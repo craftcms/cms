@@ -1,17 +1,23 @@
 <?php
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\Events\ElementQueryCacheTagsResolving;
 use CraftCms\Cms\Element\Queries\Events\ElementQueryPrepared;
 use CraftCms\Cms\Element\Queries\Events\ElementQueryPreparing;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Search\Events\SearchPerformed;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Structure\Models\StructureElement;
 use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 
 use function Pest\Laravel\travelTo;
 
@@ -117,12 +123,24 @@ it('registers when an entry the query matches expires, whatever the query’s sh
     'groupBy' => [fn () => entryQuery()->select(['entries.typeId'])->selectRaw('count(*) as c')->groupBy('entries.typeId')->reorder('entries.typeId')->asArray()->all()],
     'structure column condition' => [fn (int $live, int $expiring, int $structureId) => entryQuery()->structureId($structureId)->where('structureelements.level', 1)->count()],
     'structure column condition in beforeQuery()' => [fn (int $live, int $expiring, int $structureId) => entryQuery()->structureId($structureId)->beforeQuery(fn ($q) => $q->where('structureelements.level', 1))->count()],
-    'condition on a listener’s join' => [function () {
-        Event::listen(ElementQueryPreparing::class, fn (ElementQueryPreparing $event) => $event->query->leftJoin('sites as listenersites', 'listenersites.id', '=', 'elements_sites.siteId'));
-
-        return entryQuery()->where('listenersites.handle', '!=', 'nonexistent')->count();
-    }],
 ]);
+
+it('leaves the cache to its usual duration when a query depends on a listener’s join', function () {
+    travelTo(Date::parse('2026-01-01 09:30:00'));
+    Entry::factory()->create(['postDate' => Date::parse('2026-01-01 09:00:00')]);
+    Entry::factory()->create(['postDate' => Date::parse('2026-01-01 10:00:30')]);
+    Event::listen(ElementQueryPreparing::class, fn (ElementQueryPreparing $event) => $event->query->leftJoin('sites as listenersites', 'listenersites.id', '=', 'elements_sites.siteId'));
+    Log::spy();
+
+    ElementCaches::startCollectingCacheInfo();
+    $count = entryQuery()->where('listenersites.handle', '!=', 'nonexistent')->count();
+    [$dependency, $duration] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($count)->toBe(1)
+        ->and($duration)->toBeNull()
+        ->and($dependency->tags)->toContain('element::'.EntryElement::class);
+    Log::shouldHaveReceived('warning')->once();
+});
 
 it('doesn’t cache a result that’s already stale when the minute changes as the query runs', function () {
     travelTo(Date::parse('2026-01-01 09:59:59'));
@@ -135,6 +153,48 @@ it('doesn’t cache a result that’s already stale when the minute changes as t
 
     expect($count)->toBe(0)
         ->and($duration)->toBe(0);
+});
+
+it('looks up when entries go live even when a listener sets the query’s status', function () {
+    travelTo(Date::parse('2026-01-01 09:30:00'));
+    $entry = Entry::factory()->create(['postDate' => Date::parse('2026-01-01 10:00:30')]);
+    Event::listen(ElementQueryPreparing::class, fn (ElementQueryPreparing $event) => $event->query->status('live'));
+
+    ElementCaches::startCollectingCacheInfo();
+    entryQuery()->sectionId($entry->sectionId)->count();
+    [, $duration] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($duration)->toBe(1800);
+});
+
+it('keeps nested caches intact when a listener collects cache info while a lookup runs', function () {
+    travelTo(Date::parse('2026-01-01 09:30:00'));
+    $entry = Entry::factory()->create(['postDate' => Date::parse('2026-01-01 10:00:30')]);
+    $related = Entry::factory()->create(['postDate' => Date::parse('2026-01-01 09:00:00')]);
+    DB::table(Table::RELATIONS)->insert([
+        'fieldId' => Field::factory()->create(['type' => Entries::class])->id,
+        'sourceId' => $entry->id,
+        'targetId' => $related->id,
+        'sortOrder' => 1,
+        'dateCreated' => now(),
+        'dateUpdated' => now(),
+        'uid' => Str::uuid()->toString(),
+    ]);
+    // The relatedTo() subquery is prepared again within each lookup, and dispatches its events
+    Event::listen(ElementQueryPreparing::class, function () {
+        ElementCaches::startCollectingCacheInfo();
+        ElementCaches::stopCollectingCacheInfo();
+    });
+
+    ElementCaches::startCollectingCacheInfo();
+    ElementCaches::startCollectingCacheInfo();
+    entryQuery()->sectionId($entry->sectionId)->relatedTo(entryQuery()->id($related->id))->count();
+    [$inner, $innerDuration] = ElementCaches::stopCollectingCacheInfo();
+    [$outer, $outerDuration] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($innerDuration)->toBe(1800)
+        ->and($outerDuration)->toBe(1800)
+        ->and($outer->tags)->toBe($inner->tags);
 });
 
 it('doesn’t repeat a query’s search to look up when its results change', function () {

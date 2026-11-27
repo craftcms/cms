@@ -192,13 +192,14 @@ class DependencyCollector implements CacheCollectorInterface
      */
     public function withoutCollecting(Closure $callback): mixed
     {
-        [$tags, $expiryTimestamp] = [$this->tags, $this->expiryTimestamp];
-        $this->tags = null;
+        // Clear the buffers too, so caches the callback collects itself don’t merge into the ones being collected
+        $state = [$this->tags, $this->expiryTimestamp, $this->collectsStatusChanges, $this->buffers];
+        [$this->tags, $this->buffers] = [null, []];
 
         try {
             return $callback();
         } finally {
-            [$this->tags, $this->expiryTimestamp] = [$tags, $expiryTimestamp];
+            [$this->tags, $this->expiryTimestamp, $this->collectsStatusChanges, $this->buffers] = $state;
         }
     }
 

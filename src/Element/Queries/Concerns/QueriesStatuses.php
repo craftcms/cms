@@ -123,6 +123,8 @@ trait QueriesStatuses
     /**
      * Splits a 'status' param value into its glue, `or` or `not`, and its statuses.
      *
+     * @internal
+     *
      * @param  string|string[]  $value
      * @return array{glue: string, statuses: string[]}
      */

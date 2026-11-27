@@ -12,7 +12,9 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use DateTimeInterface;
+use Illuminate\Database\PostgresConnection;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @internal
@@ -55,12 +57,15 @@ trait CollectsCacheInfo
             return;
         }
 
-        // A lookup that fails, such as on a condition a listener added for a join the lookup lacks, leaves the cache
-        // to its usual duration rather than breaking the request
+        // A lookup that fails, such as on a condition that needs a join an event listener adds, leaves the cache to its
+        // usual duration rather than breaking the request
         try {
             $date = $this->nextStatusChangeDate();
         } catch (QueryException $e) {
-            report($e);
+            Log::warning('Couldn’t look up when the results of an element query change status, so caches that use it will only refresh at their usual duration or when elements are saved. The query may depend on a table that an ElementQueryPreparing or ElementQueryPrepared listener joins.', [
+                'elementType' => $this->elementType,
+                'exception' => $e,
+            ]);
 
             return;
         }
@@ -170,7 +175,11 @@ trait CollectsCacheInfo
      * Returns when this query’s result will next change without any element being saved, such as when a pending entry
      * goes live, or `null` if it won’t.
      *
-     * It’s called while caches are being collected, which expire at that time.
+     * It’s called while caches are being collected, which expire at the start of that date’s minute, as entry queries
+     * treat “now” as the end of the current minute. For element types that compare statuses to the exact time, the
+     * cache isn’t stored during the rest of the minute before a change.
+     *
+     * Look dates up with [[nextColumnDate()]], which keeps a lookup that fails from breaking the query.
      */
     protected function nextStatusChangeDate(): ?DateTimeInterface
     {
@@ -185,16 +194,22 @@ trait CollectsCacheInfo
      * groups, and unions. So it can find a date for an element that wouldn’t make the result, which only expires a
      * cache early, and it misses elements that only a union adds.
      *
+     * The lookup prepares a copy of the query without dispatching its [[ElementQueryPreparing]] and
+     * [[ElementQueryPrepared]] events. Params listeners set on the query still apply, but changes they make to the query
+     * builder, such as joins and conditions, don’t. Without them, the lookup can find a date for an element that
+     * wouldn’t make the result, or fail and leave the cache to its usual duration.
+     *
      * @param  string[]  $statuses
+     * @param  string  $column  A qualified database column, such as `entries.postDate`
      */
     protected function nextColumnDate(array $statuses, string $column, DateTimeInterface $after): ?DateTimeInterface
     {
         $query = (clone $this)->status($statuses)->search(null)->unique(false);
+        $query->preparesSilently = true;
 
         // The prepared query keeps its own conditions grouped, so the date condition applies to all of them.
         // Ordering by the date lets the database stop at the first match.
         // Subqueries, such as relatedTo() ones, would collect their own cache info, so nothing is collected.
-        // Within a transaction, a savepoint keeps a failed lookup from aborting it on Postgres.
         $lookUp = function (self $query) use ($column, $after): mixed {
             $connection = $query->query->getConnection();
             $value = fn () => app(DependencyCollector::class)->withoutCollecting(fn () => $query->toBase()
@@ -204,11 +219,28 @@ trait CollectsCacheInfo
                 ->orderBy($column)
                 ->value($column));
 
-            return $connection->transactionLevel() > 0 ? $connection->transaction($value) : $value();
+            // A failed query aborts a Postgres transaction, so run the lookup in a savepoint, released after it
+            if (! $connection instanceof PostgresConnection || $connection->transactionLevel() === 0) {
+                return $value();
+            }
+
+            $connection->unprepared('SAVEPOINT craft_status_lookup');
+
+            try {
+                $result = $value();
+            } catch (QueryException $e) {
+                $connection->unprepared('ROLLBACK TO SAVEPOINT craft_status_lookup');
+
+                throw $e;
+            } finally {
+                $connection->unprepared('RELEASE SAVEPOINT craft_status_lookup');
+            }
+
+            return $result;
         };
 
         // The structure join keeps MySQL from reading the date index in order, so leave it out when nothing set on
-        // the query needs it. A condition a listener or beforeQuery() callback adds can still need it, so if the
+        // the query needs it. A condition a beforeQuery() callback adds can still need it, so if the
         // lookup fails without the join, try again with it.
         $skipsStructure = $query->query->wheres === [] && ! $query->usesStructureParams();
 

@@ -246,6 +246,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private bool $isNestedCondition = false;
 
     /**
+     * Whether preparing the query skips its events and cache info collection, for a copy made only to look up when
+     * its statuses change.
+     */
+    private bool $preparesSilently = false;
+
+    /**
      * @var bool Whether columns were added to the default select with addSelect() or its variants, so the
      *           columns passed to get() don't apply, as in Laravel
      */
@@ -1926,7 +1932,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         // Nested conditions leave the events to the query they belong to
-        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition;
+        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition && ! $this->preparesSilently;
         $originalWhereCount = count($this->query->wheres);
 
         try {
