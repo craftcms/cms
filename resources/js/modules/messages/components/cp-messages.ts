@@ -59,6 +59,7 @@ export class CpMessages extends HTMLElement {
     }
 
     this.#render();
+    this.updateStack();
     this.#listen();
     this.#connectLegacyNotifier();
   }

@@ -57,13 +57,10 @@ export function findCombinatorAfterHas(selector) {
       continue;
     }
 
-    if (bracket) {
-      bracket = char !== ']';
-      continue;
-    }
-
     if (char === '"' || char === "'") {
       quote = char;
+    } else if (bracket) {
+      bracket = char !== ']';
     } else if (char === '[') {
       bracket = true;
     } else if (char === '(') {
