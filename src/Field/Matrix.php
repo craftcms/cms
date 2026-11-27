@@ -724,6 +724,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ->canonicalsOnly()
                     ->status(null)
                     ->limit(null)
+                    ->eagerly()
                     ->all(),
             default => [],
         });
@@ -1659,6 +1660,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->savedDraftsOnly()
                 ->status(null)
                 ->limit(null)
+                ->eagerly()
                 ->all();
 
             $invalidEntryIds = [];

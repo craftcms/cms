@@ -15,10 +15,12 @@ use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -270,4 +272,67 @@ it('saves only the blocks a delta posts, and keeps the rest', function () {
     expect($saved)->toContain($second)->not->toContain($first)
         ->and(array_map(fn (EntryElement $block): array => [$block->title, $block->getFieldValue('shapeInnerText')], $blocks))
         ->toBe([['First', 'One'], ['Second', 'Edited']]);
+});
+
+it('validates and renders nested blocks without a query for each outer block', function () {
+    $text = Field::factory()->create(['handle' => 'perBlockText', 'type' => PlainText::class]);
+    $innerType = EntryType::factory()->withField($text)
+        ->create(['handle' => 'perBlockInnerType', 'hasTitleField' => true]);
+    $inner = Field::factory()->create([
+        'handle' => 'perBlockInner',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$innerType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+    ]);
+    $outerType = EntryType::factory()->withField($inner)
+        ->create(['handle' => 'perBlockOuterType', 'hasTitleField' => true]);
+    $outer = Field::factory()->create([
+        'handle' => 'perBlockOuter',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$outerType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+    ]);
+    $layout = FieldLayout::factory()->forField($outer)->create();
+
+    $queriesFor = function (int $outerCount) use ($layout, $outerType, $innerType): int {
+        $owner = entryQuery()->id(Entry::factory()->withFieldLayout($layout)->create()->id)->one();
+        $outerBlocks = [];
+
+        for ($o = 0; $o < $outerCount; $o++) {
+            $innerBlocks = [];
+
+            for ($i = 0; $i < 2; $i++) {
+                $innerBlocks['uid:'.Str::uuid()->toString()] = [
+                    'type' => $innerType->handle,
+                    'title' => "Inner $o.$i",
+                    'fields' => ['perBlockText' => "Text $o.$i"],
+                ];
+            }
+
+            $outerBlocks['uid:'.Str::uuid()->toString()] = [
+                'type' => $outerType->handle,
+                'title' => "Outer $o",
+                'fields' => ['perBlockInner' => ['entries' => $innerBlocks, 'sortOrder' => array_keys($innerBlocks)]],
+            ];
+        }
+
+        $owner->setFieldValueFromRequest('perBlockOuter', ['entries' => $outerBlocks, 'sortOrder' => array_keys($outerBlocks)]);
+        expect(Elements::saveElement($owner))->toBeTrue();
+
+        $owner = entryQuery()->id($owner->id)->one();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        expect($owner->validate())->toBeTrue();
+        $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
+
+        DB::disableQueryLog();
+
+        expect(Json::encode($ui))->toContain('Text '.($outerCount - 1).'.1');
+
+        return count(DB::getQueryLog());
+    };
+
+    // Warms up what every request loads once, so only per-block queries can differ.
+    $queriesFor(1);
+
+    expect($queriesFor(4))->toBe($queriesFor(2));
 });
