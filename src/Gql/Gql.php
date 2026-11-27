@@ -346,7 +346,9 @@ class Gql
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
                 $prebuildSchema = $isIntrospectionQuery || ! Cms::config()->lazyGqlTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
-                $this->elementCaches->startCollectingCacheInfo();
+                // Without a cache key the result isn’t cached, so skip looking up when entries go live or expire.
+                // ExecutedGqlQuery’s cacheDuration then leaves those out.
+                $this->elementCaches->startCollectingCacheInfo(withStatusChanges: $cacheKey !== null);
 
                 // Field layout user conditions may be based on the user’s own content, so invalidate cached results
                 // when the user is saved

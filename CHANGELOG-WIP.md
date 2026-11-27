@@ -236,6 +236,7 @@
 - Responses to token and site token requests now have no-cache headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 
 #### Templates
+- `{% cache %}` tags and cached GraphQL results now refresh when an entry they could include goes live or expires, without a scheduled job. ([#978](https://github.com/craftcms/cms/issues/978), [#9170](https://github.com/craftcms/cms/discussions/9170), [#11743](https://github.com/craftcms/cms/issues/11743), [#16038](https://github.com/craftcms/cms/issues/16038))
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Improved Twig attribute access on Eloquent models to resolve missing and null attributes, casts, accessors, and relations through Eloquent property access, while preserving explicit method calls. ([#20165](https://github.com/craftcms/cms/pull/20165))

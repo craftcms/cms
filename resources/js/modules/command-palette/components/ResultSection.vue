@@ -12,6 +12,7 @@
    * the space kept for it here.
    */
   import {t} from '@craftcms/ui';
+  import {hotkeyKeys} from '../keys';
   import {hasActions, type CommandPaletteItem, type ResultRow} from '../types';
 
   withDefaults(
@@ -151,6 +152,19 @@
       >
         {{ row.item.description }}
       </span>
+      <span v-if="row.item.shortcut" class="command-palette-row__shortcut">
+        <span class="sr-only">{{ t('Shortcut') }}</span>
+        <template
+          v-for="(key, index) in hotkeyKeys(row.item.shortcut)"
+          :key="index"
+        >
+          <span v-if="index > 0" class="sr-only">+</span>
+          <kbd>
+            <span aria-hidden="true">{{ key.symbol }}</span>
+            <span class="sr-only">{{ key.name }}</span>
+          </kbd>
+        </template>
+      </span>
       <!-- Read with the option, as the button beside it is only seen. -->
       <span v-if="hasActions(row.item)" class="sr-only">{{
         t('Press Tab for actions')
@@ -186,7 +200,7 @@
     --_radius: var(--c-radius-sm);
     position: relative;
     display: grid;
-    grid-template-columns: auto fit-content(60%) auto minmax(0, 1fr);
+    grid-template-columns: auto fit-content(60%) auto minmax(0, 1fr) auto;
     grid-template-rows: auto auto;
     align-content: center;
     align-items: center;
@@ -297,6 +311,15 @@
 
   .command-palette-row--selected .command-palette-row__description {
     color: inherit;
+  }
+
+  .command-palette-row__shortcut {
+    grid-column: 5;
+    grid-row: 1;
+    display: inline-flex;
+    gap: var(--c-spacing-xs);
+    margin-inline-start: var(--c-spacing-sm);
+    font-size: var(--c-text-sm);
   }
 
   /* Sized and colored like the small plain button that goes over it. */

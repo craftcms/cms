@@ -1,4 +1,5 @@
 import {actionClient} from '@craftcms/ui';
+import {detectPlatform} from '@tanstack/hotkeys';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {
   createApp,
@@ -595,6 +596,34 @@ describe('CommandPalette', () => {
 
       expect(nameFromContent(element).startsWith(label)).toBe(true);
     }
+  });
+
+  it('shows an action’s shortcut, and names its keys after the option’s label', async () => {
+    const {unregister} = registerActions(() => [
+      {
+        id: 'toggle-sidebar',
+        label: 'Collapse the sidebar',
+        shortcut: 'Mod+Shift+[Backslash]',
+        run: () => {},
+      },
+    ]);
+    await open();
+    const row = option('Collapse the sidebar');
+    const mac = detectPlatform() === 'mac';
+
+    expect(
+      [...row.querySelectorAll('kbd [aria-hidden="true"]')].map(
+        (key) => key.textContent
+      )
+    ).toEqual(mac ? ['⇧', '⌘', '\\'] : ['Ctrl', 'Shift', '\\']);
+    expect(nameFromContent(row)).toBe(
+      mac
+        ? 'Collapse the sidebar Shortcut Shift + Command + Backslash'
+        : 'Collapse the sidebar Shortcut Control + Shift + Backslash'
+    );
+    expect(option('Create section').querySelector('kbd')).toBeNull();
+
+    unregister();
   });
 
   it('says in an option’s name when Tab reaches its actions', async () => {

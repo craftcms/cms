@@ -200,6 +200,23 @@ it('collects expiry info from expirable elements', function () {
         ->toBeLessThanOrEqual(300);
 });
 
+it('expires caches at the start of the minute an element expires', function (string $expiryDate, ?int $expected) {
+    $this->travelTo(new DateTime('2026-01-01 09:30:30'));
+    $this->elementCaches->startCollectingCacheInfo();
+
+    $element = new TestExpirableElementCachesElement;
+    $element->id = 123;
+    $element->expiryDate = new DateTime($expiryDate);
+
+    $this->elementCaches->collectCacheInfoForElement($element);
+
+    expect($this->elementCaches->stopCollectingCacheInfo()[1])->toBe($expected);
+})->with([
+    'a later minute' => ['2026-01-01 09:35:45', 270],
+    'later this minute' => ['2026-01-01 09:30:45', 0],
+    'already expired' => ['2026-01-01 09:30:15', null],
+]);
+
 it('throws when stopping cache collection without starting it', function () {
     $this->elementCaches->stopCollectingCacheInfo();
 })->throws(RuntimeException::class, 'Element cache invalidation tags are not currently being collected.');

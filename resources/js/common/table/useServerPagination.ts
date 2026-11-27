@@ -52,8 +52,29 @@ export function useServerPagination({
   }
 
   function onPaginationChange(updater: Updater<PaginationState>) {
-    const query = getNextPaginationParams(updater);
+    const next =
+      updater instanceof Function ? updater(paginationState.value) : updater;
+
+    if (
+      next.pageIndex === paginationState.value.pageIndex &&
+      next.pageSize === paginationState.value.pageSize
+    ) {
+      return;
+    }
+
+    const query = getNextPaginationParams(next);
     onChange({state: paginationState.value, query});
+
+    // Show a new page size right away rather than when the rows arrive. The
+    // page size select would otherwise snap back to the old size and send it
+    // as a second request. The page index waits for the rows, so a page typed
+    // while they load still counts as a change.
+    if (next.pageSize !== paginationState.value.pageSize) {
+      paginationState.value = {
+        ...paginationState.value,
+        pageSize: next.pageSize,
+      };
+    }
   }
 
   const paginationConfig = {
