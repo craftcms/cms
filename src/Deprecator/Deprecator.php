@@ -15,7 +15,10 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Log;
+use ReflectionClass;
 use Throwable;
+use Twig\Environment as TwigEnvironment;
+use Twig\Error\LoaderError;
 use Twig\Extension\CoreExtension;
 use Twig\Template as TwigTemplate;
 
@@ -86,6 +89,40 @@ class Deprecator
             'message' => $message,
             'traces' => $this->processStackTrace($traces),
         ]);
+    }
+
+    /**
+     * Logs a deprecation warning that Twig triggered.
+     *
+     * Twig ends most of its messages with the template and line, as in `in "_layouts/base.twig" at line 3.`.
+     * When it doesn't, the warning is attributed to the first caller outside of Twig and Craft, such as the template
+     * that passed a deprecated value to a Craft filter, or the plugin that called a deprecated Twig function.
+     *
+     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results whose first frame is the `trigger_deprecation()` call
+     */
+    public function logTwigDeprecation(string $message, array $traces): void
+    {
+        // Twig names classes in some messages, and anonymous class names contain a NUL byte, which PostgreSQL can't store
+        $message = str_replace("\0", '', $message);
+
+        if (preg_match('/\s\(?in (?:"([^"]+)"|(\S+(?: \(string template \w+\))?)) at line (\d+)\)?\.?$/', $message, $match, PREG_OFFSET_CAPTURE)) {
+            $file = $this->resolveTwigTemplateName($match[1][0] !== '' ? $match[1][0] : $match[2][0]);
+            $line = (int) $match[3][0];
+            $message = rtrim(substr($message, 0, $match[0][1]), '.').'.';
+        } elseif (preg_match('/ more than once in "([^"]+)" .* new definition at line (\d+)\)/', $message, $match)) {
+            // Duplicate macro definitions name the template mid-message
+            $file = $this->resolveTwigTemplateName($match[1]);
+            $line = (int) $match[2];
+        } else {
+            $coreDirs = [dirname((string) new ReflectionClass(TwigEnvironment::class)->getFileName()), dirname(__DIR__)];
+            $t = 1;
+            while (isset($traces[$t]) && (! isset($traces[$t]['file']) || Str::startsWith($traces[$t]['file'], $coreDirs))) {
+                $t++;
+            }
+            [$file, $line] = $this->findOrigin(isset($traces[$t]) ? array_slice($traces, $t - 1) : $traces);
+        }
+
+        $this->log('twig:'.md5($message), $message, $file, $line);
     }
 
     public function storeLogs(): void
@@ -194,12 +231,30 @@ class Deprecator
         $template = $traces[$t + 1]['object'] ?? null;
 
         if ($template instanceof TwigTemplate) {
-            $templateName = $template->getTemplateName();
-            $file = app(TemplateResolver::class)->resolve($templateName) ?: $templateName;
+            $file = $this->resolveTwigTemplateName($template->getTemplateName());
             $line = $this->findTemplateLine($template, $line);
         }
 
         return [$file, $line];
+    }
+
+    /**
+     * Returns the path to the template that Twig reports by name, or the name itself if it isn't a template Craft can resolve.
+     */
+    private function resolveTwigTemplateName(string $name): string
+    {
+        $name = (string) preg_replace('/ \(string template \w+\)$/', '', $name);
+
+        if (is_file($name)) {
+            return $name;
+        }
+
+        try {
+            return app(TemplateResolver::class)->resolve($name) ?: $name;
+        } catch (LoaderError) {
+            // Templates created from strings can have names Craft won't resolve, such as "../preview"
+            return $name;
+        }
     }
 
     /**
@@ -241,13 +296,14 @@ class Deprecator
                 [$file, $line] = $templateInfo;
             }
 
+            // Anonymous class names contain a NUL byte, which PostgreSQL can't store
             $logTraces[] = [
-                'objectClass' => ! empty($trace['object']) ? $trace['object']::class : null,
+                'objectClass' => ! empty($trace['object']) ? str_replace("\0", '', $trace['object']::class) : null,
                 'file' => $file,
                 'line' => $line,
-                'class' => ! empty($trace['class']) ? $trace['class'] : null,
+                'class' => ! empty($trace['class']) ? str_replace("\0", '', $trace['class']) : null,
                 'method' => ! empty($trace['function']) ? $trace['function'] : null,
-                'args' => ! empty($trace['args']) ? $this->argsToString($trace['args']) : null,
+                'args' => ! empty($trace['args']) ? str_replace("\0", '', $this->argsToString($trace['args'])) : null,
             ];
         }
 

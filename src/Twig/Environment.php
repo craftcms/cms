@@ -21,6 +21,7 @@ class Environment extends TwigEnvironment
     {
         parent::__construct($loader, $options);
 
+        $this->setCompiler(new Compiler($this));
         $this->setDefaultEscaperStrategy();
     }
 
