@@ -45,6 +45,7 @@ import {useElementActivity} from '@/modules/elements/composables/useElementActiv
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
+import {sharePayload} from '@/modules/ui/renderer/uiTree';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
 import {showError, showNotice, showSuccess} from '@/modules/messages/messages';
@@ -415,10 +416,15 @@ export function useElementEditor({
   // address) receives its own UI payload. Until it does, the block has
   // nothing to render but a spinner.
   const savedUi = shallowRef<UiPayload | null>(null);
-  const uiPayload = computed(
-    () => savedUi.value ?? withDeferredTabs(props.ui, props.deferredTabs)
+  const uiPayload = computed<UiPayload | null>((previous) =>
+    sharePayload(
+      previous,
+      savedUi.value ?? withDeferredTabs(props.ui, props.deferredTabs)
+    )
   );
-  const sidebarPayload = computed(() => props.sidebarUi);
+  const sidebarPayload = computed<UiPayload | null>((previous) =>
+    sharePayload(previous, props.sidebarUi)
+  );
   const form = useForm<ElementEditFormData>({});
   let refreshGeneration = 0;
   let nestedElementsReloadPending = false;

@@ -1690,6 +1690,38 @@ describe('useElementEditor', () => {
     expect(editor.props.saveUrl).toBe('/actions/entries/save-entry');
   });
 
+  it('keeps the layouts’ nodes when an update leaves them as they were', async () => {
+    postSpy.mockResolvedValue({
+      data: {
+        draftId: 7,
+        ui: fieldLayout('Van Gogh'),
+        screen: {sidebarUi: sidebarUi('van-gogh', false)},
+      },
+    });
+    const {editor} = mount(
+      payload({
+        canAutosave: true,
+        ui: fieldLayout('Van Gogh'),
+        sidebarUi: sidebarUi('van-gogh', false),
+      })
+    );
+    const layout = editor.uiPayload.value!;
+    const sidebar = editor.sidebarPayload.value!;
+
+    // Changes the screen that holds the layout, but not the layout.
+    editor.updatePayload({title: 'Renamed'});
+    await nextTick();
+
+    expect(editor.uiPayload.value).toBe(layout);
+
+    // A fresh copy of the same layouts.
+    await editor.autosave.save();
+    await nextTick();
+
+    expect(editor.uiPayload.value!.nodes).toBe(layout.nodes);
+    expect(editor.sidebarPayload.value!.nodes).toBe(sidebar.nodes);
+  });
+
   it('drops the autosaved screen once a visit brings a newer payload', async () => {
     postSpy.mockResolvedValue({
       data: {

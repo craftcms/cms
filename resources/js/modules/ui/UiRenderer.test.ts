@@ -3607,6 +3607,53 @@ describe('UiRenderer', () => {
     expect(probePayload.nodes[1]?.control?.props).toEqual({label: 'Original'});
   });
 
+  it('re-renders only the controls a new payload changes', async () => {
+    const renders: string[] = [];
+    const probe = defineComponent({
+      props: {
+        control: {type: Object, required: true},
+        value: {type: null, default: undefined},
+      },
+      setup(props) {
+        return () => {
+          renders.push(props.control.props.label);
+
+          return h('span', {'data-probe': ''}, props.control.props.label);
+        };
+      },
+    });
+    const probed = (labels: string[]): UiPayload => {
+      const probePayload = clonePayload();
+      labels.forEach((label, index) =>
+        Object.assign(
+          required(
+            probePayload.nodes[index]?.control,
+            'Expected a field control.'
+          ),
+          {component: 'test:probe', props: {label}}
+        )
+      );
+
+      return probePayload;
+    };
+    app.unmount();
+    await mount(probed(['First', 'Second']), {
+      components: {'test:probe': probe},
+    });
+    renders.length = 0;
+
+    // A fresh copy from the server, the way an autosave returns the layout.
+    currentPayload.value = probed(['First', 'Second, renamed']);
+    await nextTick();
+
+    expect(renders).toEqual(['Second, renamed']);
+    expect(
+      [...container.querySelectorAll('[data-probe]')].map(
+        (probe) => probe.textContent
+      )
+    ).toEqual(['First', 'Second, renamed']);
+  });
+
   it('drops unsaved values inside nested UI definitions when the host resets', async () => {
     let mutation: UiPayload['values'] = {};
     const nested = clonePayload();

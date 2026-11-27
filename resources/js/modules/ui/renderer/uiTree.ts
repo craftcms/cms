@@ -6,6 +6,7 @@ import type {
   UiNodePayload,
   UiPayload,
   UiValue,
+  UiValues,
 } from '../types';
 
 /**
@@ -34,6 +35,96 @@ function unwrap(value: UiValue): UiValue {
   }
 
   return raw;
+}
+
+/**
+ * `next`, with each part that's deeply equal to the same part of `previous`
+ * taken from `previous` instead. A server sends the whole tree again even
+ * when little of it changed, and the parts that didn't keep their identity
+ * this way, so Vue skips re-rendering them. The result is always raw, so a
+ * part shared from a reactive payload has the same identity as one shared from
+ * a plain one.
+ */
+export function shareEqual<T extends UiValue>(
+  previous: UiValue | undefined,
+  next: T
+): T {
+  // Walks the raw values, so a computed calling this doesn't track every node
+  // it reads.
+  const prev = toRaw(previous);
+  const raw = toRaw(next);
+
+  if (Object.is(prev, raw)) {
+    return raw;
+  }
+
+  if (Array.isArray(prev) && Array.isArray(raw)) {
+    let same = prev.length === raw.length;
+    const shared = raw.map((item, index) => {
+      const result = shareEqual(prev[index], item);
+      same &&= result === prev[index];
+
+      return result;
+    });
+
+    // SAFETY: each item is `next`'s own item or one deeply equal to it.
+    return (same ? prev : shared) as T;
+  }
+
+  if (isRecord(prev) && isRecord(raw)) {
+    const keys = Object.keys(raw);
+    let same = keys.length === Object.keys(prev).length;
+    const shared: UiValues = {};
+
+    for (const key of keys) {
+      shared[key] = shareEqual(prev[key], raw[key]!);
+      same &&= key in prev && shared[key] === prev[key];
+    }
+
+    // SAFETY: each entry is `next`'s own entry or one deeply equal to it.
+    return (same ? prev : shared) as T;
+  }
+
+  return raw;
+}
+
+/**
+ * `next`, with everything but its values shared with `previous` by
+ * {@link shareEqual}. Its values stay its own, because hosts take a payload's
+ * values whenever a new payload arrives, even when only the values changed.
+ * Gives back `previous` when nothing differs, so a host recomputing its
+ * payload from the same source doesn't hand its renderer a new one.
+ */
+export function sharePayload<T extends UiPayload | null | undefined>(
+  previous: UiPayload | null | undefined,
+  next: T
+): T {
+  if (!next) {
+    return next;
+  }
+
+  // SAFETY: UI payloads are JSON, so each of their parts is a UiValue.
+  const raw = toRaw(next) as unknown as UiValues;
+  const prev = toRaw(previous) as unknown as UiValues | null | undefined;
+
+  if (!prev) {
+    return raw as unknown as T;
+  }
+
+  const shared = Object.fromEntries(
+    Object.entries(raw).map(([key, value]) => [
+      key,
+      key === 'values' ? value : shareEqual(prev[key], value),
+    ])
+  );
+  const keys = Object.keys(shared);
+  const unchanged =
+    keys.length === Object.keys(prev).length &&
+    keys.every((key) => shared[key] === prev[key]);
+
+  // SAFETY: `shared` has `next`'s keys, each holding `next`'s own value or one
+  // deeply equal to it.
+  return (unchanged ? previous : shared) as T;
 }
 
 export function isWithin(path: string[], scope: string[]): boolean {

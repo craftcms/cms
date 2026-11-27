@@ -45,6 +45,8 @@
     disabledNodes,
     isWithin,
     readOnlyNodes,
+    shareEqual,
+    sharePayload,
     withControl,
     withNestedUi,
     withUis,
@@ -87,12 +89,16 @@
   }>();
   const slots = useSlots();
   const payload = shallowRef(props.payload);
-  const nodes = computed(() =>
-    props.disabled
-      ? disabledNodes(payload.value.nodes)
-      : props.readOnly
-        ? readOnlyNodes(payload.value.nodes)
-        : payload.value.nodes
+  const nodes = computed<UiNodePayload[]>((previous) =>
+    props.disabled || props.readOnly
+      ? // Copied for each payload, so only sharing keeps what didn't change.
+        shareEqual(
+          previous,
+          props.disabled
+            ? disabledNodes(payload.value.nodes)
+            : readOnlyNodes(payload.value.nodes)
+        )
+      : payload.value.nodes
   );
   /** Whether the form takes no changes for now. */
   const locked = computed(() => Boolean(props.disabled || props.readOnly));
@@ -317,9 +323,10 @@
       );
     }
 
-    payload.value = pathsMatch(scope, payload.value.scope)
+    const next = pathsMatch(scope, payload.value.scope)
       ? refreshed
       : withNestedUi(payload.value, scope, refreshed);
+    payload.value = sharePayload(payload.value, next);
 
     if (
       deferredSettlement &&
