@@ -26,6 +26,13 @@
     watch,
   } from 'vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
+  import ImageComparison from '@/common/components/ImageComparison.vue';
+  import type {
+    ComparedDetail,
+    ComparedImage,
+    ImageComparisonView,
+  } from '@/common/components/imageComparison';
+  import ImageComparisonViews from '@/common/components/ImageComparisonViews.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import type {ActionItems} from '@/common/types';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -102,8 +109,17 @@
     fromElementChip?: string | null;
     /** The same comparison with the two sides swapped. */
     reverseUrl: string | null;
+    /** Both sides' images and their files' details, when both are image assets. */
+    images?: {
+      from: ComparedImage;
+      to: ComparedImage;
+      details: ComparedDetail[];
+    } | null;
     title: string;
   }>();
+
+  const imageComparison = useTemplateRef('imageComparison');
+  const imageView = shallowRef<ImageComparisonView>('sideBySide');
 
   // Each side's values are its own, not the page's.
   provideUiValueGroup();
@@ -937,6 +953,11 @@
         ></h1>
         <h1 v-else class="compare__heading cp-h1">{{ title }}</h1>
 
+        <ImageComparisonViews
+          v-if="imageComparison?.slidable"
+          v-model="imageView"
+          class="compare__image-views"
+        />
         <div v-if="closeUrl" class="compare__close text-xl">
           <CpButtonLink
             id="compare-close"
@@ -985,6 +1006,19 @@
           </craft-tooltip>
         </template>
       </template>
+    </div>
+
+    <div v-if="images" class="compare__images">
+      <ImageComparison
+        ref="imageComparison"
+        v-model:view="imageView"
+        :from="images.from"
+        :to="[images.to]"
+        :from-label="from.label"
+        :to-label="to.label"
+        :details="images.details"
+        hide-headings
+      />
     </div>
 
     <div v-if="tabs.length > 1" class="compare__tabs">
@@ -1076,7 +1110,7 @@
           v-for="rowIndex in tab.rows"
           :key="rowKey(rowIndex)"
           class="compare__row"
-          :class="{'compare__row--changed': compareRows[rowIndex]?.changed}"
+          :class="{'cp-compare-changed': compareRows[rowIndex]?.changed}"
         >
           <div
             v-for="{key} in sides"
@@ -1270,6 +1304,21 @@
     translate: 50% -50%;
   }
 
+  /* The comparison bleeds through this padding, to the headers' border and
+     the screen's edges, with its text in line with the fields'. */
+  .compare__images {
+    --image-comparison-bleed: var(--compare-cell-padding-inline);
+    --image-comparison-gutter: var(--compare-cell-padding-inline);
+
+    padding: var(--compare-cell-padding-inline);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .compare__image-views {
+    align-self: center;
+    margin-inline-start: auto;
+  }
+
   .compare__tabs {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -1389,29 +1438,6 @@
 
   .compare__row + .compare__row {
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .compare__row--changed {
-    --compare-row-background: light-dark(
-      color-mix(
-        in oklab,
-        var(--c-color-violet-fill-quiet) 40%,
-        var(--c-surface-default)
-      ),
-      color-mix(
-        in oklab,
-        var(--c-color-violet-fill-quiet) 30%,
-        var(--c-surface-default)
-      )
-    );
-
-    background-color: var(--compare-row-background);
-  }
-
-  @media (forced-colors: active) {
-    .compare__row--changed {
-      border-inline-start: 4px solid Highlight;
-    }
   }
 
   .compare__cell {
@@ -1593,10 +1619,7 @@
   }
 
   .cp-body__panel:has(.compare__panels) {
-    --compare-hairline: light-dark(
-      color-mix(in srgb, black 18%, transparent),
-      color-mix(in srgb, white 22%, transparent)
-    );
+    --compare-hairline: var(--cp-compare-hairline);
 
     position: fixed;
     inset: 0;
