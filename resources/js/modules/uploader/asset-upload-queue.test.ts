@@ -283,7 +283,7 @@ it('offers to keep all, and not replace, when an upload looks like a copy of sev
     [...choices.querySelectorAll('craft-button')].map((button) =>
       button.textContent?.trim()
     )
-  ).toEqual(['Cancel', 'Keep all']);
+  ).toEqual(['Keep all', 'Compare', 'Discard upload']);
 });
 
 it('replaces the image picked in the comparison, of several an upload looks like a copy of', async () => {
@@ -320,7 +320,7 @@ it('keeps an upload held when its comparison is closed without a choice', async 
 
 it('discards an upload that looks like a copy when canceled', async () => {
   await uploadDuplicate();
-  await clickNotice(0, 'Cancel');
+  await clickNotice(0, 'Discard upload');
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(ui.post).toHaveBeenCalledWith('/admin/actions/assets/delete-asset', {
     assetId: 12,
@@ -436,7 +436,7 @@ it('retains a conflict and its error when replacement fails', async () => {
 
 it('discards the uploaded copy when canceling a conflict', async () => {
   await uploadConflict();
-  await clickNotice(0, 'Cancel');
+  await clickNotice(0, 'Discard upload');
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(ui.post).toHaveBeenCalledWith('/admin/actions/assets/delete-asset', {
     assetId: 21,

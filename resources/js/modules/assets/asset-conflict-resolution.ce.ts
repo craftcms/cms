@@ -24,6 +24,18 @@ export class AssetConflictResolutionElement extends LitElement {
   @property({type: Boolean, attribute: 'hide-replace'})
   hideReplace = false;
 
+  /**
+   * Whether the choices are for an upload that's held until one is made, so
+   * Cancel discards it. It reads Discard upload instead, after Keep both and
+   * `extraButtons`.
+   */
+  @property({type: Boolean})
+  discards = false;
+
+  /** More buttons, placed after Keep both, when `discards` is set. */
+  @property({attribute: false})
+  extraButtons: unknown = nothing;
+
   protected override createRenderRoot(): HTMLElement {
     return this;
   }
@@ -39,20 +51,22 @@ export class AssetConflictResolutionElement extends LitElement {
   }
 
   protected override render() {
-    return html`
-      <craft-button @click=${() => this.resolve('cancel')}
-        >${t('Cancel')}</craft-button
-      >
-      <craft-button @click=${() => this.resolve('keepBoth')}
-        >${this.multiple ? t('Keep all') : t('Keep both')}</craft-button
-      >
-      ${!this.hideReplace
-        ? html`<craft-button
-            variant="danger"
-            @click=${() => this.resolve('replace')}
-            >${t('Replace')}</craft-button
-          >`
-        : nothing}
-    `;
+    const cancel = html`<craft-button @click=${() => this.resolve('cancel')}
+      >${this.discards ? t('Discard upload') : t('Cancel')}</craft-button
+    >`;
+    const keep = html`<craft-button @click=${() => this.resolve('keepBoth')}
+      >${this.multiple ? t('Keep all') : t('Keep both')}</craft-button
+    >`;
+    const replace = this.hideReplace
+      ? nothing
+      : html`<craft-button
+          variant="danger"
+          @click=${() => this.resolve('replace')}
+          >${t('Replace')}</craft-button
+        >`;
+
+    return this.discards
+      ? html`${keep}${this.extraButtons}${cancel}${replace}`
+      : html`${cancel}${keep}${replace}`;
   }
 }

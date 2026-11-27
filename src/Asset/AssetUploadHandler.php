@@ -337,7 +337,7 @@ readonly class AssetUploadHandler
                     'hyperlink' => true,
                     'hyperlinkUrl' => (string) $duplicate->getCpEditUrl(),
                 ]),
-                'thumbUrl' => $this->assets->getThumbUrl($duplicate, 640, 640, false, ImageTransformMode::Fit),
+                'thumbUrl' => $this->assets->getThumbUrl($duplicate, 1280, 1280, false, ImageTransformMode::Fit),
                 'filename' => $duplicate->getFilename(),
                 'width' => $duplicate->getWidth(),
                 'height' => $duplicate->getHeight(),

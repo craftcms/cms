@@ -20,6 +20,33 @@ export function copiedTextPane(...content: Node[]): HTMLElement {
 }
 
 /**
+ * Fades out only the edges of a `copied-notification-value` box that its
+ * content actually runs off, as its size changes, such as when chips or images
+ * load. Calls `onResize` after each check. Returns a function that stops it.
+ */
+export function fadeOverflow(
+  container: HTMLElement,
+  content: HTMLElement,
+  onResize?: () => void
+): () => void {
+  const observer = new ResizeObserver(() => {
+    container.toggleAttribute(
+      'data-overflow-block',
+      container.scrollHeight > container.clientHeight + 1
+    );
+    container.toggleAttribute(
+      'data-overflow-inline',
+      container.scrollWidth > container.clientWidth + 1
+    );
+    onResize?.();
+  });
+  observer.observe(container);
+  observer.observe(content);
+
+  return () => observer.disconnect();
+}
+
+/**
  * A "copied" card, for whatever's on the control panel's clipboard, with a
  * Cancel button that clears it.
  */
@@ -72,21 +99,8 @@ export abstract class CopiedNotification extends Notification {
       container.append(copiedTextPane(content));
     }
 
-    // Fade out only the edges the preview actually runs off. Its size changes
-    // as chips or images load.
-    const observer = new ResizeObserver(() => {
-      container.toggleAttribute(
-        'data-overflow-block',
-        container.scrollHeight > container.clientHeight + 1
-      );
-      container.toggleAttribute(
-        'data-overflow-inline',
-        container.scrollWidth > container.clientWidth + 1
-      );
-    });
-    observer.observe(container);
-    observer.observe(content);
-    this.on('close', () => observer.disconnect());
+    const stop = fadeOverflow(container, content);
+    this.on('close', stop);
 
     // Lays the card out around the value. A `:has()` rule for this would make
     // Chrome restyle the whole page each time any element is added anywhere.
