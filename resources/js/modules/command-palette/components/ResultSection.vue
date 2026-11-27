@@ -318,7 +318,7 @@
     grid-row: 1;
     display: inline-flex;
     gap: var(--c-spacing-xs);
-    margin-inline-start: var(--c-spacing-xs);
+    margin-inline-start: var(--c-spacing-sm);
     font-size: var(--c-text-sm);
   }
 
