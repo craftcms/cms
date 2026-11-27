@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Release;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,10 +20,12 @@ class ReleaseServiceProvider extends ServiceProvider
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
             $schedule
                 ->call(fn (): int => app(Releases::class)->publishDue())
-                ->when(fn (): bool => Edition::get()->supportsReleases())
+                ->when(fn (): bool => Cms::isInstalled()
+                    && Edition::get()->supportsReleases()
+                    && ! app(Updates::class)->isUpdatePending())
                 ->name('craft:publish-releases')
                 ->everyMinute()
-                ->withoutOverlapping();
+                ->withoutOverlapping(5);
         });
     }
 }

@@ -1951,6 +1951,32 @@ class GeneralConfig extends BaseConfig
     public bool $runQueueAutomatically = true;
 
     /**
+     * @var bool Whether site requests should run Craft’s due scheduled tasks, such as publishing scheduled releases,
+     *           when Laravel’s scheduler isn’t running.
+     *
+     * Craft runs its scheduled tasks every minute from Laravel’s scheduler:
+     *
+     * ```cron
+     * * * * * * php /path/to/project/craft schedule:run
+     * ```
+     *
+     * When the scheduler hasn’t run in the last three minutes, site requests check for due tasks at most once a minute,
+     * and run them after the response is sent.
+     *
+     * Disable this if web requests have short time limits or can’t write to the database, and make sure the
+     * scheduler runs instead.
+     *
+     * ```php
+     * ->runScheduledWorkAutomatically(false)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public bool $runScheduledWorkAutomatically = true;
+
+    /**
      * @var string The name of the queue that Craft jobs should be sent to.
      *
      * ```php
@@ -4883,6 +4909,38 @@ class GeneralConfig extends BaseConfig
     public function runQueueAutomatically(bool $value = true): self
     {
         $this->runQueueAutomatically = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether site requests should run Craft’s due scheduled tasks, such as publishing scheduled releases,
+     * when Laravel’s scheduler isn’t running.
+     *
+     * Craft runs its scheduled tasks every minute from Laravel’s scheduler:
+     *
+     * ```cron
+     * * * * * * php /path/to/project/craft schedule:run
+     * ```
+     *
+     * When the scheduler hasn’t run in the last three minutes, site requests check for due tasks at most once a minute,
+     * and run them after the response is sent.
+     *
+     * Disable this if web requests have short time limits or can’t write to the database, and make sure the
+     * scheduler runs instead.
+     *
+     * ```php
+     * ->runScheduledWorkAutomatically(false)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $runScheduledWorkAutomatically
+     */
+    public function runScheduledWorkAutomatically(bool $value = true): self
+    {
+        $this->runScheduledWorkAutomatically = $value;
 
         return $this;
     }

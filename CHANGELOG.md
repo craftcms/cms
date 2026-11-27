@@ -8,6 +8,8 @@
 - Brightened the live, pending, and expired status colors. ([#20964](https://github.com/craftcms/cms/pull/20964))
 - Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))
 - GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
+- Scheduled releases now publish on sites where Laravel’s scheduler isn’t running, from site requests.
+- Added the `runScheduledWorkAutomatically` config setting.
 - Improved the performance of edit pages with many fields or nested entries. ([#21077](https://github.com/craftcms/cms/pull/21077))
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - Improved the responsiveness of large control panel pages, which no longer restyle every element whenever content is added or a class or inline style changes. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21150](https://github.com/craftcms/cms/issues/21150), [#21125](https://github.com/craftcms/cms/pull/21125))
