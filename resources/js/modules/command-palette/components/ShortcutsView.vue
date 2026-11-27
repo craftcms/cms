@@ -8,40 +8,17 @@
    * for screen readers.
    */
   import {t} from '@craftcms/ui';
-  import {detectPlatform, type ParsedHotkeyChord} from '@tanstack/hotkeys';
+  import {detectPlatform} from '@tanstack/hotkeys';
   import {useId} from 'vue';
   import {uiLayerManager} from '@/common/slideouts/panel-stack';
   import {listedShortcuts, type ListedShortcut} from '@/common/shortcuts';
+  import {keysOf, type Key} from '../keys';
 
   defineEmits<{
     (event: 'back'): void;
   }>();
 
-  interface Key {
-    symbol: string;
-    name: string;
-  }
-
   const isMac = detectPlatform() === 'mac';
-
-  /** The keys of a chord, modifiers first, in the platform's usual order. */
-  function keysOf(chord: ParsedHotkeyChord): Key[] {
-    const modifiers: Key[] = isMac
-      ? [
-          ...(chord.ctrl ? [{symbol: '⌃', name: t('Control')}] : []),
-          ...(chord.alt ? [{symbol: '⌥', name: t('Option')}] : []),
-          ...(chord.shift ? [{symbol: '⇧', name: t('Shift')}] : []),
-          ...(chord.meta ? [{symbol: '⌘', name: t('Command')}] : []),
-        ]
-      : [
-          ...(chord.ctrl ? [{symbol: 'Ctrl', name: t('Control')}] : []),
-          ...(chord.alt ? [{symbol: 'Alt', name: t('Alt')}] : []),
-          ...(chord.shift ? [{symbol: 'Shift', name: t('Shift')}] : []),
-          ...(chord.meta ? [{symbol: 'Meta', name: t('Meta')}] : []),
-        ];
-
-    return [...modifiers, keyOf(chord.key ?? chord.code ?? '')];
-  }
 
   /** Key names for Garnish's key codes that aren't a character's. */
   const keyCodeKeys: Record<number, string> = {
@@ -52,30 +29,6 @@
     219: '[',
     221: ']',
   };
-
-  function keyOf(key: string): Key {
-    switch (key) {
-      case 'Enter':
-        return isMac
-          ? {symbol: '↩', name: t('Return')}
-          : {symbol: 'Enter', name: t('Enter')};
-      case 'Escape':
-        return {symbol: 'Esc', name: t('Escape')};
-      case '/':
-        return {symbol: '/', name: t('Slash')};
-      case '.':
-        return {symbol: '.', name: t('Period')};
-      // Shortcuts bound to the physical key have its code rather than a key.
-      case 'Backslash':
-        return {symbol: '\\', name: t('Backslash')};
-      case '[':
-        return {symbol: '[', name: t('Left bracket')};
-      case ']':
-        return {symbol: ']', name: t('Right bracket')};
-      default:
-        return {symbol: key, name: key};
-    }
-  }
 
   /**
    * The described shortcuts registered with Garnish's layers — by legacy
