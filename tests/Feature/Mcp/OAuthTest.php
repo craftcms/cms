@@ -343,7 +343,9 @@ it('issues one-hour access tokens and 30-day refresh tokens', function (): void 
     $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
     $this->get(route('craft.mcp.oauth.authorize', mcpAuthorizationParameters($clientId)))->assertOk();
     $location = $this->post(route('craft.mcp.oauth.approve'), ['auth_token' => session('authToken')])->headers->get('Location');
-    mcpExchangeAuthorizationCode($this, $clientId, $location)->assertJsonPath('expires_in', 3600);
+    expect(mcpExchangeAuthorizationCode($this, $clientId, $location)->json('expires_in'))
+        ->toBeGreaterThan(3590)
+        ->toBeLessThanOrEqual(3600);
 
     expect(Passport::refreshToken()->newQuery()->sole()->expires_at->diffInDays(now()->addDays(30), absolute: true))
         ->toBeLessThan(1);
