@@ -12,8 +12,12 @@ const messages = ruleMessages(ruleName, {
     `Avoid :has() before a ${combinator} combinator: Chromium then restyles the :has() element's subtree, into every shadow root in it, whenever anything is added or removed inside it. Put :has() on the element being styled, as in .tabs:has(~ .panel) rather than :has(> .panel) > .tabs, or toggle a class or attribute from JS.`,
 });
 
-/** Pseudo-classes whose arguments are selector lists that share the compound they sit in. */
-const SELECTOR_LIST_CALL = /:(?:is|where|not|matches|-webkit-any)$/i;
+/**
+ * Pseudo-classes whose arguments are selector lists that share the compound
+ * they sit in, including Vue's scoped-style wrappers, which compile away.
+ */
+const SELECTOR_LIST_CALL =
+  /:(?:is|where|not|matches|-webkit-any|deep|global|slotted)$/i;
 
 /** Sibling combinators only restyle the siblings, so they're left alone. */
 const COMBINATOR_NAMES = {
@@ -136,12 +140,52 @@ function resolvedSelector(rule) {
   const outer = `:is(${resolvedSelector(parent)})`;
 
   return rule.selectors
-    .map((selector) =>
-      selector.includes('&')
-        ? selector.replaceAll('&', outer)
-        : `${outer} ${selector}`
-    )
+    .map((selector) => {
+      const resolved = replaceNestingSelectors(selector, outer);
+      return resolved === selector ? `${outer} ${selector}` : resolved;
+    })
     .join(', ');
+}
+
+/**
+ * Replaces each `&` nesting selector with `outer`, skipping strings, escapes,
+ * and attribute selectors, where `&` is a literal character.
+ *
+ * @param {string} selector
+ * @param {string} outer
+ * @returns {string}
+ */
+function replaceNestingSelectors(selector, outer) {
+  let output = '';
+  let quote = null;
+  let bracket = false;
+
+  for (let i = 0; i < selector.length; i++) {
+    const char = selector[i];
+
+    if (char === '\\') {
+      output += selector.slice(i, i + 2);
+      i++;
+      continue;
+    }
+
+    if (quote) {
+      quote = char === quote ? null : quote;
+    } else if (char === '"' || char === "'") {
+      quote = char;
+    } else if (bracket) {
+      bracket = char !== ']';
+    } else if (char === '[') {
+      bracket = true;
+    } else if (char === '&') {
+      output += outer;
+      continue;
+    }
+
+    output += char;
+  }
+
+  return output;
 }
 
 export default createPlugin(ruleName, (enabled) => (root, result) => {
