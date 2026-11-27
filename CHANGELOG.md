@@ -27,6 +27,7 @@
 - Added `Craft.Grid::queueRefreshCols()`. ([#21062](https://github.com/craftcms/cms/pull/21062))
 - Added `CraftCms\Cms\Ui\Controls\Number::locale()`. ([#21080](https://github.com/craftcms/cms/issues/21080), [#21107](https://github.com/craftcms/cms/pull/21107))
 - `CraftCms\Cms\Queue\BatchedJob` subclasses can now process items from any data source by overriding `loadData()`. ([#21164](https://github.com/craftcms/cms/pull/21164))
+- Added `CraftCms\Cms\Queue\ArrayBatcher`. ([#21164](https://github.com/craftcms/cms/pull/21164))
 - Added `CraftCms\Cms\Queue\BatchedJob::data()` and `loadData()`. ([#21164](https://github.com/craftcms/cms/pull/21164))
 - Added `CraftCms\Cms\Queue\Contracts\Batchable`. ([#21164](https://github.com/craftcms/cms/pull/21164))
 - Added `CraftCms\Cms\Queue\CsvBatcher`. ([#21164](https://github.com/craftcms/cms/pull/21164))
