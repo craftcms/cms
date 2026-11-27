@@ -51,8 +51,8 @@ trait CollectsCacheTags
 
         $collector->collectTags($this->getCacheTags());
 
-        if (! $aborted && $collector->collectsStatusChanges()) {
-            $this->collectStatusChangeExpiry($collector);
+        if (! $aborted && $collector->collectsStatusChanges() && ($date = $this->nextStatusChangeDate())) {
+            $collector->setStatusChangeDate($date);
         }
     }
 
@@ -138,14 +138,19 @@ trait CollectsCacheTags
     }
 
     /**
-     * Registers the time this query’s result will change without any element being saved, such as when a pending
-     * entry goes live, as the expiry date of the caches being collected.
+     * Returns when this query’s result will next change without any element being saved, such as when a pending entry
+     * goes live, or `null` if it won’t.
+     *
+     * It’s called while caches are being collected, which expire at that time.
      */
-    protected function collectStatusChangeExpiry(DependencyCollector $collector): void {}
+    protected function nextStatusChangeDate(): ?DateTimeInterface
+    {
+        return null;
+    }
 
     /**
      * Returns the earliest value of a date column after the given time among the elements this query could match with
-     * the given statuses, on any of the sites it queries, for [[collectStatusChangeExpiry()]].
+     * the given statuses, on any of the sites it queries, for [[nextStatusChangeDate()]].
      *
      * The lookup skips the query’s events and the conditions their listeners add, its search, which it would otherwise
      * repeat, and its selects, orders, groups, and unions. That can only find an earlier date, or miss elements a union
@@ -153,7 +158,7 @@ trait CollectsCacheTags
      *
      * @param  string[]  $statuses
      */
-    protected function nextStatusChangeDate(array $statuses, string $column, DateTimeInterface $after): ?DateTimeInterface
+    protected function nextDate(array $statuses, string $column, DateTimeInterface $after): ?DateTimeInterface
     {
         $query = (clone $this)->status($statuses)->search(null)->unique(false);
         $query->preparesSilently = true;

@@ -56,7 +56,7 @@ trait OverridesResults
      *
      * @return TValue[]|null
      */
-    protected function useResultOverride(): ?array
+    protected function resolveResultOverride(): ?array
     {
         $result = $this->getResultOverride();
 

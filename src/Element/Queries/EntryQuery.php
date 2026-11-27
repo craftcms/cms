@@ -22,7 +22,6 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use DateTimeInterface;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
@@ -362,15 +361,15 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     private ?DateTimeInterface $statusTime = null;
 
     /**
-     * Expires the caches being collected when the next entry this query could match changes status in a way that
-     * changes the result: a pending entry going live, when the query matches live or pending entries but not both, or
-     * a live or pending entry expiring, when it matches live or expired entries but not both.
+     * Returns when the next entry this query could match changes status in a way that changes the result: a pending
+     * entry going live, when the query matches live or pending entries but not both, or a live or pending entry
+     * expiring, when it matches live or expired entries but not both.
      */
     #[Override]
-    protected function collectStatusChangeExpiry(DependencyCollector $collector): void
+    protected function nextStatusChangeDate(): ?DateTimeInterface
     {
         if (Cms::config()->staticStatuses || $this->archived || ! $this->status) {
-            return;
+            return null;
         }
 
         // A `not` or `or` glue is ignored: negating the statuses flips both sides of each comparison below
@@ -383,20 +382,17 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         // Compare to the “now” the status conditions used, so an entry going live as the minute changes isn’t missed
         $after = $this->statusTime ?? now()->endOfMinute();
 
-        if (
-            $matches(Entry::STATUS_LIVE) !== $matches(Entry::STATUS_PENDING) &&
-            ($date = $this->nextStatusChangeDate([Entry::STATUS_PENDING], 'entries.postDate', $after))
-        ) {
-            $collector->setStatusChangeDate($date);
-        }
+        $dates = array_filter([
+            $matches(Entry::STATUS_LIVE) !== $matches(Entry::STATUS_PENDING)
+                ? $this->nextDate([Entry::STATUS_PENDING], 'entries.postDate', $after)
+                : null,
+            // Pending entries can expire too, once they’ve gone live
+            $matches(Entry::STATUS_LIVE) !== $matches(Entry::STATUS_EXPIRED)
+                ? $this->nextDate([Entry::STATUS_LIVE, Entry::STATUS_PENDING], 'entries.expiryDate', $after)
+                : null,
+        ]);
 
-        // Pending entries can expire too, once they’ve gone live
-        if (
-            $matches(Entry::STATUS_LIVE) !== $matches(Entry::STATUS_EXPIRED) &&
-            ($date = $this->nextStatusChangeDate([Entry::STATUS_LIVE, Entry::STATUS_PENDING], 'entries.expiryDate', $after))
-        ) {
-            $collector->setStatusChangeDate($date);
-        }
+        return $dates ? min($dates) : null;
     }
 
     #[Override]

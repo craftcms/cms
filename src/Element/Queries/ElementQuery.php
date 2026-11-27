@@ -675,7 +675,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->getModels($columns));
         }
 
-        if (! is_null($result = $this->useResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             if ($this->with) {
                 Elements::eagerLoadElements($this->elementType, $result, $this->with);
             }
@@ -752,7 +752,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->pluck($column, $key));
         }
 
-        if (! is_null($result = $this->useResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             return collect($result)->pluck($this->attributeName($column), $key === null ? null : $this->attributeName($key));
         }
 
@@ -1095,7 +1095,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->count($columns));
         }
 
-        if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->useResultOverride())) {
+        if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->resolveResultOverride())) {
             return count($result);
         }
 
@@ -1180,7 +1180,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function nth(int $n, $columns = ['*']): ElementInterface|array|null
     {
-        if (! is_null($result = $this->useResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             return $result[$n] ?? null;
         }
 
