@@ -40,6 +40,7 @@ use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveExpiredUploads;
 use CraftCms\Cms\GarbageCollection\Jobs\RunGarbageCollection;
 use CraftCms\Cms\Queue\Models\JobProgress;
+use CraftCms\Cms\Support\Facades\SchedulerHeartbeat;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
@@ -58,7 +59,8 @@ class GarbageCollection
 
     /**
      * @var int the probability (parts per million) that garbage collection (GC) should be performed
-     *          on a request. Defaults to 10, meaning 0.001% chance.
+     *          on a request while Laravel’s scheduler isn’t running. Defaults to 10, meaning 0.001% chance.
+     *          While the scheduler is running, GC runs daily instead.
      *
      * This number should be between 0 and 1000000. A value 0 means no GC will be performed at all unless forced.
      */
@@ -161,7 +163,7 @@ class GarbageCollection
 
     public function queue(): void
     {
-        if (! $this->shouldRun()) {
+        if (! $this->shouldRun() || SchedulerHeartbeat::isRunning()) {
             return;
         }
 

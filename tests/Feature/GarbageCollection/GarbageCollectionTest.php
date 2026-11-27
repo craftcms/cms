@@ -3,6 +3,7 @@
 declare(strict_types=1);
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Console\SchedulerHeartbeat;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Queue\Models\JobProgress;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Lottery;
@@ -55,6 +57,30 @@ it('queues garbage collection on a lottery', function () {
 
     Queue::assertPushed(RunGarbageCollection::class, 1);
 });
+
+it('skips the lottery while the scheduler is running', function () {
+    Queue::fake();
+    Lottery::alwaysWin();
+
+    app(SchedulerHeartbeat::class)->record();
+    app(GarbageCollection::class)->queue();
+
+    Queue::assertNothingPushed();
+});
+
+it('queues garbage collection daily on the scheduler', function (string $time, int $probability, int $expected) {
+    Queue::fake();
+    app()->resolving(GarbageCollection::class, fn (GarbageCollection $gc) => $gc->probability = $probability);
+
+    Date::setTestNow($time);
+    $this->artisan('schedule:run')->assertSuccessful();
+
+    Queue::assertPushed(RunGarbageCollection::class, $expected);
+})->with([
+    'at midnight' => ['2026-10-01 00:00:00 UTC', 10, 1],
+    'during the day' => ['2026-10-01 12:00:00 UTC', 10, 0],
+    'when disabled' => ['2026-10-01 00:00:00 UTC', 0, 0],
+])->after(fn () => Date::setTestNow());
 
 it('uses every action at least once', function () {
     $actions = collect(File::allFiles(__DIR__.'/../../../src/GarbageCollection/Actions'))
