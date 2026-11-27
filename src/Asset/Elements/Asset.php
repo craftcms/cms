@@ -2772,9 +2772,9 @@ class Asset extends Element
             // Each scanline starts with its filter type: none
             $data .= "\0";
 
+            // The pixels are already `#rrggbb` or `#rrggbbaa` strings, so their bytes are the RGBA values
             foreach ($row as $color) {
-                [$red, $green, $blue, $alpha] = ColorGrid::parse($color);
-                $data .= pack('C4', $red, $green, $blue, (int) round($alpha * 255));
+                $data .= hex2bin(substr($color, 1)).(strlen($color) > 7 ? '' : "\xff");
             }
         }
 
