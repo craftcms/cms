@@ -49,6 +49,7 @@ import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
 import {Slideout, uiLayerManager, type SlideoutSettings} from './slideout';
 import type {UiValues} from '@/modules/ui/types';
+import {UiFieldIdScope} from '@/modules/ui/runtime';
 import {http, isHttpError} from '@craftcms/ui/utilities/api/http';
 import {
   sendLegacyRequest,
@@ -535,6 +536,9 @@ export class CpScreenSlideout extends Slideout {
             slideout: true,
           });
           installCpApp(this.inertiaApp);
+          // Keeps the page's field and tab panel ids apart from those of
+          // other slideouts showing the same screen.
+          this.inertiaApp.provide(UiFieldIdScope, data.namespace);
           this.inertiaApp.mount(this.$content[0]);
         }
 
