@@ -3,7 +3,7 @@
    * The AI Assistant screen of the user’s account: their own guidance, which the
    * assistant follows in every conversation.
    */
-  import {useId} from 'vue';
+  import {inject, useId} from 'vue';
   import {t} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
   import {update} from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AccountController';
@@ -11,8 +11,11 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import UserScreen from '@/modules/user/components/UserScreen.vue';
   import {instructionsToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
-  import {fieldId} from '@/modules/ui/runtime';
+  import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
   import '@/modules/markdown-field/markdown-field';
+
+  // Matches the ids the error summary links to, in a slideout as well.
+  const fieldIdScope = inject(UiFieldIdScope, undefined);
 
   defineOptions({
     inheritAttrs: false,
@@ -35,7 +38,7 @@
   <UserScreen>
     <craft-field-group>
       <craft-field
-        :id="fieldId(['guidance'])"
+        :id="scopedId(fieldIdScope, fieldId(['guidance']))"
         :label="t('Personal guidance')"
         :help-text="
           t(

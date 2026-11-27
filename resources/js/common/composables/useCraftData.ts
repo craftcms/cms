@@ -130,6 +130,39 @@ export function useHelpers() {
   };
 }
 
+/**
+ * Points the site crumb's links at the given page URL, keeping each link's
+ * `site` param.
+ *
+ * The server builds the links from the query of the request that sent the
+ * crumb. Partial reloads such as an element index's search, sort or paging
+ * change the URL without sending the crumb again, so its links would bring
+ * back the old query.
+ */
+function withSiteCrumbUrl<T>(item: T, pageUrl: string): T {
+  const {href, items} = item as {href?: unknown; items?: unknown};
+  const updated = {...item} as Record<string, unknown>;
+
+  if (Array.isArray(items)) {
+    updated.items = items.map((child) => withSiteCrumbUrl(child, pageUrl));
+  }
+
+  if (typeof href === 'string' && href !== '') {
+    const linked = new URL(href, window.location.origin);
+    const url = new URL(pageUrl, linked);
+    url.searchParams.delete('fresh');
+
+    const site = linked.searchParams.get('site');
+    if (site !== null) {
+      url.searchParams.set('site', site);
+    }
+
+    updated.href = url.href;
+  }
+
+  return updated as T;
+}
+
 export default function useCraftData(): {
   [Key in keyof CraftData]-?: Readonly<Ref<CraftData[Key]>>;
 } {
@@ -137,5 +170,13 @@ export default function useCraftData(): {
     craft: CraftData;
   }>();
 
-  return toRefs(computed(() => page.props.craft));
+  return toRefs(
+    computed(() => {
+      const craft = page.props.craft;
+
+      return craft?.siteCrumb
+        ? {...craft, siteCrumb: withSiteCrumbUrl(craft.siteCrumb, page.url)}
+        : craft;
+    })
+  );
 }
