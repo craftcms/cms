@@ -6,7 +6,6 @@
    * sides where they differ. With the slider, the two are stacked in one
    * larger box, and a divider between them slides to show more of either.
    */
-  import '@craftcms/ui/components/badge/badge';
   import {t} from '@craftcms/ui';
   import {
     computed,
@@ -340,24 +339,20 @@
         >
           <th :id="headerId(`detail-${detail.key}`)" scope="rowgroup">
             {{ detail.label }}
-            <craft-badge
+            <span
               v-if="differs(image, detail)"
-              fill="violet"
-              size="small"
-              no-prefix
-              >{{ t('Different') }}</craft-badge
+              class="image-comparison__badge"
+              >{{ t('Different') }}</span
             >
           </th>
           <!-- Repeats the label above the other side's value, as the
                Compare screen does. The row header already names it. -->
           <td aria-hidden="true">
             {{ detail.label }}
-            <craft-badge
+            <span
               v-if="differs(image, detail)"
-              fill="violet"
-              size="small"
-              no-prefix
-              >{{ t('Different') }}</craft-badge
+              class="image-comparison__badge"
+              >{{ t('Different') }}</span
             >
           </td>
         </tr>
@@ -500,10 +495,18 @@
     font-weight: var(--font-weight-medium);
   }
 
-  .image-comparison__label-row craft-badge {
+  /* Styled like the badge on a changed field's label, which `craft-field` draws. */
+  .image-comparison__badge {
     margin-inline-start: var(--c-spacing-xs);
-    vertical-align: middle;
+    padding-block: 0;
+    padding-inline: 0.25em;
+    border: 1px solid var(--c-color-violet-border-quiet);
+    border-radius: var(--c-radius-sm, 3px);
+    background-color: var(--c-color-violet-fill-quiet);
+    color: var(--c-color-violet-on-quiet);
+    font-size: calc(11rem / 16);
     font-weight: normal;
+    line-height: 1.45;
   }
 
   .image-comparison__value-row > td {

@@ -100,7 +100,7 @@ function status(): string | undefined {
 /** The details whose rows say they differ, by their row headers. */
 function marked(): string[] {
   return [...document.querySelectorAll('th[scope="rowgroup"]')]
-    .filter((header) => header.querySelector('craft-badge'))
+    .filter((header) => header.querySelector('.image-comparison__badge'))
     .map((header) => header.firstChild!.textContent!.trim());
 }
 

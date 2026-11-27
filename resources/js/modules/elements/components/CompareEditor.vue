@@ -19,6 +19,7 @@
   const props = defineProps<{
     editor: ElementEditPayload & {saveParams: UiValues};
     changed: Record<string, boolean | null>;
+    changedBadge: string;
     fieldOutlets: UiFieldOutlets;
     root: HTMLElement | null;
     footerTargets: {notices: HTMLElement | null; actions: HTMLElement | null};
@@ -60,6 +61,7 @@
     ref="form"
     :editor="editor"
     :changed="changed"
+    :changed-badge="changedBadge"
     :field-outlets="fieldOutlets"
     :root="root"
     :footer-targets="footerTargets"

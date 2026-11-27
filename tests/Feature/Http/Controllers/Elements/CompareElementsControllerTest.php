@@ -878,6 +878,8 @@ it('compares two separate entries, each by its own versions', function () {
             $props = $page->toArray()['props'];
 
             expect(changedFields($page, 'to'))->toMatchArray(['Summary' => true, 'Tagline' => false])
+                ->and(collect(paneFields($page, 'to'))->pluck('props.labelBadge', 'props.label')->filter()->all())
+                ->toBe(['Summary' => 'Different'])
                 ->and(compareMenuLink($props['to']['versionMenu'], 'Extended run')['href'])
                 ->toContain("/compare/$a->id/$b->id?draftId=$draft->draftId")
                 ->and(collect($props['from']['versionMenu'])->flatMap(fn (array $group) => $group['items'])->pluck('label')->all())

@@ -583,10 +583,15 @@
     return {from: sideBadges('from'), to: sideBadges('to')};
   });
 
+  /** The badge on a changed field: two separate elements differ, rather than one changing the other. */
+  const changedBadge = computed(() =>
+    props.fromElementChip ? t('Different') : t('Changed')
+  );
+
   /** Each read-only side's form, badged as the comparison stands. */
   const sideForms = computed(() => ({
-    from: readOnlyPane(props.from.ui, badges.value.from),
-    to: readOnlyPane(props.to.ui, badges.value.to),
+    from: readOnlyPane(props.from.ui, badges.value.from, changedBadge.value),
+    to: readOnlyPane(props.to.ui, badges.value.to, changedBadge.value),
   }));
 
   /**
@@ -1067,7 +1072,7 @@
             >
               <craft-indicator
                 fill="var(--c-field-modified-indicator)"
-                :label="t('Changed')"
+                :label="changedBadge"
               ></craft-indicator>
             </span>
             <craft-icon
@@ -1201,6 +1206,7 @@
           :ref="editorRefs[key]"
           :editor="side.editor"
           :changed="badges[key]"
+          :changed-badge="changedBadge"
           :field-outlets="fieldOutlets[key]"
           :root="panels"
           :footer-targets="footerTargets[key]"

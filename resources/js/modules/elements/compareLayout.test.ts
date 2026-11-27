@@ -438,14 +438,15 @@ describe('withoutCompareAction', () => {
         field('summary', 'Changed'),
         {...tab('visit', 'Visit', []), children: [field('venue', null)]},
       ]),
-      {summary: false, venue: true}
+      {summary: false, venue: true},
+      'Different'
     );
     const venue = ui.nodes[1]!.children![0]!;
 
     expect(menuItems(ui.nodes[0]!)).toEqual([copy]);
     expect(menuItems(venue)).toEqual([copy]);
     expect(ui.nodes[0]!.props.labelBadge).toBeNull();
-    expect(venue.props.labelBadge).toBe('Changed');
+    expect(venue.props.labelBadge).toBe('Different');
   });
 
   it('drops the action menu when that was all it had, keeping the field’s other actions', () => {
