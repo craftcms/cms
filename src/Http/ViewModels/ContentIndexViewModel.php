@@ -42,6 +42,7 @@ use Illuminate\Support\Facades\Gate;
 use Inertia\RenderContext;
 use Inertia\Support\Header;
 use ReflectionMethod;
+use WeakMap;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -114,6 +115,14 @@ abstract class ContentIndexViewModel extends ViewModel
 
     /** @var Collection<int, Site>|null */
     private ?Collection $selectableSites = null;
+
+    /**
+     * The capabilities {@see baseRowData()} checked for each row’s element, so the row’s chip or card reuses them
+     * instead of checking the same permissions again.
+     *
+     * @var WeakMap<ElementInterface, array{copyable: bool, duplicatable: bool, deletable: bool, comparable: bool}>
+     */
+    private WeakMap $rowCapabilities;
 
     public function __construct(
         /** @var class-string<ElementInterface> */
@@ -1826,6 +1835,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return app(ElementHtml::class)->elementChipHtml($element, [
             'autoReload' => false,
             'context' => static::RENDER_CONTEXT,
+            'capabilities' => $this->rowCapabilities[$element] ?? null,
             'appearance' => 'plain',
             'thumbSize' => $this->thumbSize(),
             ...$config,
@@ -1879,7 +1889,10 @@ abstract class ContentIndexViewModel extends ViewModel
             return [
                 'id' => $this->rowId($element),
                 ...$this->baseRowData($element, $elementHtml),
-                ...$elementHtml->elementCardData($element, $cardConfig),
+                ...$elementHtml->elementCardData($element, [
+                    ...$cardConfig,
+                    'capabilities' => $this->rowCapabilities[$element],
+                ]),
             ];
         }, $elements);
     }
@@ -1979,8 +1992,10 @@ abstract class ContentIndexViewModel extends ViewModel
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
         $elementHtml ??= app(ElementHtml::class);
+        $this->rowCapabilities ??= new WeakMap;
+        $this->rowCapabilities[$element] = $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT);
         $capabilities = [
-            ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            ...$this->rowCapabilities[$element],
             ...$this->extraCapabilities($element),
         ];
 
