@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\QueueWorkerHeartbeat;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Http\Request;
@@ -59,6 +60,10 @@ readonly class RunQueue
         $contentType = $response->headers->get('Content-Type', '');
 
         if (! str_contains((string) $contentType, 'text/html') && ! str_contains((string) $contentType, 'application/xhtml+xml')) {
+            return false;
+        }
+
+        if (app(QueueWorkerHeartbeat::class)->isRunning()) {
             return false;
         }
 

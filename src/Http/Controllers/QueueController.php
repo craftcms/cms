@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Requests\TableRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\QueueWorkerHeartbeat;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Http\JsonResponse;
@@ -32,7 +33,7 @@ readonly class QueueController
 
     public function run(): Response
     {
-        if (app()->isDownForMaintenance() || ! Cms::config()->runQueueAutomatically) {
+        if (app()->isDownForMaintenance() || ! Cms::config()->runQueueAutomatically || app(QueueWorkerHeartbeat::class)->isRunning()) {
             return response()->make();
         }
 
