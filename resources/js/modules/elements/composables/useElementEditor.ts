@@ -47,6 +47,8 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import {
   canReuseUis,
+  isWithin,
+  reusedScopes,
   sharePayload,
   UI_REUSE_HEADER,
 } from '@/modules/ui/renderer/uiTree';
@@ -431,10 +433,14 @@ export function useElementEditor({
   );
   const form = useForm<ElementEditFormData>({});
   let refreshGeneration = 0;
+  let refreshSequence = 0;
+  /** The latest refresh of each scope, by when it was sent. */
+  const refreshes = new Map<string, {scope: string[]; sequence: number}>();
   let nestedElementsReloadPending = false;
 
   function invalidateUiRefreshes(): void {
     refreshGeneration++;
+    refreshes.clear();
   }
 
   provideUiValueGroup();
@@ -645,9 +651,9 @@ export function useElementEditor({
       // it was on load would look unchanged, and never be saved.
       if (form) {
         savedUi.value = form;
-        // Rebases on the payload rather than the response, since only the
-        // payload has the values of the nested UIs the save left as placeholders.
-        rebase(uiPayload.value?.values ?? form.values);
+        // The nested UIs the save left as placeholders keep their baselines.
+        // The payload's values for them can be unsaved ones a refresh rendered.
+        rebase(form.values, reusedScopes(form.nodes));
       }
 
       if (screen) {
@@ -818,7 +824,19 @@ export function useElementEditor({
     scope: string[] = uiPayload.value?.scope ?? [],
     {reuseUis = true}: {reuseUis?: boolean} = {}
   ): Promise<UiValues | undefined> {
-    const generation = ++refreshGeneration;
+    const generation = refreshGeneration;
+    const sequence = ++refreshSequence;
+    refreshes.set(JSON.stringify(scope), {scope, sequence});
+    // Superseded by a save, or by a newer refresh of this scope, of one inside
+    // it, or of one it's inside. Refreshes of sibling scopes, such as the
+    // blocks the renderer fills, don't supersede each other.
+    const superseded = () =>
+      generation !== refreshGeneration ||
+      [...refreshes.values()].some(
+        (refresh) =>
+          refresh.sequence > sequence &&
+          (isWithin(refresh.scope, scope) || isWithin(scope, refresh.scope))
+      );
     const rootScope = uiPayload.value?.scope ?? [];
     // Posts only what differs from what the server holds, as autosave does, so
     // the server can send placeholders for the nested UIs the refresh doesn't
@@ -846,7 +864,7 @@ export function useElementEditor({
       }
     );
 
-    if (generation !== refreshGeneration) {
+    if (superseded()) {
       return;
     }
 
@@ -856,7 +874,7 @@ export function useElementEditor({
 
     await appendHeadHtml(response.headHtml);
 
-    if (generation !== refreshGeneration) {
+    if (superseded()) {
       return;
     }
 
@@ -874,7 +892,7 @@ export function useElementEditor({
       applyingSavedPayload = false;
     }
 
-    if (generation !== refreshGeneration) {
+    if (superseded()) {
       return;
     }
 

@@ -16,7 +16,7 @@ import type {
   UiValue,
   UiValues,
 } from '../types';
-import {cloneRaw, isWithin} from './uiTree';
+import {cloneRaw, isWithin, withMissingValues} from './uiTree';
 
 /**
  * The values a UI holds, measured against the baseline the server last
@@ -112,9 +112,16 @@ export function useUiValues(initial: UiPayload) {
     rememberControls(source.nodes);
   }
 
-  /** Takes `source` as what the server now holds, and drops the changes it settles. */
-  function rebase(source: UiValues): void {
-    baseline = cloneRaw(source);
+  /**
+   * Takes `source` as what the server now holds, and drops the changes it
+   * settles. The scopes in `kept` are placeholders the save left alone, so they
+   * keep the values the baseline already holds for them.
+   */
+  function rebase(source: UiValues, kept: string[][] = []): void {
+    baseline = kept.reduce(
+      (next, scope) => withMissingValues(next, scope, valueAt(baseline, scope)),
+      cloneRaw(source)
+    );
     changedPaths.value = new Set(
       [...changedPaths.value].filter((path) => {
         const segments = path.split('.');

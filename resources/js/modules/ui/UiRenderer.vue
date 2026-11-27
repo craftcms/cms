@@ -227,6 +227,9 @@
       getValue: (path) => cloneRaw(valueAt(currentValues(), [...path])),
     };
     unregisterUiValueSource = registerUiValueSource(uiValueSource);
+    // A host can hand over placeholders it couldn't fill, such as while it
+    // was detached.
+    reusedScopes(payload.value.nodes).forEach(refresher.fill);
   });
   onBeforeUnmount(() => {
     unregisterValueSource?.();
@@ -450,8 +453,8 @@
    * it was before that save then still differs from the baseline and goes out
    * with the next one, and edits made while it was in flight stay unsaved.
    */
-  function rebase(source: UiPayload['values']): void {
-    valueState.rebase(source);
+  function rebase(source: UiPayload['values'], kept?: string[][]): void {
+    valueState.rebase(source, kept);
     emitMutation();
   }
 

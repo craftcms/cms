@@ -1084,6 +1084,23 @@ describe('UiRenderer', () => {
     expect(heading('a')?.readOnly).toBe(true);
   });
 
+  it('asks for the reused nested UIs it mounts with', async () => {
+    const full = nestedBlocksPayload({a: 'A'});
+    const refresh = vi.fn(async (_values: UiValues, scope?: string[]) => ({
+      ...full,
+      scope: scope!,
+      refreshable: true,
+      nodes: full.nodes[0]!.control!.uis![0]!.nodes,
+    }));
+    app.unmount();
+    await mount(nestedBlocksPayload({a: 'A'}, ['a']), {refresh});
+
+    await vi.waitFor(() =>
+      expect(nestedBlockHeading(container, 'a')?.value).toBe('A')
+    );
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+
   it('keeps the nested UIs a new payload sends as reused', async () => {
     const path = ['fields', 'blocks'];
 

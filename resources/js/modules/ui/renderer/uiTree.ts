@@ -246,7 +246,7 @@ function findControl(
  * `values`, with the keys `source` has at `path` and `values` lacks there
  * added. Copies only the records along `path`.
  */
-function withMissingValues(
+export function withMissingValues(
   values: UiValues,
   path: string[],
   source: UiValue

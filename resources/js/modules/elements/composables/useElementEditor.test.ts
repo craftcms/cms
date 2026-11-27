@@ -1530,6 +1530,24 @@ describe('useElementEditor', () => {
     expect(editor.uiPayload.value?.values).toEqual({title: 'Latest title'});
   });
 
+  it('applies refreshes of sibling scopes, whichever answers first', async () => {
+    const first = deferred<{data: {ui: UiPayload}}>();
+    const a = {...fieldLayout('A'), scope: ['fields', 'a']};
+    const b = {...fieldLayout('B'), scope: ['fields', 'b']};
+    postSpy
+      .mockImplementationOnce(() => first.promise)
+      .mockResolvedValueOnce({data: {ui: b}});
+    const {editor} = mount(
+      payload({canAutosave: false, ui: fieldLayout('Original title')})
+    );
+
+    const refreshA = editor.refreshLayout({}, ['fields', 'a']);
+    await editor.refreshLayout({}, ['fields', 'b']);
+    first.resolve({data: {ui: a}});
+
+    await expect(refreshA).resolves.toEqual(a);
+  });
+
   it('ignores a refresh that predates an authoritative page payload', async () => {
     const refresh = deferred<{data: {ui: UiPayload}}>();
     postSpy.mockImplementationOnce(() => refresh.promise);
@@ -1784,6 +1802,44 @@ describe('useElementEditor', () => {
     expect(postSpy.mock.calls[4]?.[2]?.headers?.['X-Craft-Ui-Reuse']).toBe(
       undefined
     );
+  });
+
+  it('saves a block edited back to a value a refresh rendered but an autosave left out', async () => {
+    const heading = (uid: string) => nestedBlockHeading(container!, uid)!;
+    const type = async (uid: string, value: string) => {
+      await vi.waitFor(() => expect(heading(uid)).not.toBeNull());
+      heading(uid).value = value;
+      heading(uid).dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+    };
+    const {editor} = mount(
+      payload({canAutosave: true, ui: nestedBlocksPayload({a: 'A', b: 'B'})})
+    );
+
+    // A refresh renders block a's unsaved value, which is then undone.
+    await type('a', 'A2');
+    postSpy.mockResolvedValueOnce({
+      data: {ui: nestedBlocksPayload({a: 'A2', b: 'B'})},
+    });
+    await editor.refreshLayout({});
+    await type('a', 'A');
+
+    await type('b', 'B2');
+    postSpy.mockResolvedValueOnce({
+      data: {draftId: 7, ui: nestedBlocksPayload({a: 'A', b: 'B2'}, ['a'])},
+    });
+    await editor.autosave.save();
+    await nextTick();
+
+    await type('a', 'A2');
+    postSpy.mockResolvedValueOnce({
+      data: {draftId: 7, ui: nestedBlocksPayload({a: 'A2', b: 'B2'}, ['b'])},
+    });
+    await editor.autosave.save();
+
+    expect(
+      Object.keys(postSpy.mock.lastCall?.[1]?.fields?.blocks?.entries ?? {})
+    ).toEqual(['a']);
   });
 
   it('drops the autosaved screen once a visit brings a newer payload', async () => {
