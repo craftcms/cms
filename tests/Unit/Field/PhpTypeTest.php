@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\BaseRelationField;
@@ -78,6 +79,17 @@ test('relational phpType() strings give each generic class every template type',
     Users::class,
     Matrix::class,
     Addresses::class,
-    BaseRelationField::class,
     CustomersField::class,
 ]);
+
+test('BaseRelationField::phpType() describes its subclass’s element type', function () {
+    $field = new class extends BaseRelationField
+    {
+        public static function elementType(): string
+        {
+            return Entry::class;
+        }
+    };
+
+    expect($field::phpType())->toBe('\\CraftCms\\Cms\\Element\\Queries\\Contracts\\ElementQueryInterface<\\CraftCms\\Cms\\Entry\\Elements\\Entry>|\\CraftCms\\Cms\\Element\\ElementCollection<int, \\CraftCms\\Cms\\Entry\\Elements\\Entry>');
+});
