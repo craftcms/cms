@@ -10,7 +10,7 @@
 - GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
 - Improved the performance of edit pages with many fields or nested entries. ([#21077](https://github.com/craftcms/cms/pull/21077))
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
-- Improved the performance of entry indexes and of element indexes with thumbnails. ([#21181](https://github.com/craftcms/cms/issues/21181))
+- Improved the performance of entry indexes and of element indexes with thumbnails. ([#21181](https://github.com/craftcms/cms/issues/21181), [#21188](https://github.com/craftcms/cms/pull/21188))
 - Improved the responsiveness of large control panel pages, which no longer restyle every element whenever content is added or a class or inline style changes. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21150](https://github.com/craftcms/cms/issues/21150), [#21125](https://github.com/craftcms/cms/pull/21125))
 - Element indexes now load their rows along with the page, rather than showing placeholders first. ([#21156](https://github.com/craftcms/cms/pull/21156))
 - Element selector modals are now taller by default. ([#21067](https://github.com/craftcms/cms/pull/21067))
