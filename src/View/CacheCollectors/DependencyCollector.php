@@ -133,10 +133,9 @@ class DependencyCollector implements CacheCollectorInterface
     }
 
     /**
-     * Registers an element’s expiry date, if it’s expirable and has one.
+     * Registers an element’s expiry date as a status change, if it’s expirable and hasn’t expired yet.
      *
-     * The cache expires at the start of the date’s minute, as entry queries treat “now” as the end of the current
-     * minute, unless that’s already passed. For element types that compare to the exact time, that’s up to 59 seconds
+     * For element types that compare to the exact time rather than the minute, the cache expires up to 59 seconds
      * early.
      *
      * @internal
@@ -151,9 +150,10 @@ class DependencyCollector implements CacheCollectorInterface
             return;
         }
 
-        $startOfMinute = Date::instance($expiryDate)->startOfMinute();
-
-        $this->setExpiryDate($startOfMinute->isFuture() ? $startOfMinute : $expiryDate);
+        // An element that has already expired was loaded on purpose, such as by a query for expired entries
+        if ($expiryDate->getTimestamp() > now()->getTimestamp()) {
+            $this->setStatusChangeDate($expiryDate);
+        }
     }
 
     /**

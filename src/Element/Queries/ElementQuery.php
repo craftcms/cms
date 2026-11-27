@@ -89,7 +89,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     use Concerns\CachesQueries;
-    use Concerns\CollectsCacheTags;
+    use Concerns\CollectsCacheInfo;
     use Concerns\FormatsResults;
 
     /** @use Concerns\HydratesElements<TElement> */
@@ -244,12 +244,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @see whereNestedElementQuery()
      */
     private bool $isNestedCondition = false;
-
-    /**
-     * Whether preparing the query skips its events and cache info collection, for a copy run only to work out
-     * cache info.
-     */
-    private bool $preparesSilently = false;
 
     /**
      * @var bool Whether columns were added to the default select with addSelect() or its variants, so the
@@ -1932,7 +1926,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         // Nested conditions leave the events to the query they belong to
-        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition && ! $this->preparesSilently;
+        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition;
         $originalWhereCount = count($this->query->wheres);
 
         try {
@@ -1960,7 +1954,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         } catch (QueryAbortedException $e) {
             // An empty result still changes when elements are saved
             if ($dispatchesEvents) {
-                $this->collectCacheInfo(aborted: true);
+                $this->collectCacheTags();
             }
 
             throw $e;

@@ -26,11 +26,9 @@ use Tpetry\QueryExpressions\Value\Number;
 trait QueriesStructures
 {
     /**
-     * The params that need the query to join structure data.
-     *
-     * @internal
+     * The params that need the query to join structure data, apart from `leaves`.
      */
-    protected const array STRUCTURE_PARAMS = [
+    private const array STRUCTURE_PARAMS = [
         'hasDescendants',
         'ancestorOf',
         'descendantOf',
@@ -598,6 +596,14 @@ trait QueriesStructures
         return $this;
     }
 
+    /**
+     * Returns whether any params that need the query to join structure data are set.
+     */
+    private function usesStructureParams(): bool
+    {
+        return $this->leaves || array_any(self::STRUCTURE_PARAMS, fn (string $param) => ! in_array($this->$param, [null, false], true));
+    }
+
     private function shouldJoinStructureData(): bool
     {
         return ! $this->revisions && $this->withStructure;
@@ -607,6 +613,7 @@ trait QueriesStructures
     private function applyStructureParams(ElementQuery $elementQuery): void
     {
         if (! $elementQuery->shouldJoinStructureData()) {
+            // `leaves` only narrows the results when structure data is joined
             foreach (self::STRUCTURE_PARAMS as $param) {
                 if (! in_array($elementQuery->$param, [null, false], true)) {
                     throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");

@@ -108,6 +108,12 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     public ?bool $savable = null;
 
+    /**
+     * The “now” the status conditions compare dates to, set the first time they’re applied. Copies of the query, such
+     * as the ones made to look up when statuses change, keep it so they compare to the same time.
+     */
+    private ?DateTimeInterface $statusTime = null;
+
     /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
@@ -355,12 +361,6 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     }
 
     /**
-     * The “now” the status conditions compare dates to, set the first time they’re applied, so copies of the query
-     * made to look up when statuses change compare to the same time.
-     */
-    private ?DateTimeInterface $statusTime = null;
-
-    /**
      * Returns when the next entry this query could match changes status in a way that changes the result: a pending
      * entry going live, when the query matches live or pending entries but not both, or a live or pending entry
      * expiring, when it matches live or expired entries but not both.
@@ -372,11 +372,8 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return null;
         }
 
-        // A `not` or `or` glue is ignored: negating the statuses flips both sides of each comparison below
-        $statuses = array_diff(array_map(
-            fn (string $status) => strtolower(trim($status)),
-            is_array($this->status) ? $this->status : explode(',', $this->status),
-        ), ['not', 'or']);
+        // The glue is ignored: negating the statuses flips both sides of each comparison below
+        $statuses = array_map(strtolower(...), self::parseStatusParam($this->status)['statuses']);
         $matches = fn (string $status) => in_array($status, $statuses, true) || in_array(Entry::STATUS_ENABLED, $statuses, true);
 
         // Compare to the “now” the status conditions used, so an entry going live as the minute changes isn’t missed
@@ -384,11 +381,11 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
         $dates = array_filter([
             $matches(Entry::STATUS_LIVE) !== $matches(Entry::STATUS_PENDING)
-                ? $this->nextDate([Entry::STATUS_PENDING], 'entries.postDate', $after)
+                ? $this->nextColumnDate([Entry::STATUS_PENDING], 'entries.postDate', $after)
                 : null,
             // Pending entries can expire too, once they’ve gone live
             $matches(Entry::STATUS_LIVE) !== $matches(Entry::STATUS_EXPIRED)
-                ? $this->nextDate([Entry::STATUS_LIVE, Entry::STATUS_PENDING], 'entries.expiryDate', $after)
+                ? $this->nextColumnDate([Entry::STATUS_LIVE, Entry::STATUS_PENDING], 'entries.expiryDate', $after)
                 : null,
         ]);
 

@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Element\Queries\Events\ElementQueryCacheTagsResolving;
 use CraftCms\Cms\Element\Queries\Events\ElementQueryPrepared;
+use CraftCms\Cms\Element\Queries\Events\ElementQueryPreparing;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Search\Events\SearchPerformed;
@@ -115,6 +116,12 @@ it('registers when an entry the query matches expires, whatever the query’s sh
     'union' => [fn (int $live, int $expiring) => entryQuery()->id($expiring)->union(entryQuery()->id($live)->toBase())->count()],
     'groupBy' => [fn () => entryQuery()->select(['entries.typeId'])->selectRaw('count(*) as c')->groupBy('entries.typeId')->reorder('entries.typeId')->asArray()->all()],
     'structure column condition' => [fn (int $live, int $expiring, int $structureId) => entryQuery()->structureId($structureId)->where('structureelements.level', 1)->count()],
+    'structure column condition in beforeQuery()' => [fn (int $live, int $expiring, int $structureId) => entryQuery()->structureId($structureId)->beforeQuery(fn ($q) => $q->where('structureelements.level', 1))->count()],
+    'condition on a listener’s join' => [function () {
+        Event::listen(ElementQueryPreparing::class, fn (ElementQueryPreparing $event) => $event->query->leftJoin('sites as listenersites', 'listenersites.id', '=', 'elements_sites.siteId'));
+
+        return entryQuery()->where('listenersites.handle', '!=', 'nonexistent')->count();
+    }],
 ]);
 
 it('doesn’t cache a result that’s already stale when the minute changes as the query runs', function () {

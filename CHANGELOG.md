@@ -31,7 +31,7 @@
 - Added the `output` argument to the `@formatDateTime` GraphQL directive. It can be set to `date` or `time` to output only the date or time, using the locale’s date or time format for `short`, `medium`, `long`, and `full`. ([#21084](https://github.com/craftcms/cms/pull/21084))
 - Added the `assertCpMessage()`, `assertNoCpMessages()`, and `cpMessages()` `Illuminate\Testing\TestResponse` macros, for testing the control panel messages a response delivers. ([#21161](https://github.com/craftcms/cms/pull/21161))
 - Added `CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters`. ([#21170](https://github.com/craftcms/cms/pull/21170))
-- Added `CraftCms\Cms\Element\Queries\ElementQuery::nextDate()` and `nextStatusChangeDate()`.
+- Added `CraftCms\Cms\Element\Queries\ElementQuery::nextColumnDate()` and `nextStatusChangeDate()`.
 - Added the `$withStatusChanges` argument to `CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()`.
 - While GraphQL caching is disabled, GraphQL requests don’t look up when entries go live or expire, so `CraftCms\Cms\Gql\Events\ExecutedGqlQuery::$cacheDuration` leaves those out.
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))

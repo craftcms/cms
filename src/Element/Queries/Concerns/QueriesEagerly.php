@@ -310,7 +310,7 @@ trait QueriesEagerly
 
         // The elements may have been loaded before the caches being collected began
         if ($result !== null) {
-            $count ? $this->collectCacheInfoForLoadedElements() : $this->collectCacheInfoForLoadedElements($result);
+            $this->collectCacheInfoForLoadedElements(is_int($result) ? [] : $result);
         }
 
         return $result;

@@ -153,6 +153,7 @@ class ElementCaches
      * @param  bool  $withStatusChanges  Whether element queries should look up when their results will change without
      *                                   a save, such as when a pending entry goes live. Pass `false` when the collected
      *                                   info won’t be used to cache anything, to skip the lookups’ queries.
+     *                                   The lookups still run when an enclosing cache collects them.
      */
     public function startCollectingCacheInfo(bool $withStatusChanges = true): void
     {

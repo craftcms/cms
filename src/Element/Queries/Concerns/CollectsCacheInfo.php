@@ -12,11 +12,12 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use DateTimeInterface;
+use Illuminate\Database\QueryException;
 
 /**
  * @internal
  */
-trait CollectsCacheTags
+trait CollectsCacheInfo
 {
     /**
      * @var string[]|null
@@ -25,7 +26,7 @@ trait CollectsCacheTags
      */
     private ?array $cacheTags = null;
 
-    protected function initCollectsCacheTags(): void
+    protected function initCollectsCacheInfo(): void
     {
         $this->beforeQuery(static function (ElementQuery $elementQuery) {
             $elementQuery->cacheTags = null;
@@ -36,12 +37,11 @@ trait CollectsCacheTags
      * Registers this query’s cache tags with the caches being collected, along with the time its result will next
      * change without a save.
      *
-     * It’s called when the query is prepared, so it covers every way of running it against the database. When
-     * preparing the query aborts it, only the tags are registered, since the result can’t change until a save.
+     * It’s called when the query is prepared, so it covers every way of running it against the database.
      *
      * @internal
      */
-    protected function collectCacheInfo(bool $aborted = false): void
+    protected function collectCacheInfo(): void
     {
         $collector = app(DependencyCollector::class);
 
@@ -51,8 +51,37 @@ trait CollectsCacheTags
 
         $collector->collectTags($this->getCacheTags());
 
-        if (! $aborted && $collector->collectsStatusChanges() && ($date = $this->nextStatusChangeDate())) {
+        if (! $collector->collectsStatusChanges()) {
+            return;
+        }
+
+        // A lookup that fails, such as on a condition a listener added for a join the lookup lacks, leaves the cache
+        // to its usual duration rather than breaking the request
+        try {
+            $date = $this->nextStatusChangeDate();
+        } catch (QueryException $e) {
+            report($e);
+
+            return;
+        }
+
+        if ($date) {
             $collector->setStatusChangeDate($date);
+        }
+    }
+
+    /**
+     * Registers this query’s cache tags with the caches being collected, without its status changes, such as when
+     * preparing the query aborts it and its empty result can only change on a save.
+     *
+     * @internal
+     */
+    protected function collectCacheTags(): void
+    {
+        $collector = app(DependencyCollector::class);
+
+        if ($collector->isCollecting()) {
+            $collector->collectTags($this->getCacheTags());
         }
     }
 
@@ -116,13 +145,13 @@ trait CollectsCacheTags
      * result comes from elements that were already loaded rather than from the database.
      *
      * Unlike [[collectCacheInfo()]], this doesn’t look up when other elements’ statuses change, such as when a pending
-     * entry that would join the result goes live, since that would take the query the loaded elements saved.
+     * entry that would join the result goes live. That would run a query, which loading the elements in advance avoids.
      *
      * @internal
      *
      * @param  iterable<ElementInterface>  $elements
      */
-    protected function collectCacheInfoForLoadedElements(iterable $elements = []): void
+    protected function collectCacheInfoForLoadedElements(iterable $elements): void
     {
         $collector = app(DependencyCollector::class);
 
@@ -152,35 +181,46 @@ trait CollectsCacheTags
      * Returns the earliest value of a date column after the given time among the elements this query could match with
      * the given statuses, on any of the sites it queries, for [[nextStatusChangeDate()]].
      *
-     * The lookup skips the query’s events and the conditions their listeners add, its search, which it would otherwise
-     * repeat, and its selects, orders, groups, and unions. That can only find an earlier date, or miss elements a union
-     * adds.
+     * The lookup leaves out the query’s search, which it would otherwise repeat, and its selects, orders, limit, offset,
+     * groups, and unions. So it can find a date for an element that wouldn’t make the result, which only expires a
+     * cache early, and it misses elements that only a union adds.
      *
      * @param  string[]  $statuses
      */
-    protected function nextDate(array $statuses, string $column, DateTimeInterface $after): ?DateTimeInterface
+    protected function nextColumnDate(array $statuses, string $column, DateTimeInterface $after): ?DateTimeInterface
     {
         $query = (clone $this)->status($statuses)->search(null)->unique(false);
-        $query->preparesSilently = true;
-
-        // The structure join keeps MySQL from reading the date index in order, so leave it out unless a param or
-        // condition of the query’s own could need it
-        if (
-            $query->query->wheres === [] &&
-            ! array_any(self::STRUCTURE_PARAMS, fn (string $param) => ! in_array($query->$param, [null, false], true))
-        ) {
-            $query->withStructure(false);
-        }
 
         // The prepared query keeps its own conditions grouped, so the date condition applies to all of them.
         // Ordering by the date lets the database stop at the first match.
-        // Subqueries, such as relatedTo() ones, would still collect their own cache info.
-        $date = app(DependencyCollector::class)->withoutCollecting(fn () => $query->toBase()
-            ->cloneWithout(['columns', 'orders', 'limit', 'offset', 'groups', 'havings', 'unions', 'unionLimit', 'unionOffset', 'unionOrders', 'lock'])
-            ->cloneWithoutBindings(['select', 'order', 'groupBy', 'having', 'union', 'unionOrder'])
-            ->where($column, '>', Query::prepareDateForDb($after))
-            ->orderBy($column)
-            ->value($column));
+        // Subqueries, such as relatedTo() ones, would collect their own cache info, so nothing is collected.
+        // Within a transaction, a savepoint keeps a failed lookup from aborting it on Postgres.
+        $lookUp = function (self $query) use ($column, $after): mixed {
+            $connection = $query->query->getConnection();
+            $value = fn () => app(DependencyCollector::class)->withoutCollecting(fn () => $query->toBase()
+                ->cloneWithout(['columns', 'orders', 'limit', 'offset', 'groups', 'havings', 'unions', 'unionLimit', 'unionOffset', 'unionOrders', 'lock'])
+                ->cloneWithoutBindings(['select', 'order', 'groupBy', 'having', 'union', 'unionOrder'])
+                ->where($column, '>', Query::prepareDateForDb($after))
+                ->orderBy($column)
+                ->value($column));
+
+            return $connection->transactionLevel() > 0 ? $connection->transaction($value) : $value();
+        };
+
+        // The structure join keeps MySQL from reading the date index in order, so leave it out when nothing set on
+        // the query needs it. A condition a listener or beforeQuery() callback adds can still need it, so if the
+        // lookup fails without the join, try again with it.
+        $skipsStructure = $query->query->wheres === [] && ! $query->usesStructureParams();
+
+        try {
+            $date = $lookUp($skipsStructure ? (clone $query)->withStructure(false) : $query);
+        } catch (QueryException $e) {
+            if (! $skipsStructure) {
+                throw $e;
+            }
+
+            $date = $lookUp($query);
+        }
 
         return DateTimeHelper::toDateTime($date) ?: null;
     }
