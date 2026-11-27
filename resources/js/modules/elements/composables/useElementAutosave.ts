@@ -2,6 +2,7 @@ import {actionClient, isHttpError} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {computed, readonly, ref, shallowRef} from 'vue';
+import {UI_REUSE_HEADER} from '@/modules/ui/renderer/uiTree';
 import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
@@ -164,7 +165,7 @@ export function useElementAutosave<T extends object>(
       const reuse = draftId.value !== null && options.reuseUi?.();
       const {data} = await dependencies.post(options.url, payload, {
         signal: request.controller.signal,
-        ...(reuse && {headers: {'X-Craft-Ui-Reuse': '1'}}),
+        ...(reuse && {headers: {[UI_REUSE_HEADER]: '1'}}),
       });
 
       // Canceled with the response already on its way: whatever the host has

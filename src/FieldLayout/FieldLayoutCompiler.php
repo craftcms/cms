@@ -174,6 +174,7 @@ class FieldLayoutCompiler
             refreshable: $context->refreshable,
             preview: $context->preview,
             reuseUnchanged: $context->reuseUnchanged,
+            requiredScope: $context->requiredScope,
         );
     }
 }

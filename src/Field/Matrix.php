@@ -632,17 +632,24 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'collapsed' => $entry->collapsed,
             ];
             $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
-            // The client already shows the fields of a saved block this request didn't post, so it gets a placeholder.
-            $uis[$uid] = $context->ui->reuseUnchanged && $entry->id && ! $entry->forceSave && $entry->errors()->isEmpty()
+            $scope = [...$context->resolvedPath(), 'entries', $uid];
+            // The client already shows the fields of a saved block this request didn't post, so it gets a placeholder,
+            // unless the scope the request asked for is that block or inside it.
+            $uis[$uid] = $context->ui->reuseUnchanged &&
+                $entry->id &&
+                ! $entry->forceSave &&
+                $entry->errors()->isEmpty() &&
+                array_slice($context->ui->requiredScope, 0, count($scope)) !== $scope
                 ? null
                 : app(FieldLayoutCompiler::class)->ui(
                     $entry->getFieldLayout(),
                     $entry,
                     new UiContext(
-                        namespace: [...$context->resolvedPath(), 'entries', $uid],
+                        namespace: $scope,
                         mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
                         preview: $context->ui->preview,
                         reuseUnchanged: $context->ui->reuseUnchanged,
+                        requiredScope: $context->ui->requiredScope,
                     ),
                 );
             $sortOrder[] = $uid;

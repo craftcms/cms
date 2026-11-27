@@ -1726,7 +1726,7 @@ describe('useElementEditor', () => {
     expect(editor.sidebarPayload.value!.nodes).toBe(sidebar.nodes);
   });
 
-  it('keeps the nested UIs an autosave to the draft didn’t change', async () => {
+  it('keeps the nested UIs an autosave or refresh didn’t change', async () => {
     const heading = (uid: string) => nestedBlockHeading(container!, uid)!;
     const editB = async (value: string) => {
       // The Controls render their inputs on a later tick than the UI.
@@ -1758,12 +1758,21 @@ describe('useElementEditor', () => {
     expect(
       postSpy.mock.calls.map((call) => call[2]?.headers?.['X-Craft-Ui-Reuse'])
     ).toEqual([undefined, '1', '1']);
-    expect(heading('a').value).toBe('A');
     // Block a's heading is what the draft holds, so it isn't posted again.
     expect(
       Object.keys(postSpy.mock.calls[2]?.[1]?.fields?.blocks?.entries ?? {})
     ).toEqual(['b']);
 
+    // The draft already holds every value, so the refresh posts none.
+    postSpy.mockResolvedValueOnce({
+      data: {ui: nestedBlocksPayload({a: 'A', b: 'B4'}, ['a', 'b'])},
+    });
+    await editor.refreshLayout({});
+    await nextTick();
+
+    expect(postSpy.mock.calls[3]?.[1]?.fields).toBeUndefined();
+    expect(postSpy.mock.calls[3]?.[2]?.headers?.['X-Craft-Ui-Reuse']).toBe('1');
+    expect([heading('a').value, heading('b').value]).toEqual(['A', 'B4']);
   });
 
   it('drops the autosaved screen once a visit brings a newer payload', async () => {

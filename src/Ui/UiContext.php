@@ -23,6 +23,9 @@ readonly class UiContext
      * @param  bool  $reuseUnchanged  Whether the client keeps the nested UIs it already shows, so a control can send
      *                                a placeholder for each nested UI this request didn't change instead of building
      *                                it again. See {@see NestedUiPayload::$reused}.
+     * @param  list<string>  $requiredScope  A scope the response has to show in full, such as the one a refresh asked
+     *                                       for. Controls always build the nested UIs on its path. Those inside it can
+     *                                       still be placeholders.
      */
     public function __construct(
         public string|array $namespace = [],
@@ -33,6 +36,7 @@ readonly class UiContext
         public bool $refreshable = false,
         public bool $preview = false,
         public bool $reuseUnchanged = false,
+        public array $requiredScope = [],
     ) {
         $this->mode = is_string($mode) ? ControlMode::from($mode) : $mode;
     }

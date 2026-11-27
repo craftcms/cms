@@ -9,6 +9,7 @@ import {
   defineEntryFieldLayoutUiHost,
   type EntryFieldLayoutUiHost,
 } from './entry-field-layout-ui-host';
+import {nestedBlocksPayload} from './nested-blocks.test-support';
 import type {UiPayload} from './types';
 import {
   NestedOwnerEditorKey,
@@ -527,4 +528,35 @@ it('submits Entry UI values and preserves refresh context', async () => {
   expect(appendBodyHtmlSpy).not.toHaveBeenCalledWith(
     '<script>older-root</script>'
   );
+});
+
+it('keeps the nested UIs a payload sends as reused while detached', async () => {
+  defineEntryFieldLayoutUiHost(createCpComponentRegistry());
+  const layout = (reused: string[] = []) =>
+    nestedBlocksPayload({a: 'a', b: 'b'}, reused);
+  const form = document.createElement('form');
+  const host = document.createElement(
+    'craft-entry-field-layout-ui'
+  ) as EntryFieldLayoutUiHost;
+  host.dataset.payload = JSON.stringify(layout());
+  form.append(host);
+  document.body.append(form);
+  await nextTick();
+
+  expect(host.uiReuseHeaders).toEqual({'X-Craft-Ui-Reuse': '1'});
+
+  // What the legacy editor hands the host after a save that left block a
+  // alone, while no renderer is mounted to fill it in.
+  host.remove();
+  host.payload = layout(['a']);
+
+  const [a, b] = host.payload!.nodes[0]!.control!.uis!;
+  expect([a!.reused, a!.nodes.length, b!.nodes.length]).toEqual([
+    undefined,
+    1,
+    1,
+  ]);
+  expect(host.payload!.values).toMatchObject({
+    fields: {blocks: {entries: {a: {fields: {heading: 'a'}}}}},
+  });
 });

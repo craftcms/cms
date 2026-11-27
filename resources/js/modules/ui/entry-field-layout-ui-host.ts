@@ -12,6 +12,7 @@ import {
 import UiRenderer from './UiRenderer.vue';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {isolateFieldUi, rebaseFieldUi, preserveFieldUis} from './html-field-ui';
+import {canReuseUis, UI_REUSE_HEADER, withReusedUis} from './renderer/uiTree';
 import {
   legacyElementEditor,
   prepareHtmlNestedOwner,
@@ -43,6 +44,8 @@ type ElementEditor = {
 
 export interface EntryFieldLayoutUiHost extends HTMLElement {
   payload: UiPayload | null;
+  /** What the legacy element editor sends to have this host fill in placeholders. */
+  readonly uiReuseHeaders: Record<string, string>;
   fieldValue: UiValue;
   requestMetadata: () => UiValues;
 }
@@ -140,6 +143,11 @@ export function defineEntryFieldLayoutUiHost(
             this.#fieldPath
           );
         }
+        // Fills in placeholders from the nested UIs this host shows, even while
+        // no renderer is mounted to do it.
+        if (payload && this.#renderedPayload) {
+          payload = withReusedUis(this.#renderedPayload, payload);
+        }
         if (payload && this.payload) preserveFieldUis(payload, this.payload);
         this.#payload.value = payload;
         this.#renderedPayload = payload;
@@ -165,6 +173,17 @@ export function defineEntryFieldLayoutUiHost(
         this.#payload.value = payload;
         this.#renderedPayload = payload;
         this.#rememberFieldUi();
+      }
+
+      /**
+       * The headers asking the server for placeholders in place of the nested
+       * UIs a request didn't change, which this host fills in. Empty when it
+       * doesn't show every nested UI.
+       */
+      get uiReuseHeaders(): Record<string, string> {
+        return canReuseUis(this.#renderedPayload)
+          ? {[UI_REUSE_HEADER]: '1'}
+          : {};
       }
 
       get payload(): UiPayload | null {
@@ -389,6 +408,7 @@ export function defineEntryFieldLayoutUiHost(
           'X-Craft-Ui-Scope': JSON.stringify(
             this.#fieldPath ? rootScope : scope
           ),
+          ...this.uiReuseHeaders,
         };
 
         const {data: response} = await actionClient.post(

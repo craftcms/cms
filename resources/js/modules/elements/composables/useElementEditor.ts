@@ -45,7 +45,11 @@ import {useElementActivity} from '@/modules/elements/composables/useElementActiv
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
-import {sharePayload} from '@/modules/ui/renderer/uiTree';
+import {
+  canReuseUis,
+  sharePayload,
+  UI_REUSE_HEADER,
+} from '@/modules/ui/renderer/uiTree';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
 import {showError, showNotice, showSuccess} from '@/modules/messages/messages';
@@ -514,10 +518,7 @@ export function useElementEditor({
     isProvisional: props.isProvisionalDraft,
     enabled: () =>
       props.canAutosave && !props.readOnly && !releaseDraftLocked.value,
-    // A tab still deferred hasn't shown its nested UIs yet.
-    reuseUi: () =>
-      !!uiPayload.value &&
-      !uiPayload.value.nodes.some((node) => node.props.deferred),
+    reuseUi: () => canReuseUis(uiPayload.value),
     transform: (data) =>
       requestValues(
         preparingOwnerGroups.size
@@ -816,12 +817,15 @@ export function useElementEditor({
   ): Promise<UiValues | undefined> {
     const generation = ++refreshGeneration;
     const rootScope = uiPayload.value?.scope ?? [];
-    const currentValues = renderer.value?.currentValues() ?? values.value;
+    // Posts only what differs from what the server holds, as autosave does, so
+    // the server can send placeholders for the nested UIs the refresh doesn't
+    // change.
+    const changedValues = renderer.value?.mutation() ?? values.value;
     const {data: response} = await actionClient.post(
       UpdateFieldLayoutController.url(),
       {
         ...saveData?.(),
-        ...currentValues,
+        ...changedValues,
         ...contextParams(),
         elementType: props.elementType,
         elementId: props.elementId,
@@ -833,6 +837,7 @@ export function useElementEditor({
         headers: {
           'X-Craft-Ui-Root-Scope': JSON.stringify(rootScope),
           'X-Craft-Ui-Scope': JSON.stringify(scope),
+          ...(canReuseUis(uiPayload.value) && {[UI_REUSE_HEADER]: '1'}),
         },
       }
     );

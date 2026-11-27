@@ -1575,7 +1575,12 @@ Craft.ElementEditor = Garnish.Base.extend(
           'elements/save-draft',
           {
             signal: this.abortController.signal,
-            headers: this._saveHeaders,
+            // Creating the draft gives its nested elements new owners, which
+            // every nested UI shows, so that request asks for all of them.
+            headers: {
+              ...this._saveHeaders,
+              ...(this.settings.draftId ? this._uiReuseHeaders : {}),
+            },
             data: params.join('&'),
           }
         );
@@ -1852,7 +1857,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           'elements/update-field-layout',
           {
             signal: this.abortController.signal,
-            headers: this._saveHeaders,
+            headers: {...this._saveHeaders, ...this._uiReuseHeaders},
             data: preparedData,
           }
         );
@@ -1942,6 +1947,14 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       return headers;
+    },
+
+    /**
+     * Asks the server for placeholders in place of the nested UIs a request
+     * didn't change, which the UI host fills in from the ones it shows.
+     */
+    get _uiReuseHeaders() {
+      return this.getUiHost()?.uiReuseHeaders ?? {};
     },
 
     getDraftElementId(elementId) {

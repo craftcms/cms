@@ -129,6 +129,21 @@ export function sharePayload<T extends UiPayload | null | undefined>(
 }
 
 /**
+ * The request header asking the server for placeholders in place of the
+ * nested UIs the request didn't change. Send it only when the host fills the
+ * response in from a payload that {@link canReuseUis} accepts.
+ */
+export const UI_REUSE_HEADER = 'X-Craft-Ui-Reuse';
+
+/**
+ * Whether `payload` shows every nested UI a placeholder could stand in for.
+ * A tab that's still deferred shows none of its own.
+ */
+export function canReuseUis(payload: UiPayload | null | undefined): boolean {
+  return !!payload && !payload.nodes.some((node) => node.props.deferred);
+}
+
+/**
  * `next`, with each `reused` placeholder replaced by the nested UI at the same
  * scope in `previous`, the payload the client shows, and that UI's values
  * copied over. A server sends placeholders only to a client that asks for

@@ -13,6 +13,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 
@@ -342,3 +343,29 @@ it('leaves out the nested UIs of blocks a save-draft didn’t change when the cl
         ->and($uis[$newUid])->not->toHaveKey('reused')
         ->and($values[$newUid]['fields']['innerText'])->toBe('New');
 })->with(['with the reuse header' => true, 'without it' => false]);
+
+it('builds the block a refresh asks for even when the request didn’t change it', function () {
+    actingAs(User::findOne());
+
+    [$entry, $blockUids] = matrixIdentityFixture();
+
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true);
+    $scope = ['fields', 'matrixField', 'entries', $blockUids[0]];
+
+    // Autosave already saved the first block, so the refresh posts nothing for it.
+    $response = withHeaders([
+        'X-Craft-Ui-Reuse' => '1',
+        'X-Craft-Ui-Scope' => Json::encode($scope),
+    ])->postJson(cp_url('actions/elements/update-field-layout'), [
+        'elementId' => $entry->id,
+        'draftId' => $draft->draftId,
+        'siteId' => $entry->siteId,
+        'provisional' => 1,
+        'fields' => ['matrixField' => ['entries' => [], 'sortOrder' => $blockUids]],
+    ])->assertOk();
+
+    expect($response->json('ui.scope'))->toBe($scope)
+        ->and(Json::encode($response->json('ui.nodes')))->toContain('innerText')
+        ->and($response->json("ui.values.fields.matrixField.entries.{$blockUids[0]}.fields.innerText"))->toBe('Canonical 1');
+});
