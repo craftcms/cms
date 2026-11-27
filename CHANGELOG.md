@@ -8,6 +8,7 @@
 - Brightened the live, pending, and expired status colors. ([#20964](https://github.com/craftcms/cms/pull/20964))
 - Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))
 - GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
+- OAuth access tokens now expire after one hour, and refresh tokens after 30 days, rather than one year. ([#21165](https://github.com/craftcms/cms/pull/21165))
 - Improved the performance of edit pages with many fields or nested entries. ([#21077](https://github.com/craftcms/cms/pull/21077))
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - Improved the responsiveness of large control panel pages, which no longer restyle every element whenever content is added or a class or inline style changes. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21150](https://github.com/craftcms/cms/issues/21150), [#21125](https://github.com/craftcms/cms/pull/21125))
@@ -142,6 +143,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where `or` conditions passed to element queries’ legacy `andWhere()` method could match elements that the query’s other params excluded. ([#21147](https://github.com/craftcms/cms/issues/21147), [#21149](https://github.com/craftcms/cms/pull/21149))
 - Fixed errors that occurred when calling element queries’ legacy `filterWhere()`, `andFilterWhere()`, and `orFilterWhere()` methods. ([#21147](https://github.com/craftcms/cms/issues/21147), [#21149](https://github.com/craftcms/cms/pull/21149))
 - Fixed a bug where required Dropdown fields without a default option showed their first option when empty, but saved no value. ([#21152](https://github.com/craftcms/cms/issues/21152), [#21154](https://github.com/craftcms/cms/pull/21154))
+- Fixed a bug where POST requests with a `token` body param could return a 400 error. ([#21165](https://github.com/craftcms/cms/pull/21165))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
