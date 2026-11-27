@@ -1525,7 +1525,7 @@ return [
     'Retry all failed jobs' => 'נסה מחדש את כל העבודות שכשלו',
     'Retry' => 'נסה שוב',
     'Retrying all failed jobs.' => 'מנסה מחדש את כל העבודות שכשלו.',
-    'Revert content from this revision' => 'שחזר את התוכן מגרסה שמורה זו',
+    'Revert content from this revision' => 'שחזור התוכן מגרסה שמורה זו',
     'Revert the update' => 'הפוך את העדכון',
     'Revert update' => 'אחזר עדכון',
     'Reverted content from revision {num}.' => 'התוכן שוחזר מהגרסה השמורה {num}.',
