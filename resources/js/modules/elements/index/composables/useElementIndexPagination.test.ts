@@ -24,6 +24,26 @@ describe('useElementIndexPagination', () => {
   beforeEach(() => vi.stubGlobal('Craft', {}));
   afterEach(() => vi.unstubAllGlobals());
 
+  it('shows a new page size before the rows arrive, and requests it once', () => {
+    const indexVisitor = visitor({source: 'section:news'});
+    const {paginationState, paginationConfig} = useElementIndexPagination(
+      {pagination},
+      ref<ViewState>({showHeaderColumn: true, static: false}),
+      indexVisitor,
+      () => 'section:news'
+    );
+
+    paginationConfig.onPaginationChange({pageIndex: 0, pageSize: 100});
+    // The page size select reports the same choice again on `change`.
+    paginationConfig.onPaginationChange({pageIndex: 0, pageSize: 100});
+
+    expect(paginationState.value.pageSize).toBe(100);
+    expect(indexVisitor.visit).toHaveBeenCalledOnce();
+    expect(indexVisitor.visit.mock.calls[0]?.[0]).toMatchObject({
+      per_page: 100,
+    });
+  });
+
   it('restores the page size chosen for a source on its next load', () => {
     const viewState = ref<ViewState>({showHeaderColumn: true, static: false});
     const first = useElementIndexPagination(

@@ -177,6 +177,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where switching tabs in a slideout could switch the visible panel of another slideout behind it. ([#21153](https://github.com/craftcms/cms/issues/21153), [#21179](https://github.com/craftcms/cms/pull/21179))
 - Fixed a bug where PHPStan reported `generics.interfaceConflict` errors for element classes with an `@extends` tag, such as Eloquent elements, because `ElementInterface` and `Component` disagreed on the type of their array-access keys. ([#21135](https://github.com/craftcms/cms/pull/21135))
 - Fixed a bug where closing a Matrix field’s settings slideout always warned about unsaved changes. ([#21158](https://github.com/craftcms/cms/issues/21158), [#21182](https://github.com/craftcms/cms/pull/21182))
+- Fixed a bug where choosing a new page size on element indexes could switch back to the previous one. ([#21183](https://github.com/craftcms/cms/issues/21183))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
