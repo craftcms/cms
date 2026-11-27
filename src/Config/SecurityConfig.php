@@ -19,7 +19,7 @@ class SecurityConfig extends BaseConfig
      * The Laravel authentication guard Craft should use.
      *
      * Set this to `craft` to use Craft’s dedicated guard and user provider. If this is `null`, Craft will continue using Laravel’s default guard.
-     * Configure <config5:authPasswordBroker> as well if Craft should use a separate password broker.
+     * Configure `authPasswordBroker` as well if Craft should use a separate password broker.
      *
      * @see getAuthGuard()
      */
@@ -121,7 +121,7 @@ class SecurityConfig extends BaseConfig
     /**
      * The amount of time content preview tokens can be used before expiring.
      *
-     * Defaults to <config5:defaultTokenDuration> value.
+     * Defaults to the `defaultTokenDuration` value.
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      */

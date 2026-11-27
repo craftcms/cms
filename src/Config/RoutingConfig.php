@@ -39,7 +39,7 @@ class RoutingConfig extends BaseConfig
      * It will be determined automatically if left blank.
      *
      * ::: tip
-     * The base control panel URL should **not** include the [control panel trigger word](config5:cpTrigger) (e.g. `/admin`).
+     * The base control panel URL should **not** include the control panel trigger word (`cpTrigger`) (e.g. `/admin`).
      * :::
      */
     public ?string $baseCpUrl = null;
@@ -56,7 +56,7 @@ class RoutingConfig extends BaseConfig
      * define('CRAFT_CP', true);
      * ```
      *
-     * Alternatively, you can set the <config5:baseCpUrl> config setting, but then you will run the risk of losing access to portions of your
+     * Alternatively, you can set the `baseCpUrl` config setting, but then you will run the risk of losing access to portions of your
      * control panel due to URI conflicts with actual folders/files in your main web root.
      *
      * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control panel.)
@@ -65,7 +65,7 @@ class RoutingConfig extends BaseConfig
 
     /**
      * The URI Craft should redirect to when user token validation fails. User tokens are used for
-     * email verification and password resets. If `null`, <config5:loginPath> will be used by default.
+     * email verification and password resets. If `null`, `loginPath` will be used by default.
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
@@ -124,7 +124,7 @@ class RoutingConfig extends BaseConfig
     /**
      * The path users should be redirected to after logging in from the front-end site.
      *
-     * This setting will also come into effect if the user visits the login page (as specified by the <config5:loginPath> config setting) when
+     * This setting will also come into effect if the user visits the login page (as specified by the `loginPath` config setting) when
      * they are already logged in.
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
@@ -148,7 +148,7 @@ class RoutingConfig extends BaseConfig
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: tip
-     * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
+     * You might also want to set `invalidUserTokenPath` in case a user clicks on an expired password reset link.
      * :::
      *
      * @see getSetPasswordPath()
@@ -163,7 +163,7 @@ class RoutingConfig extends BaseConfig
      * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
      *
      * ::: tip
-     * You’ll also need to set [setPasswordPath](config5:setPasswordPath), which determines the URI and template path for the Set Password form
+     * You’ll also need to set `setPasswordPath`, which determines the URI and template path for the Set Password form
      * where the user resets their password after following the link in the Password Reset email.
      * :::
      *

@@ -746,11 +746,11 @@ class GeneralConfig extends BaseConfig
      * - Front-end routing will skip checks for element and template requests.
      * - Front-end responses will be JSON-formatted rather than HTML by default.
      * - Twig will be configured to escape unsafe strings for JavaScript/JSON rather than HTML by default for front-end requests.
-     * - The <config5:loginPath>, <config5:logoutPath>, <config5:setPasswordPath>, and <config5:verifyEmailPath> settings will be ignored.
+     * - The `routing.loginPath`, `routing.logoutPath`, `routing.setPasswordPath`, and `routing.verifyEmailPath` settings will be ignored.
      *
      * ::: tip
      * With Headless Mode enabled, users may only set passwords and verify email addresses via the control panel. Be sure to grant “Access the control
-     * panel” permission to all content editors and administrators. You’ll also need to set the <config5:baseCpUrl> config setting if the control
+     * panel” permission to all content editors and administrators. You’ll also need to set the `routing.baseCpUrl` config setting if the control
      * panel is located on a different domain than your front end.
      * :::
      *
@@ -944,7 +944,7 @@ class GeneralConfig extends BaseConfig
      * - `addTrailingSlashesToUrls` – Whether auto-generated URLs should have trailing slashes. (Default is `false`.)
      * - `baseCpUrl` – The base URL Craft should use when generating control panel URLs. (Default is `null`.)
      * - `cpTrigger` – The URI segment Craft should look for when determining if the current request should route to the control panel rather than the front-end website. (Default is `'admin'`.)
-     * - `invalidUserTokenPath` – The URI Craft should redirect to when user token validation fails. User tokens are used for email verification and password resets. If `null`, <config5:loginPath> will be used by default. (Default is `null`.)
+     * - `invalidUserTokenPath` – The URI Craft should redirect to when user token validation fails. User tokens are used for email verification and password resets. If `null`, `routing.loginPath` will be used by default. (Default is `null`.)
      * - `loginPath` – The URI Craft should use for user login on the front end. (Default is `false`.)
      * - `logoutPath` – The URI Craft should use for user logout on the front end. (Default is `'logout'`.)
      * - `pageTrigger` – The query string param name Craft should use for paginated requests. (Default is `'page'`.)
@@ -1981,11 +1981,11 @@ class GeneralConfig extends BaseConfig
      * - Front-end routing will skip checks for element and template requests.
      * - Front-end responses will be JSON-formatted rather than HTML by default.
      * - Twig will be configured to escape unsafe strings for JavaScript/JSON rather than HTML by default for front-end requests.
-     * - The <config5:loginPath>, <config5:logoutPath>, <config5:setPasswordPath>, and <config5:verifyEmailPath> settings will be ignored.
+     * - The `routing.loginPath`, `routing.logoutPath`, `routing.setPasswordPath`, and `routing.verifyEmailPath` settings will be ignored.
      *
      * ::: tip
      * With Headless Mode enabled, users may only set passwords and verify email addresses via the control panel. Be sure to grant “Access the control
-     * panel” permission to all content editors and administrators. You’ll also need to set the <config5:baseCpUrl> config setting if the control
+     * panel” permission to all content editors and administrators. You’ll also need to set the `routing.baseCpUrl` config setting if the control
      * panel is located on a different domain than your front end.
      * :::
      *
