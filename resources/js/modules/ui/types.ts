@@ -146,6 +146,13 @@ export type NestedUiPayload = {
   scope: string[];
   refreshable: boolean;
   nodes: UiNodePayload[];
+  /**
+   * A placeholder for a nested UI the request didn't change. The server sends
+   * one, with no nodes or values, only when the client asks for placeholders.
+   *
+   * @see withReusedUis
+   */
+  reused?: boolean;
 };
 
 export type UiChangeKind = 'discrete' | 'typing';

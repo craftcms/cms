@@ -202,7 +202,13 @@ class UiResolver
         );
 
         $uis = array_map(function (array $definition) use ($nestedContext, $path, $deltaGroup, $mode, $type, $component, $identity): NestedUiPayload {
-            if (! isset($definition['scope'], $definition['ui'], $definition['refreshable']) || ! $definition['ui'] instanceof Ui || ! is_bool($definition['refreshable'])) {
+            $reused = ($definition['reused'] ?? false) === true;
+
+            if (
+                ! isset($definition['scope'], $definition['refreshable']) ||
+                ! is_bool($definition['refreshable']) ||
+                (! $reused && ! ($definition['ui'] ?? null) instanceof Ui)
+            ) {
                 throw new InvalidArgumentException("Nested UI definitions for Control [{$type}] with component [{$component}] at [{$identity}] are invalid.");
             }
 
@@ -210,6 +216,15 @@ class UiResolver
                 $definition['scope'],
                 "Nested UI definition for Control [{$type}] with component [{$component}] at [{$identity}]",
             )];
+
+            if ($reused) {
+                return new NestedUiPayload(
+                    scope: $scope,
+                    refreshable: $definition['refreshable'],
+                    nodes: [],
+                    reused: true,
+                );
+            }
 
             return new NestedUiPayload(
                 scope: $scope,

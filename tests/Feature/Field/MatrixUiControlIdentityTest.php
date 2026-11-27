@@ -20,6 +20,7 @@ use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
+use function Pest\Laravel\withHeaders;
 
 function matrixIdentityFixture(bool $innerTextRequired = false): array
 {
@@ -189,21 +190,26 @@ it('returns a save-draft UI that still identifies the posted Matrix blocks', fun
 
 /**
  * @param  list<array<string, mixed>>  $nodes
+ * @return list<array<string, mixed>>
+ */
+function matrixNestedUis(array $nodes): array
+{
+    $uis = [];
+
+    foreach ($nodes as $node) {
+        $uis = [...$uis, ...$node['control']['uis'] ?? [], ...matrixNestedUis($node['children'] ?? [])];
+    }
+
+    return $uis;
+}
+
+/**
+ * @param  list<array<string, mixed>>  $nodes
  * @return list<list<string>>
  */
 function matrixNestedUiScopes(array $nodes): array
 {
-    $scopes = [];
-
-    foreach ($nodes as $node) {
-        foreach ($node['control']['uis'] ?? [] as $ui) {
-            $scopes[] = $ui['scope'];
-        }
-
-        $scopes = [...$scopes, ...matrixNestedUiScopes($node['children'] ?? [])];
-    }
-
-    return $scopes;
+    return array_column(matrixNestedUis($nodes), 'scope');
 }
 
 it('keeps Matrix block identities stable across repeated provisional draft saves', function () {
@@ -292,3 +298,47 @@ it('keys a failed save’s Matrix entry errors by the controls of the blocks tha
         'matrixField',
     ]);
 });
+
+it('leaves out the nested UIs of blocks a save-draft didn’t change when the client keeps them', function (bool $reuse) {
+    actingAs(User::findOne());
+
+    [$entry, $blockUids, $matrixEntryType] = matrixIdentityFixture();
+
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true);
+    $newUid = Str::uuid()->toString();
+
+    $response = withHeaders($reuse ? ['X-Craft-Ui-Reuse' => '1'] : [])->postJson(cp_url('actions/elements/save-draft'), [
+        'elementId' => $entry->id,
+        'draftId' => $draft->draftId,
+        'siteId' => $entry->siteId,
+        'provisional' => 1,
+        'fields' => [
+            'matrixField' => [
+                'entries' => [
+                    "uid:$blockUids[1]" => ['fields' => ['innerText' => 'Draft 2']],
+                    "uid:$newUid" => ['type' => $matrixEntryType->handle, 'enabled' => true, 'fields' => ['innerText' => 'New']],
+                ],
+                'sortOrder' => [...$blockUids, $newUid],
+            ],
+        ],
+    ])->assertOk();
+
+    $uis = [];
+
+    foreach (matrixNestedUis($response->json('ui.nodes')) as $ui) {
+        $uis[array_last($ui['scope'])] = $ui;
+    }
+
+    $values = $response->json('ui.values.fields.matrixField.entries');
+
+    expect(array_keys($uis))->toBe([...$blockUids, $newUid])
+        ->and($uis[$blockUids[0]]['reused'] ?? false)->toBe($reuse)
+        ->and($uis[$blockUids[0]]['nodes'] === [])->toBe($reuse)
+        ->and(isset($values[$blockUids[0]]['fields']))->toBe(! $reuse)
+        ->and($values[$blockUids[0]]['type'])->toBe('matrixBlock')
+        ->and($uis[$blockUids[1]])->not->toHaveKey('reused')
+        ->and($values[$blockUids[1]]['fields']['innerText'])->toBe('Draft 2')
+        ->and($uis[$newUid])->not->toHaveKey('reused')
+        ->and($values[$newUid]['fields']['innerText'])->toBe('New');
+})->with(['with the reuse header' => true, 'without it' => false]);

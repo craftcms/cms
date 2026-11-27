@@ -47,6 +47,7 @@
     readOnlyNodes,
     shareEqual,
     sharePayload,
+    withReusedUis,
     withControl,
     withNestedUi,
     withUis,
@@ -293,9 +294,13 @@
   }
 
   function reconcile(
-    refreshed: UiPayload,
+    received: UiPayload,
     scope: string[] = payload.value.scope
   ): void {
+    // Fills in placeholders before anything reads the payload, so adopting it
+    // keeps the values the server left out with them.
+    const refreshed = withReusedUis(payload.value, received);
+
     if (!pathsMatch(refreshed.scope, scope)) {
       throw new Error(
         `Refreshed UI scope [${refreshed.scope.join('.')}] does not match [${scope.join('.')}].`

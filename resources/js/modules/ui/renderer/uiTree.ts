@@ -1,5 +1,5 @@
 import {toRaw} from 'vue';
-import {isRecord, pathsMatch, visitControls} from '../runtime';
+import {isRecord, pathsMatch, valueAt, visitControls} from '../runtime';
 import type {
   NestedUiPayload,
   UiControlPayload,
@@ -94,6 +94,7 @@ export function shareEqual<T extends UiValue>(
  * values whenever a new payload arrives, even when only the values changed.
  * Gives back `previous` when nothing differs, so a host recomputing its
  * payload from the same source doesn't hand its renderer a new one.
+ * {@link withReusedUis} first fills in the placeholders the server sent.
  */
 export function sharePayload<T extends UiPayload | null | undefined>(
   previous: UiPayload | null | undefined,
@@ -103,13 +104,13 @@ export function sharePayload<T extends UiPayload | null | undefined>(
     return next;
   }
 
-  // SAFETY: UI payloads are JSON, so each of their parts is a UiValue.
-  const raw = toRaw(next) as unknown as UiValues;
-  const prev = toRaw(previous) as unknown as UiValues | null | undefined;
-
-  if (!prev) {
-    return raw as unknown as T;
+  if (!previous) {
+    return toRaw(next);
   }
+
+  // SAFETY: UI payloads are JSON, so each of their parts is a UiValue.
+  const raw = withReusedUis(previous, toRaw(next)) as unknown as UiValues;
+  const prev = toRaw(previous) as unknown as UiValues;
 
   const shared = Object.fromEntries(
     Object.entries(raw).map(([key, value]) => [
@@ -125,6 +126,95 @@ export function sharePayload<T extends UiPayload | null | undefined>(
   // SAFETY: `shared` has `next`'s keys, each holding `next`'s own value or one
   // deeply equal to it.
   return (unchanged ? previous : shared) as T;
+}
+
+/**
+ * `next`, with each `reused` placeholder replaced by the nested UI at the same
+ * scope in `previous`, the payload the client shows, and that UI's values
+ * copied over. A server sends placeholders only to a client that asks for
+ * them, so it builds and sends only the nested UIs a request changed.
+ *
+ * A placeholder stays when `previous` has no UI at its scope. That only
+ * happens when a host asks for placeholders without showing the whole payload.
+ */
+export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
+  let values = next.values;
+
+  const fillUis = (uis: NestedUiPayload[]): NestedUiPayload[] => {
+    const filled = uis.map((ui) => {
+      if (!ui.reused) {
+        const nodes = fillNodes(ui.nodes);
+
+        return nodes === ui.nodes ? ui : {...ui, nodes};
+      }
+
+      const shown = findNestedUi(toRaw(previous).nodes, ui.scope);
+
+      if (!shown || shown.reused) {
+        return ui;
+      }
+
+      values = withMissingValues(
+        values,
+        ui.scope,
+        valueAt(toRaw(previous).values, ui.scope)
+      );
+
+      return shown;
+    });
+
+    return filled.every((ui, index) => ui === uis[index]) ? uis : filled;
+  };
+
+  const fillNodes = (nodes: UiNodePayload[]): UiNodePayload[] => {
+    const filled = nodes.map((node) => {
+      const uis = node.control?.uis && fillUis(node.control.uis);
+      const children = node.children && fillNodes(node.children);
+
+      if (uis === node.control?.uis && children === node.children) {
+        return node;
+      }
+
+      return {
+        ...node,
+        ...(node.control && {control: {...node.control, uis}}),
+        ...(children && {children}),
+      };
+    });
+
+    return filled.every((node, index) => node === nodes[index])
+      ? nodes
+      : filled;
+  };
+
+  const nodes = fillNodes(next.nodes);
+
+  return nodes === next.nodes ? next : {...next, nodes, values};
+}
+
+/**
+ * `values`, with the keys `source` has at `path` and `values` lacks there
+ * added. Copies only the records along `path`.
+ */
+function withMissingValues(
+  values: UiValues,
+  path: string[],
+  source: UiValue
+): UiValues {
+  if (!isRecord(source)) {
+    return values;
+  }
+
+  const [segment, ...rest] = path;
+  const current = values[segment!];
+  const target = isRecord(current) ? current : {};
+
+  return {
+    ...values,
+    [segment!]: rest.length
+      ? withMissingValues(target, rest, source)
+      : {...source, ...target},
+  };
 }
 
 export function isWithin(path: string[], scope: string[]): boolean {

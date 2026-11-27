@@ -41,6 +41,11 @@ import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/t
 import Cp from '@/bootstrap/cp';
 import UiRenderer from './UiRenderer.vue';
 import {registerUiComponents} from './register';
+import {valueAt} from './runtime';
+import {
+  nestedBlockHeading,
+  nestedBlocksPayload,
+} from './nested-blocks.test-support';
 import type {UiValueChangeDetail} from './ui-values';
 import type {UiValueSnapshot} from './valueAccess';
 import type {
@@ -1004,6 +1009,30 @@ describe('UiRenderer', () => {
       },
       'typing'
     );
+  });
+
+  it('keeps the nested UIs a new payload sends as reused', async () => {
+    const path = ['fields', 'blocks'];
+
+    app.unmount();
+    await mount(nestedBlocksPayload({a: 'Heading a', b: 'Heading b'}));
+
+    // What a server returns once block b is saved, leaving block a out.
+    currentPayload.value = nestedBlocksPayload({a: 'Heading a', b: 'Saved b'}, [
+      'a',
+    ]);
+    await nextTick();
+
+    expect(nestedBlockHeading(container, 'a')?.value).toBe('Heading a');
+    expect(
+      valueAt(renderer.currentValues(), [
+        ...path,
+        'entries',
+        'a',
+        'fields',
+        'heading',
+      ])
+    ).toBe('Heading a');
   });
 
   it('submits all scoped settings when one setting in a shared delta group changes', async () => {

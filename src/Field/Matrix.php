@@ -632,15 +632,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'collapsed' => $entry->collapsed,
             ];
             $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
-            $uis[$uid] = app(FieldLayoutCompiler::class)->ui(
-                $entry->getFieldLayout(),
-                $entry,
-                new UiContext(
-                    namespace: [...$context->resolvedPath(), 'entries', $uid],
-                    mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
-                    preview: $context->ui->preview,
-                ),
-            );
+            // The client already shows the fields of a saved block this request didn't post, so it gets a placeholder.
+            $uis[$uid] = $context->ui->reuseUnchanged && $entry->id && ! $entry->forceSave && $entry->errors()->isEmpty()
+                ? null
+                : app(FieldLayoutCompiler::class)->ui(
+                    $entry->getFieldLayout(),
+                    $entry,
+                    new UiContext(
+                        namespace: [...$context->resolvedPath(), 'entries', $uid],
+                        mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
+                        preview: $context->ui->preview,
+                        reuseUnchanged: $context->ui->reuseUnchanged,
+                    ),
+                );
             $sortOrder[] = $uid;
         }
 
@@ -2129,6 +2133,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 $entry->setPrimaryOwner($element);
                 $entry->setOwner($element);
                 $entry->siteId = $element->siteId;
+                // Keeps the entry flagged once the save gives it an ID, so `uiControl()` builds its UI for the response.
+                $entry->forceSave = true;
 
                 // Use the provided UUID, so the block can persist across future autosaves
                 if ($uids) {

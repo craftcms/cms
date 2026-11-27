@@ -27,6 +27,10 @@ import {SlideoutControllerKey} from '@/common/slideouts/types';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import UiRenderer from '@/modules/ui/UiRenderer.vue';
 import {registerUiComponents} from '@/modules/ui/register';
+import {
+  nestedBlockHeading,
+  nestedBlocksPayload,
+} from '@/modules/ui/nested-blocks.test-support';
 import type {UiPayload} from '@/modules/ui/types';
 import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
@@ -1720,6 +1724,46 @@ describe('useElementEditor', () => {
 
     expect(editor.uiPayload.value!.nodes).toBe(layout.nodes);
     expect(editor.sidebarPayload.value!.nodes).toBe(sidebar.nodes);
+  });
+
+  it('keeps the nested UIs an autosave to the draft didn’t change', async () => {
+    const heading = (uid: string) => nestedBlockHeading(container!, uid)!;
+    const editB = async (value: string) => {
+      // The Controls render their inputs on a later tick than the UI.
+      await vi.waitFor(() => expect(heading('b')).not.toBeNull());
+      heading('b').value = value;
+      heading('b').dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      await editor.autosave.save();
+      await nextTick();
+    };
+    const {editor} = mount(
+      payload({canAutosave: true, ui: nestedBlocksPayload({a: 'A', b: 'B'})})
+    );
+
+    // The save creating the draft gets every nested UI.
+    postSpy.mockResolvedValueOnce({
+      data: {draftId: 7, ui: nestedBlocksPayload({a: 'A', b: 'B2'})},
+    });
+    await editB('B2');
+    postSpy.mockResolvedValueOnce({
+      data: {draftId: 7, ui: nestedBlocksPayload({a: 'A', b: 'B3'}, ['a'])},
+    });
+    await editB('B3');
+    postSpy.mockResolvedValueOnce({
+      data: {draftId: 7, ui: nestedBlocksPayload({a: 'A', b: 'B4'}, ['a'])},
+    });
+    await editB('B4');
+
+    expect(
+      postSpy.mock.calls.map((call) => call[2]?.headers?.['X-Craft-Ui-Reuse'])
+    ).toEqual([undefined, '1', '1']);
+    expect(heading('a').value).toBe('A');
+    // Block a's heading is what the draft holds, so it isn't posted again.
+    expect(
+      Object.keys(postSpy.mock.calls[2]?.[1]?.fields?.blocks?.entries ?? {})
+    ).toEqual(['b']);
+
   });
 
   it('drops the autosaved screen once a visit brings a newer payload', async () => {

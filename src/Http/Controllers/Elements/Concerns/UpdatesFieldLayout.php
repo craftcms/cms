@@ -27,6 +27,9 @@ trait UpdatesFieldLayout
      * Split out so a caller that needs the layout for something else as well —
      * autosave rebuilds the whole edit screen payload around it — can compile
      * it once and hand the same payload to {@see fieldLayoutData()}.
+     *
+     * A client that sends `X-Craft-Ui-Reuse` keeps the nested UIs it already shows, so those the request didn't
+     * change are sent as placeholders. See {@see UiContext::$reuseUnchanged}.
      */
     protected function compileFieldLayout(ElementInterface $element): UiPayload
     {
@@ -38,6 +41,7 @@ trait UpdatesFieldLayout
                 errors: $element->errors()->getMessages(),
                 mode: Gate::check('save', $element) ? ControlMode::Editable : ControlMode::ReadOnly,
                 refreshable: true,
+                reuseUnchanged: request()->hasHeader('X-Craft-Ui-Reuse'),
             ),
         );
     }

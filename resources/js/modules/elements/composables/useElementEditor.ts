@@ -514,6 +514,10 @@ export function useElementEditor({
     isProvisional: props.isProvisionalDraft,
     enabled: () =>
       props.canAutosave && !props.readOnly && !releaseDraftLocked.value,
+    // A tab still deferred hasn't shown its nested UIs yet.
+    reuseUi: () =>
+      !!uiPayload.value &&
+      !uiPayload.value.nodes.some((node) => node.props.deferred),
     transform: (data) =>
       requestValues(
         preparingOwnerGroups.size
@@ -640,7 +644,9 @@ export function useElementEditor({
       // it was on load would look unchanged, and never be saved.
       if (form) {
         savedUi.value = form;
-        rebase(form.values);
+        // Rebases on the payload rather than the response, since only the
+        // payload has the values of the nested UIs the save left as placeholders.
+        rebase(uiPayload.value?.values ?? form.values);
       }
 
       if (screen) {
