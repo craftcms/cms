@@ -408,3 +408,31 @@ it('renders the blocks a Matrix field shows once its entries are validated', fun
 
     expect($ui->values['fields']['shapeMatrix']['sortOrder'])->toBe([$uid]);
 });
+
+it('renders the blocks of each Matrix field that shares a handle with another', function () {
+    [$first, $blockType] = matrixShapeFixture(['viewMode' => Matrix::VIEW_MODE_BLOCKS]);
+    $other = Field::factory()->create([
+        'handle' => 'otherShapeMatrix',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+    ]);
+    $layout = FieldLayout::factory()
+        ->withContentTab([new CustomField(config: ['fieldUid' => $other->uid, 'handle' => 'shapeMatrix'])])
+        ->create();
+    $second = entryQuery()->id(Entry::factory()->withFieldLayout($layout)->create()->id)->one();
+    $uids = [];
+
+    foreach ([$first, $second] as $owner) {
+        $uids[$owner->id] = Str::uuid()->toString();
+        saveMatrixShape($owner, [
+            'entries' => ["uid:{$uids[$owner->id]}" => ['type' => $blockType->handle, 'title' => 'Block']],
+            'sortOrder' => ["uid:{$uids[$owner->id]}"],
+        ]);
+    }
+
+    foreach (entryQuery()->id(array_keys($uids))->all() as $owner) {
+        $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
+
+        expect($ui->values['fields']['shapeMatrix']['sortOrder'])->toBe([$uids[$owner->id]]);
+    }
+});

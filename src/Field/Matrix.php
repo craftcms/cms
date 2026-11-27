@@ -735,8 +735,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ->canonicalsOnly()
                     ->status(null)
                     ->limit(null)
-                    // Its own alias, since validation eager-loads this field with other criteria.
-                    ->eagerly("matrix-ui:$this->handle")
+                    // Its own alias, since validation eager-loads this field with other criteria, and other fields
+                    // can share its handle.
+                    ->eagerly("matrix-ui:$this->id:$this->handle")
                     ->all(),
             default => [],
         });
@@ -1673,7 +1674,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->savedDraftsOnly()
                 ->status(null)
                 ->limit(null)
-                ->eagerly("matrix-validation:$this->handle")
+                ->eagerly("matrix-validation:$this->id:$this->handle")
                 ->all();
 
             // A draft only checks the entries this save writes, as `NestedElementManager::saveNestedElements()` decides
