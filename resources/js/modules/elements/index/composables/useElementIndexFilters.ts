@@ -17,6 +17,8 @@ export interface UseElementIndexFiltersOptions {
   busy?: MaybeRefOrGetter<boolean>;
   preferredSort?: MaybeRefOrGetter<Array<SortItem>>;
   params?: MaybeRefOrGetter<IndexQueryParams>;
+  /** The props a filter change reloads. Without it, the visit reloads every prop. */
+  only?: MaybeRefOrGetter<Array<string> | undefined>;
 }
 
 export interface ElementIndexFilters {
@@ -96,6 +98,7 @@ export function useElementIndexFilters(
     visitor.merge(
       {...next, ...(sort !== undefined ? {sort} : {})},
       {
+        only: toValue(options.only),
         resetPage: true,
         replace,
         onFinish: ({completed}) => {

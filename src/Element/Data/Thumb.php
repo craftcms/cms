@@ -18,10 +18,12 @@ readonly class Thumb
     /**
      * @param  Closure(int, ImageTransformMode): ?string  $html  Renders the thumbnail at a size and mode.
      * @param  Asset|null  $asset  The asset whose image the thumbnail shows, if any.
+     * @param  ImageTransformMode|null  $assetTransformMode  The mode the asset's image is always transformed in, or `null` if it uses the mode the thumbnail is rendered in.
      */
     public function __construct(
         private Closure $html,
         private ?Asset $asset = null,
+        private ?ImageTransformMode $assetTransformMode = null,
     ) {}
 
     /**
@@ -40,6 +42,15 @@ readonly class Thumb
     public function getAsset(): ?Asset
     {
         return $this->asset;
+    }
+
+    /**
+     * Returns the mode the asset's image is always transformed in, or `null` if it uses the mode the thumbnail is
+     * rendered in.
+     */
+    public function getAssetTransformMode(): ?ImageTransformMode
+    {
+        return $this->assetTransformMode;
     }
 
     /**
