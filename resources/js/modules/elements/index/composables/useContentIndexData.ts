@@ -144,6 +144,7 @@ export function useContentIndexData<
     statusMenuValue: computed(() => props().statusMenuValue),
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
+    filterProps: computed(() => props().filterProps),
     queryCriteria: computed(() => props().queryCriteria),
     currentCondition: computed(() => props().currentCondition),
     drafts: computed(() => props().drafts),

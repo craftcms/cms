@@ -512,7 +512,7 @@ readonly class ElementAttributeRenderer
     {
         $uid = Str::after($attribute, 'generatedField:');
 
-        return $element->getGeneratedFieldValues()[$uid] ?? '';
+        return (string) ($element->getGeneratedFieldValues()[$uid] ?? '');
     }
 
     public function getFieldFromAlternativeLayouts(ElementInterface $element, string $layoutElementUid): ?FieldInterface

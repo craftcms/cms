@@ -39,6 +39,8 @@ export function useElementIndexPagination(
   const persistedPageSize = () =>
     viewState.value.sources?.[sourceKey()]?.pageSize;
 
+  let latestVisit = 0;
+
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination ?? pendingPagination,
     // A non-page index keeps its query in the visitor, not in the URL.
@@ -54,25 +56,34 @@ export function useElementIndexPagination(
         };
       }
 
-      visitor.visit(query, {only: ['data', 'pagination']});
+      const visit = ++latestVisit;
+      visitor.visit(query, {
+        only: ['data', 'pagination'],
+        // A cancelled or failed load leaves the rows as they were, so the
+        // controls go back to showing them, and the same choice can be retried.
+        onFinish: ({completed}) => {
+          if (!completed && visit === latestVisit) {
+            showConfirmed(props.pagination);
+          }
+        },
+      });
     },
   });
 
+  function showConfirmed(pagination: PaginationData | undefined): void {
+    if (!pagination) {
+      return;
+    }
+
+    paginationState.value = {
+      pageIndex: pagination.current_page ? pagination.current_page - 1 : 0,
+      pageSize: pagination.per_page,
+    };
+  }
+
   // Keep the table's pagination state in sync with the server-confirmed page
   // (also covers page resets triggered by sorting or filtering).
-  watch(
-    () => props.pagination,
-    (pagination) => {
-      if (!pagination) {
-        return;
-      }
-
-      paginationState.value = {
-        pageIndex: pagination.current_page ? pagination.current_page - 1 : 0,
-        pageSize: pagination.per_page,
-      };
-    }
-  );
+  watch(() => props.pagination, showConfirmed);
 
   // The server has no access to the persisted view state, so the first
   // payload is paginated by the URL's `per_page`, or else the default. A size

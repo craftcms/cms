@@ -121,6 +121,28 @@ trait QueriesStatuses
     }
 
     /**
+     * Splits a 'status' param value into its glue, `or` or `not`, and its statuses.
+     *
+     * @internal
+     *
+     * @param  string|string[]  $value
+     * @return array{glue: string, statuses: string[]}
+     */
+    protected static function parseStatusParam(array|string $value): array
+    {
+        $statuses = is_array($value) ? array_values($value) : str($value)->explode(',')->all();
+        $firstVal = strtolower((string) reset($statuses));
+
+        if (in_array($firstVal, ['not', 'or'])) {
+            array_shift($statuses);
+
+            return ['glue' => $firstVal, 'statuses' => $statuses];
+        }
+
+        return ['glue' => 'or', 'statuses' => $statuses];
+    }
+
+    /**
      * Applies the 'status' param to the query being prepared.
      *
      * @param  ElementQuery<ElementInterface>  $elementQuery
@@ -133,18 +155,7 @@ trait QueriesStatuses
             return;
         }
 
-        if (! is_array($value)) {
-            $value = str($value)->explode(',')->all();
-        }
-
-        $statuses = array_merge($value);
-        $firstVal = strtolower((string) reset($statuses));
-        $glue = 'or';
-
-        if (in_array($firstVal, ['not', 'or'])) {
-            $glue = $firstVal;
-            array_shift($statuses);
-        }
+        ['glue' => $glue, 'statuses' => $statuses] = self::parseStatusParam($value);
 
         if (! $statuses) {
             return;

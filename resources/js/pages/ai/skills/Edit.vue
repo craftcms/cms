@@ -3,7 +3,7 @@
    * Creates or edits one of the AI assistant’s skills. The AI Guidance & Skills
    * utility opens it in a slideout.
    */
-  import {ref, useId, watch} from 'vue';
+  import {inject, ref, useId, watch} from 'vue';
   import {t} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
   import {
@@ -17,8 +17,11 @@
   import type CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/input/input';
   import {instructionsToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
-  import {fieldId} from '@/modules/ui/runtime';
+  import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
   import '@/modules/markdown-field/markdown-field';
+
+  // Matches the ids the error summary links to, in a slideout as well.
+  const fieldIdScope = inject(UiFieldIdScope, undefined);
 
   const props = defineProps<{
     skill: AgentSkillData | null;
@@ -76,7 +79,7 @@
   <CpContainer class="py-lg">
     <craft-field-group>
       <craft-field
-        :id="fieldId(['title'])"
+        :id="scopedId(fieldIdScope, fieldId(['title']))"
         :label="t('Title')"
         .hasErrors="Boolean(form.errors.title)"
         width="full"
@@ -98,7 +101,7 @@
       </craft-field>
 
       <craft-field
-        :id="fieldId(['description'])"
+        :id="scopedId(fieldIdScope, fieldId(['description']))"
         :label="t('Description')"
         :help-text="
           t(
@@ -125,7 +128,7 @@
       </craft-field>
 
       <craft-field
-        :id="fieldId(['body'])"
+        :id="scopedId(fieldIdScope, fieldId(['body']))"
         :label="t('Instructions')"
         :help-text="
           t(

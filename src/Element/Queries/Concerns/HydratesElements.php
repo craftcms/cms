@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
@@ -68,13 +67,7 @@ trait HydratesElements
                     $element->elementQueryResult = $allElements;
 
                     // If we're collecting cache info and the element is expirable, register its expiry date
-                    if (
-                        $element instanceof ExpirableElementInterface &&
-                        $dependencyCollector->isCollecting() &&
-                        ($expiryDate = $element->getExpiryDate()) !== null
-                    ) {
-                        $dependencyCollector->setExpiryDate($expiryDate);
-                    }
+                    $dependencyCollector->collectElementExpiry($element);
 
                     return $element;
                 });

@@ -21,9 +21,11 @@ use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -31,6 +33,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Support\Utils;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
@@ -38,6 +41,8 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use Inertia\RenderContext;
 use Inertia\Support\Header;
+use ReflectionMethod;
+use WeakMap;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -110,6 +115,14 @@ abstract class ContentIndexViewModel extends ViewModel
 
     /** @var Collection<int, Site>|null */
     private ?Collection $selectableSites = null;
+
+    /**
+     * The capabilities {@see baseRowData()} checked for each row’s element, so the row’s chip or card reuses them
+     * instead of checking the same permissions again.
+     *
+     * @var WeakMap<ElementInterface, array{copyable: bool, duplicatable: bool, deletable: bool, comparable: bool}>
+     */
+    private WeakMap $rowCapabilities;
 
     public function __construct(
         /** @var class-string<ElementInterface> */
@@ -253,9 +266,34 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
+     * The props a search, status or filter change reloads. That's every payload key except the methods marked
+     * {@see UnaffectedByFilters}, plus the shared `queue` prop, which reports the thumbnail jobs the new rows queue.
+     *
+     * @return list<string>
+     */
+    #[UnaffectedByFilters]
+    public function filterProps(): array
+    {
+        $unaffected = fn (ReflectionMethod $method): bool => collect(class_parents($this) + [static::class => static::class])
+            ->contains(fn (string $class): bool => method_exists($class, $method->getName())
+                && new ReflectionMethod($class, $method->getName())->getAttributes(UnaffectedByFilters::class) !== []);
+
+        return [
+            ...array_keys(Utils::getPublicProperties($this)),
+            ...collect($this->payloadMethods())
+                ->reject($unaffected)
+                ->map(fn (ReflectionMethod $method): string => $method->getName())
+                ->values()
+                ->all(),
+            'queue',
+        ];
+    }
+
+    /**
      * The render context — index screens always render in the `index`
      * context, and the client echoes it back on XHR element endpoints.
      */
+    #[UnaffectedByFilters]
     public function context(): string
     {
         return static::RENDER_CONTEXT;
@@ -306,6 +344,7 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /** @return array<string, mixed>|null */
+    #[UnaffectedByFilters]
     public function source(): ?array
     {
         return $this->sourceSettings()->source;
@@ -489,6 +528,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return list<array{label: string, value: string, icon?: string, color?: string}>
      */
+    #[UnaffectedByFilters]
     public function statusOptions(): array
     {
         $showStatusMenu = $this->showStatusMenu();
@@ -522,11 +562,13 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
+    #[UnaffectedByFilters]
     public function showStatusMenu(): bool
     {
         return $this->indexState()->showStatusMenu($this->elementType);
     }
 
+    #[UnaffectedByFilters]
     public function showSiteMenu(): bool
     {
         // The shared resolution is just "is the element type localized?"; the
@@ -573,6 +615,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return app(RequestedSite::class)->get();
     }
 
+    #[UnaffectedByFilters]
     public function siteId(): int
     {
         return $this->sourceSettings()->siteId;
@@ -586,6 +629,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return list<array{id: int, handle: string, name: string, group: ?string}>
      */
+    #[UnaffectedByFilters]
     public function sites(): array
     {
         if (! $this->showSiteMenu()) {
@@ -650,6 +694,7 @@ abstract class ContentIndexViewModel extends ViewModel
      * index's own name — a custom index page's, otherwise the element type's
      * plural display name — when no source resolves.
      */
+    #[UnaffectedByFilters]
     public function title(): string
     {
         $sourceLabel = $this->sourceState()[1]['label'] ?? null;
@@ -695,6 +740,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return list<ActionItem|array<string, mixed>>
      */
+    #[UnaffectedByFilters]
     public function crumbs(): array
     {
         $indexUrl = $this->indexUrl();
@@ -753,6 +799,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return list<array<string, mixed>>
      */
+    #[UnaffectedByFilters]
     public function sources(): array
     {
         return $this->resolvedSources ??= ElementSources::filterSourcesBySite(
@@ -782,36 +829,43 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /** @return class-string<ElementInterface> */
+    #[UnaffectedByFilters]
     public function elementType(): string
     {
         return $this->elementType;
     }
 
+    #[UnaffectedByFilters]
     public function page(): ?string
     {
         return $this->page;
     }
 
+    #[UnaffectedByFilters]
     public function elementDisplayName(): string
     {
         return $this->elementType::displayName();
     }
 
+    #[UnaffectedByFilters]
     public function elementPluralDisplayName(): string
     {
         return $this->elementType::pluralDisplayName();
     }
 
+    #[UnaffectedByFilters]
     public function elementLowerDisplayName(): string
     {
         return $this->elementType::lowerDisplayName();
     }
 
+    #[UnaffectedByFilters]
     public function elementPluralLowerDisplayName(): string
     {
         return $this->elementType::pluralLowerDisplayName();
     }
 
+    #[UnaffectedByFilters]
     public function canHaveDrafts(): bool
     {
         return $this->elementType::hasDrafts();
@@ -833,6 +887,7 @@ abstract class ContentIndexViewModel extends ViewModel
         ));
     }
 
+    #[UnaffectedByFilters]
     public function selectedSubnavItem(): ?string
     {
         return $this->page !== null
@@ -847,6 +902,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return array<int, array{label: string, value: string, defaultDir: string}>
      */
+    #[UnaffectedByFilters]
     public function sortOptions(): array
     {
         return $this->sourceSettings()->publicSortOptions();
@@ -858,12 +914,14 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return array<int, array{label: string, value: string, align: 'start'|'end'}>
      */
+    #[UnaffectedByFilters]
     public function tableColumns(): array
     {
         return $this->sourceSettings()->tableColumns;
     }
 
     /** @return string[] */
+    #[UnaffectedByFilters]
     public function defaultTableColumns(): array
     {
         return $this->sourceSettings()->defaultTableColumns;
@@ -874,6 +932,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return array<int, array{field: string, direction: string}>
      */
+    #[UnaffectedByFilters]
     public function defaultSort(): array
     {
         return $this->sourceSettings()->defaultSort;
@@ -886,6 +945,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return array{style: string, alignment: 'start'|'end'}|null
      */
+    #[UnaffectedByFilters]
     public function cardThumbs(): ?array
     {
         $sourceKey = $this->sourceState()[0];
@@ -923,8 +983,52 @@ abstract class ContentIndexViewModel extends ViewModel
         };
     }
 
-    /** @param list<ElementInterface|array<string, mixed>> $elements */
-    protected function prepareElements(array $elements): void {}
+    /**
+     * Loads the transform indexes for the images in the rows' thumbnails and card covers with one query per size,
+     * rather than one per row.
+     *
+     * @param  list<ElementInterface|array<string, mixed>>  $elements
+     */
+    protected function prepareElements(array $elements): void
+    {
+        $cards = $this->mode() === ElementIndexViewMode::Cards->value;
+        $thumbs = [];
+        $covers = [];
+
+        foreach ($elements as $element) {
+            $thumb = $element instanceof ElementInterface ? $element->getThumb() : null;
+
+            if (! $asset = $thumb?->getAsset()) {
+                continue;
+            }
+
+            $mode = $thumb->getAssetTransformMode() ?? ImageTransformMode::Fit;
+            $thumbs[$mode->value][] = $asset;
+
+            // The same styles as ElementHtml::cardAttributes() shows covers for
+            $coverStyle = $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'auto' : 'normal');
+
+            if ($cards && ($coverStyle === 'cover' || ($coverStyle === 'auto' && $asset->canCoverCard()))) {
+                $covers[] = $asset;
+            }
+        }
+
+        $sizes = match ($this->mode()) {
+            ElementIndexViewMode::Cards->value => [120, 240],
+            ElementIndexViewMode::Thumbs->value => [
+                $size = $this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE,
+                $size * 2,
+            ],
+            // Table rows show plain chips, whose small thumbnails are 30px
+            default => [$size = $this->thumbSize()->pixels() ?? 30, $size * 2],
+        };
+
+        foreach ($thumbs as $mode => $assets) {
+            Assets::preloadThumbs($assets, $sizes, ImageTransformMode::from($mode));
+        }
+
+        Assets::preloadThumbs($covers, [Asset::CARD_COVER_SIZE], ImageTransformMode::Crop);
+    }
 
     /** @return array<int, array<string, mixed>>|null */
     public function actions(): ?array
@@ -949,6 +1053,7 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /** @return array<int, array<string, mixed>> */
+    #[UnaffectedByFilters]
     public function exporters(): array
     {
         [$sourceKey] = $this->sourceState();
@@ -1063,6 +1168,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * @return list<NavItem>
      */
+    #[UnaffectedByFilters]
     public function sourceNavItems(): array
     {
         if ($this->indexUrl() === null) {
@@ -1729,6 +1835,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return app(ElementHtml::class)->elementChipHtml($element, [
             'autoReload' => false,
             'context' => static::RENDER_CONTEXT,
+            'capabilities' => $this->rowCapabilities[$element] ?? null,
             'appearance' => 'plain',
             'thumbSize' => $this->thumbSize(),
             ...$config,
@@ -1782,7 +1889,10 @@ abstract class ContentIndexViewModel extends ViewModel
             return [
                 'id' => $this->rowId($element),
                 ...$this->baseRowData($element, $elementHtml),
-                ...$elementHtml->elementCardData($element, $cardConfig),
+                ...$elementHtml->elementCardData($element, [
+                    ...$cardConfig,
+                    'capabilities' => $this->rowCapabilities[$element],
+                ]),
             ];
         }, $elements);
     }
@@ -1882,8 +1992,10 @@ abstract class ContentIndexViewModel extends ViewModel
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
         $elementHtml ??= app(ElementHtml::class);
+        $this->rowCapabilities ??= new WeakMap;
+        $this->rowCapabilities[$element] = $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT);
         $capabilities = [
-            ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            ...$this->rowCapabilities[$element],
             ...$this->extraCapabilities($element),
         ];
 

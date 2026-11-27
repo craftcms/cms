@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner as Designer;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Nodes\Outlet;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -42,7 +43,11 @@ class FieldLayoutDesigner extends Control
         );
     }
 
-    /** @param array<string, mixed> $value */
+    /**
+     * @param  array<string, mixed>  $value
+     * @param  string|null  $idNamespace  A prefix for the designer’s ids, for a designer shown beside another, such as in
+     *                                    stacked slideouts, so its labels and controls don’t reference the other one’s.
+     */
     public static function designerHtml(
         array $value,
         string $elementType,
@@ -52,11 +57,12 @@ class FieldLayoutDesigner extends Control
         bool $withGeneratedFields = false,
         bool $withCardViewDesigner = false,
         ?string $cardViewDesignerOutlet = null,
+        ?string $idNamespace = null,
     ): string {
         $layout = Fields::createLayout(['type' => $elementType] + $value);
         $namespace = $name === null ? null : self::parentInputName($name);
 
-        return InputNamespace::namespaceInputs(
+        $html = InputNamespace::namespaceInputs(
             fn (): string => $withGeneratedFields || $withCardViewDesigner
                 ? app(Designer::class)->fieldHtml($layout, [
                     'customizableTabs' => $customizableTabs,
@@ -71,6 +77,8 @@ class FieldLayoutDesigner extends Control
                 ]),
             $namespace,
         );
+
+        return $idNamespace === null ? $html : Html::namespaceAttributes($html, $idNamespace);
     }
 
     public function component(): string

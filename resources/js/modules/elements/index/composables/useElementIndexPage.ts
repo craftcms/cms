@@ -39,6 +39,8 @@ export function useElementIndexPage(
           'pagination',
           'navSourceBadges',
           'sourceNavItems',
+          // A Craft 5 index screen (`cp/ElementIndex`) sends its source nav
+          // and badge counts as `subnav`.
           'subnav',
         ],
         onSuccess: () => {

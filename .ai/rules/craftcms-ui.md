@@ -45,6 +45,16 @@ so reviewers see what the tests measure. The story shows the case; the
 browser test verifies it, so an edge-case story never counts as verification
 in a `.a11y.md`.
 
+## Await idle work in tests instead of polling for it
+When a component defers work with `whenIdle()` (`src/utilities/idle.ts`), wait
+for it in tests with `await new Promise<void>((resolve) => whenIdle(() => resolve()))`,
+then assert once. Don't poll with `vi.waitFor`: browser test files share one
+page, and while the others render, an idle callback can wait past its
+one-second default, so the test fails only in CI. Idle callbacks run in the
+order they're queued, so queue yours after the component queues its own. If
+the component queues it from a `MutationObserver` or a Lit update, await
+`updateComplete` first.
+
 ## Document a11y requirements for new components and a11y-relevant changes
 Create or update a `<component>.a11y.md` file next to a component (see `button/button.a11y.md`, `thumbnail/thumbnail.a11y.md`) whenever you create a component, or add or change behavior that could affect accessibility — even if the change isn't accessibility-motivated. That covers keyboard navigation, focus order, and screen-reader behavior (accessible names, announcements) same as it covers motion, contrast, target size, cognitive load, zoom/reflow, and anything else in `.ai/rules/accessibility.md`'s scope — none of these is the sole trigger, and none is excluded. The file is a `## Requirements` checklist, one requirement per line, each noting what verifies it — a `.test.ts`/`.browser.test.ts` case, or a Storybook `play()` assertion only when that requirement is itself a documented example (see the story-vs-browser-test rule above). Write the checklist first, unchecked, then use it as the spec for the tests/story you add; check an item off only once something actually verifies it. This is in addition to, not instead of, the automated axe-core pass every story already gets — the checklist covers what axe can't catch.
 
