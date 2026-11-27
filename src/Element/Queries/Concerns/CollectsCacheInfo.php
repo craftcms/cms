@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use DateTimeInterface;
+use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 
@@ -212,6 +213,7 @@ trait CollectsCacheInfo
         // Ordering by the date lets the database stop at the first match.
         // Subqueries, such as relatedTo() ones, would collect their own cache info, so nothing is collected.
         $lookUp = function (self $query) use ($column, $after): mixed {
+            /** @var Connection $connection */
             $connection = $query->query->getConnection();
             $value = fn () => app(DependencyCollector::class)->withoutCollecting(fn () => $query->toBase()
                 ->cloneWithout(['columns', 'orders', 'limit', 'offset', 'groups', 'havings', 'unions', 'unionLimit', 'unionOffset', 'unionOrders', 'lock'])
