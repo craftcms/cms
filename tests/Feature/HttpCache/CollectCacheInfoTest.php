@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 use function CraftCms\Cms\renderString;
 
+// Tests that check a cap freeze time at the start of a minute, since element expiry dates can be rounded down to one.
 beforeEach(function () {
     // Where cache integrations such as craftcms/http-cache read the response's cache info: outermost global middleware.
     $this->cacheInfo = new ArrayObject;
@@ -36,7 +37,7 @@ readonly class RecordCacheInfo
 }
 
 it('tags a page with the elements it queried until it terminates, and caps its lifetimes at the earliest expiry', function () {
-    $this->freezeSecond();
+    $this->travelTo(now()->startOfMinute());
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
     Route::get('/page', function () use ($entry) {
@@ -56,7 +57,7 @@ it('tags a page with the elements it queried until it terminates, and caps its l
 });
 
 it('keeps a private response private when capping its lifetimes', function () {
-    $this->freezeSecond();
+    $this->travelTo(now()->startOfMinute());
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
     Route::get('/page', function () use ($entry) {
@@ -77,7 +78,7 @@ it('keeps a private response private when capping its lifetimes', function () {
 });
 
 it('caps lifetimes at expiry dates added through the facade', function () {
-    $this->freezeSecond();
+    $this->travelTo(now()->startOfMinute());
 
     Route::get('/page', function () {
         CacheInfo::addExpiryDate(now()->addMinutes(5));
@@ -89,7 +90,7 @@ it('caps lifetimes at expiry dates added through the facade', function () {
 });
 
 it('caps the lifetimes of successful responses, 304s and redirects only', function (Closure $respond, array $headers, int $status, string $maxAge) {
-    $this->freezeSecond();
+    $this->travelTo(now()->startOfMinute());
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
     Route::get('/page', function (Request $request) use ($entry, $respond) {
@@ -127,7 +128,7 @@ it('collects tags added through the facade and the Twig global', function () {
 });
 
 it('keeps tags and element expiry dates from inside a cached block on a cache hit', function () {
-    $this->freezeSecond();
+    $this->travelTo(now()->startOfMinute());
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
     Route::get('/page', fn () => response(renderString(
