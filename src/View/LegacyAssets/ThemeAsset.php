@@ -26,8 +26,8 @@ class ThemeAsset implements LegacyAssetInterface
             $htmlStack->cssFile(craftAsset('legacy/theme/dist/cp.css'));
         } else {
             $htmlStack->cssFile(craftAsset('legacy/theme/dist/fe.css'));
-            if (Cms::config()->systemTemplateCss) {
-                $htmlStack->cssFile(Cms::config()->systemTemplateCss);
+            if (Cms::config()->cp->systemTemplateCss) {
+                $htmlStack->cssFile(Cms::config()->cp->systemTemplateCss);
             }
         }
     }

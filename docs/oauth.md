@@ -147,7 +147,7 @@ The default user populator:
 - sets `email` from the provider email when present
 - sets `fullName` from the provider name when present
 - sets `username` if it is blank:
-  - to the email if `useEmailAsUsername` is enabled
+  - to the email if `users.useEmailAsUsername` is enabled
   - otherwise to the provider nickname
   - otherwise to the provider email
   - otherwise to `{providerHandle}_{identity}`

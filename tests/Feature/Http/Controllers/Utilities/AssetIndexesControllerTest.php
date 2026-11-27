@@ -23,7 +23,7 @@ beforeEach(function () {
 });
 
 test('unauthorized users cannot access asset indexes utility', function () {
-    Cms::config()->disabledUtilities = [AssetIndexes::id()];
+    Cms::config()->cp->disabledUtilities = [AssetIndexes::id()];
 
     postJson(action([AssetIndexesController::class, 'startIndexing']), [
         'volumes' => [1],

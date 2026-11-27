@@ -19,7 +19,7 @@ beforeEach(function () {
 });
 
 test('unauthorized users cannot access migrations utility', function () {
-    Cms::config()->disabledUtilities = [Migrations::id()];
+    Cms::config()->cp->disabledUtilities = [Migrations::id()];
 
     post(action(MigrationsController::class))
         ->assertForbidden();

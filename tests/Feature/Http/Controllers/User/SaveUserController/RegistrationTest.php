@@ -207,7 +207,7 @@ it('can set custom username', function () {
 });
 
 it('does not auto-login user after registration', function () {
-    Cms::config()->autoLoginAfterAccountActivation = true;
+    Cms::config()->users->autoLoginAfterAccountActivation = true;
 
     post(action(SaveUserController::class), [
         'email' => 'noautologin@example.com',

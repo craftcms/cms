@@ -32,7 +32,7 @@ class UserPreferencesViewModel extends ViewModel
     /** @return array<string, mixed> */
     public function preferences(): array
     {
-        $a11yDefaults = Cms::config()->accessibilityDefaults;
+        $a11yDefaults = Cms::config()->cp->accessibilityDefaults;
 
         return [
             'preferredLanguage' => $this->userLanguage(),
@@ -107,7 +107,7 @@ class UserPreferencesViewModel extends ViewModel
             ! $userLocale ||
             I18N::getAllLocales()->doesntContain(fn (Locale $locale) => $locale->id === Env::parse($userLocale))
         ) {
-            return Cms::config()->defaultCpLocale ?? app()->getLocale();
+            return Cms::config()->cp->defaultLocale ?? app()->getLocale();
         }
 
         return $userLocale;

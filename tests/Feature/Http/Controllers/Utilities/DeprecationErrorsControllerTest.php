@@ -18,7 +18,7 @@ beforeEach(function () {
 });
 
 test('unauthorized users cannot access deprecation errors utility', function () {
-    Cms::config()->disabledUtilities = [DeprecationErrors::id()];
+    Cms::config()->cp->disabledUtilities = [DeprecationErrors::id()];
 
     $logId = DB::table('deprecationerrors')->insertGetId([
         'key' => 'test-deprecation',

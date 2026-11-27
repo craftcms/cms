@@ -84,7 +84,7 @@ readonly class LoginController extends AuthenticationController
             'loginName' => [
                 'required',
                 'string',
-                Rule::when($this->generalConfig->useEmailAsUsername, 'email'),
+                Rule::when($this->generalConfig->users->useEmailAsUsername, 'email'),
             ],
             'password' => Password::required(),
             'rememberMe' => ['nullable'],

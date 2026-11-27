@@ -28,7 +28,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND', 'CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS', 'CRAFT_ASSETS_UPLOAD_CHUNK_SIZE', 'CRAFT_DEFAULT_TEMPLATE_EXTENSIONS', 'CRAFT_SLUG_WORD_SEPARATOR', 'CRAFT_DISABLE_2FA', 'CRAFT_MAX_INVALID_LOGINS'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND', 'CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS', 'CRAFT_ASSETS_UPLOAD_CHUNK_SIZE', 'CRAFT_DEFAULT_TEMPLATE_EXTENSIONS', 'CRAFT_SLUG_WORD_SEPARATOR', 'CRAFT_DISABLE_2FA', 'CRAFT_MAX_INVALID_LOGINS', 'CRAFT_DISABLED_UTILITIES', 'CRAFT_USE_EMAIL_AS_USERNAME'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -391,10 +391,26 @@ it('forwards the renamed routing, security, user, and garbage collection setting
         ->and($config->routing->getLoginPath())->toBe('login')
         ->and($config->getLoginPath())->toBe('login')
         ->and($config->routing->getPageTriggerParam())->toBe('p')
-        ->and($config->users->disable2fa)->toBeTrue()
+        ->and($config->security->disable2fa)->toBeTrue()
         ->and($config->security->maxInvalidLogins)->toBeFalse()
         ->and($config->storeUserIps)->toBeFalse()
         ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->toContain('env:CRAFT_DISABLE_2FA', 'env:CRAFT_MAX_INVALID_LOGINS', GeneralConfig::class.'::storeUserIps');
+});
+
+it('forwards the renamed control panel and user settings', function () {
+    app(ConfigRepository::class)->set('craft.general', ['cpIconPath' => '@root/icon.svg']);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_DISABLED_UTILITIES'] = 'updates,find-replace';
+    $_SERVER['CRAFT_USE_EMAIL_AS_USERNAME'] = 'true';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class);
+
+    expect($config->cp->iconPath)->toBe('@root/icon.svg')
+        ->and($config->cp->disabledUtilities)->toBe(['updates', 'find-replace'])
+        ->and($config->users->useEmailAsUsername)->toBeTrue()
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->toContain(GeneralConfig::class.'::cpIconPath', 'env:CRAFT_USE_EMAIL_AS_USERNAME');
 });
 
 it('does not change a cached config’s nested objects when applying environment overrides', function () {

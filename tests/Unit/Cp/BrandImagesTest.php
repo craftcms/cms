@@ -19,7 +19,7 @@ afterEach(function () {
 
 it('inlines an SVG path in place of the URL, keeping its styles matched to its elements', function () {
     File::put("$this->dir/icon.svg", '<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><style>#bg .shape { fill: light-dark(#000, #fff); }</style><g id="bg"><rect class="shape" width="32" height="32"/></g></svg>');
-    Cms::config()->cpIconPath = "$this->dir/icon.svg";
+    Cms::config()->cp->iconPath = "$this->dir/icon.svg";
     Cms::config()->cpIconUrl = 'https://example.test/icon.png';
 
     $html = Cp::iconHtml();
@@ -36,7 +36,7 @@ it('inlines an SVG path in place of the URL, keeping its styles matched to its e
 
 it('embeds a raster path as a data URL', function () {
     File::put("$this->dir/logo.png", base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='));
-    Cms::config()->cpLogoPath = "$this->dir/logo.png";
+    Cms::config()->cp->logoPath = "$this->dir/logo.png";
 
     $img = new Crawler(Cp::logoHtml())->filter('img');
 
@@ -45,7 +45,7 @@ it('embeds a raster path as a data URL', function () {
 });
 
 it('falls back to the deprecated URL when the path is not a file', function () {
-    Cms::config()->cpLogoPath = "$this->dir/missing.svg";
+    Cms::config()->cp->logoPath = "$this->dir/missing.svg";
     Cms::config()->cpLogoUrl = 'https://example.test/logo.svg';
 
     expect(new Crawler(Cp::logoHtml())->filter('img')->attr('src'))->toBe('https://example.test/logo.svg')

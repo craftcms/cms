@@ -185,7 +185,7 @@ readonly class PasswordController
                 'loginName' => [
                     'required',
                     'string',
-                    Rule::when($generalConfig->useEmailAsUsername, 'email'),
+                    Rule::when($generalConfig->users->useEmailAsUsername, 'email'),
                 ],
             ]);
 
@@ -196,7 +196,7 @@ readonly class PasswordController
                 ! $user?->getIsCredentialed() ||
                 (! $user->getHasPassword() && $user->getHasSsoIdentity())
             ) {
-                $errors[] = $generalConfig->useEmailAsUsername
+                $errors[] = $generalConfig->users->useEmailAsUsername
                     ? t('Invalid email.')
                     : t('Invalid username or email.');
             }

@@ -396,7 +396,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             $this->email = Str::idnToUtf8Email($this->email);
         }
 
-        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
+        if (empty($this->username) && Cms::config()->users->useEmailAsUsername) {
             $this->username = $this->email;
         }
 
@@ -681,7 +681,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     protected static function defineSortOptions(): array
     {
-        if (Cms::config()->useEmailAsUsername) {
+        if (Cms::config()->users->useEmailAsUsername) {
             return [
                 'email' => t('Email'),
                 'fullName' => t('Full Name'),
@@ -2263,7 +2263,7 @@ XML;
             return false;
         }
 
-        if (Cms::config()->useEmailAsUsername) {
+        if (Cms::config()->users->useEmailAsUsername) {
             $this->username = $this->email;
         }
 

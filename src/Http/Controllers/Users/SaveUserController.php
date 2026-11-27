@@ -170,7 +170,7 @@ readonly class SaveUserController
                     ) ||
                     (
                         ! $requireEmailVerification && $isNewUser && (
-                            ($isPublicRegistration && $this->generalConfig->security->deferPublicRegistrationPassword) ||
+                            ($isPublicRegistration && $this->generalConfig->users->deferPublicRegistrationPassword) ||
                             ($request->input('sendActivationEmail') ?? $request->input('sendVerificationEmail'))
                         )
                     )
@@ -200,7 +200,7 @@ readonly class SaveUserController
 
         // Are they allowed to set a new password?
         if ($isPublicRegistration) {
-            if (! $this->generalConfig->security->deferPublicRegistrationPassword) {
+            if (! $this->generalConfig->users->deferPublicRegistrationPassword) {
                 $user->newPassword = $request->input('password', '');
             }
         } elseif ($isCurrentUser) {
@@ -224,7 +224,7 @@ readonly class SaveUserController
         // ---------------------------------------------------------------------
 
         // Is the site set to use email addresses as usernames?
-        if ($this->generalConfig->useEmailAsUsername) {
+        if ($this->generalConfig->users->useEmailAsUsername) {
             $user->username = $user->email;
         } elseif ($isNewUser || $request->craftUser()?->isAdmin() || $isCurrentUser) {
             $user->username = $request->input('username', ($user->username ?: $user->email));
@@ -398,7 +398,7 @@ readonly class SaveUserController
     private function publicRegistrationResponseModel(Request $request, ?string $email, string $fieldsLocation): User
     {
         $user = new User(['email' => $email]);
-        $user->username = $this->generalConfig->useEmailAsUsername
+        $user->username = $this->generalConfig->users->useEmailAsUsername
             ? $email
             : $request->input('username', $email);
         $this->populateNameAttributes($request, $user);
@@ -557,7 +557,7 @@ readonly class SaveUserController
      */
     private function maybeLoginUserAfterAccountActivation(User $user): bool
     {
-        if (! $this->generalConfig->autoLoginAfterAccountActivation) {
+        if (! $this->generalConfig->users->autoLoginAfterAccountActivation) {
             return false;
         }
 

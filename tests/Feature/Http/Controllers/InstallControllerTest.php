@@ -344,7 +344,7 @@ it('can validate account', function (array $data, array $errors) {
 ]);
 
 test('username is not required when useEmailAsUsername is enabled', function () {
-    Cms::config()->useEmailAsUsername();
+    Cms::config()->users->useEmailAsUsername();
 
     postJson(action([InstallController::class, 'validateAccount']), [])
         ->assertJsonValidationErrors([

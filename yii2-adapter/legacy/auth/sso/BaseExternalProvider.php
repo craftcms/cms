@@ -200,7 +200,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         // If the user has an ID, don't mess with username/em
         if (!$user->getId()) {
-            if (!$user->username || Cms::config()->useEmailAsUsername) {
+            if (!$user->username || Cms::config()->users->useEmailAsUsername) {
                 $user->username = $user->email;
             }
         }

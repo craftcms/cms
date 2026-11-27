@@ -36,7 +36,7 @@ it('filters unavailable registered utilities', function () {
     app(UtilityTypes::class)->register(DummyUtility::class, UnselectableUtility::class);
 
     Cms::config()->backups->command = false;
-    Cms::config()->disabledUtilities[] = DummyUtility::id();
+    Cms::config()->cp->disabledUtilities[] = DummyUtility::id();
 
     expect($this->utilities->getAllUtilityTypes())
         ->not()->toContain(DbBackup::class)

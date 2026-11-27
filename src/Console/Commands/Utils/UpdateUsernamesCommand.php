@@ -28,7 +28,7 @@ class UpdateUsernamesCommand extends Command
 
     public function handle(GeneralConfig $generalConfig): int
     {
-        if (! $generalConfig->useEmailAsUsername) {
+        if (! $generalConfig->users->useEmailAsUsername) {
             $this->components->error('The `useEmailAsUsername` config setting is not enabled.');
 
             return self::FAILURE;

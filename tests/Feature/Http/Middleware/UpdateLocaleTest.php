@@ -42,7 +42,7 @@ it('uses defaultCpLanguage when user has no language preference', function () {
     $user = UserModel::factory()->create()->asElement();
     actingAs($user);
 
-    Cms::config()->defaultCpLanguage = 'fr';
+    Cms::config()->cp->defaultLanguage = 'fr';
 
     $request = Request::create('/'.Cms::config()->routing->cpTrigger.'/dashboard');
     $request->setUserResolver(fn () => $user);
@@ -58,7 +58,7 @@ it('uses fallback locale when user preference is invalid', function () {
 
     app(Users::class)->saveUserPreferences($user, ['language' => 'invalid-locale-xyz']);
 
-    Cms::config()->defaultCpLanguage = 'es';
+    Cms::config()->cp->defaultLanguage = 'es';
 
     $request = Request::create('/'.Cms::config()->routing->cpTrigger.'/dashboard');
     $request->setUserResolver(fn () => $user);

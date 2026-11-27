@@ -185,7 +185,7 @@ readonly class Cms
             return $language;
         }
 
-        return self::config()->defaultCpLanguage ?? self::fallbackLanguage($request);
+        return self::config()->cp->defaultLanguage ?? self::fallbackLanguage($request);
     }
 
     private static function fallbackLanguage(Request $request): string

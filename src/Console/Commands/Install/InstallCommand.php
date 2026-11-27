@@ -94,7 +94,7 @@ class InstallCommand extends Command
         $defaultSiteLanguage = $this->defaultSiteLanguage();
 
         $responses = form()
-            ->addIf(! $generalConfig->useEmailAsUsername && ! $this->option('username'), fn ($form) => text(
+            ->addIf(! $generalConfig->users->useEmailAsUsername && ! $this->option('username'), fn ($form) => text(
                 label: 'What is the username?',
                 required: true,
                 validate: ['alpha_dash']
@@ -180,7 +180,7 @@ class InstallCommand extends Command
         $language = $this->option('language') ?? $responses['language'];
         $timezone = $this->option('timezone') ?? $responses['timezone'];
 
-        if ($generalConfig->useEmailAsUsername) {
+        if ($generalConfig->users->useEmailAsUsername) {
             $username = $email;
         }
 

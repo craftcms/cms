@@ -26,7 +26,7 @@ function renderedAutocomplete(BaseField $field, ?ElementInterface $element): ?st
 }
 
 beforeEach(function () {
-    app(GeneralConfig::class)->useEmailAsUsername = false;
+    app(GeneralConfig::class)->users->useEmailAsUsername = false;
     app(GeneralConfig::class)->users->showFirstAndLastNameFields = false;
     $this->admin = User::findOne();
     actingAs($this->admin);

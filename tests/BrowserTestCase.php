@@ -65,7 +65,7 @@ class BrowserTestCase extends TestCase
 
         $this->withVite();
 
-        Cms::config()->accessibilityDefaults['underlineLinks'] = true;
+        Cms::config()->cp->accessibilityDefaults['underlineLinks'] = true;
 
         // Testbench reports a console app, which builds URLs from the primary site rather than the request. The
         // browser sends real requests, so they're handled as such once the setup above has run as usual.

@@ -17,7 +17,7 @@ beforeEach(function () {
 });
 
 test('unauthorized users cannot access find and replace utility', function () {
-    Cms::config()->disabledUtilities = [FindAndReplaceUtility::id()];
+    Cms::config()->cp->disabledUtilities = [FindAndReplaceUtility::id()];
 
     postJson(action(FindAndReplaceController::class), [
         'find' => 'oldtext',

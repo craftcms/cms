@@ -473,10 +473,10 @@ class LooseEndsChecks
         if (Edition::isAtLeast(Edition::Pro)) {
             $rebrand = app(Rebrand::class);
 
-            foreach (['icon' => 'cpIconPath', 'logo' => 'cpLogoPath'] as $type => $setting) {
+            foreach (['icon' => 'iconPath', 'logo' => 'logoPath'] as $type => $setting) {
                 $image = $type === 'icon' ? $rebrand->getIcon() : $rebrand->getLogo();
 
-                if ($image !== null && Cms::config()->$setting === $image->getPath()) {
+                if ($image !== null && Cms::config()->cp->$setting === $image->getPath()) {
                     $findings[] = $this->finding(
                         "layout.rebrand-$type",
                         Section::Config,
@@ -484,7 +484,7 @@ class LooseEndsChecks
                         $type === 'icon'
                             ? t('The control panel icon was uploaded in the control panel.', category: 'yii2-adapter')
                             : t('The control panel logo was uploaded in the control panel.', category: 'yii2-adapter'),
-                        t('Set the `{setting}` general config setting instead.', ['setting' => $setting], 'yii2-adapter'),
+                        t('Set the `{setting}` general config setting instead.', ['setting' => "cp.$setting"], 'yii2-adapter'),
                     );
                 }
             }
