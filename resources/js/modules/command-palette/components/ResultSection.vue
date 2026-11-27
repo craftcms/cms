@@ -321,11 +321,6 @@
     font-size: var(--c-text-sm);
   }
 
-  /* The keycaps keep their quiet fill on a selected row, so their text pairs with it rather than the row's. */
-  .command-palette-row__shortcut kbd {
-    color: var(--c-color-neutral-on-quiet);
-  }
-
   /* Sized and colored like the small plain button that goes over it. */
   .command-palette-row__actions {
     grid-column: 3;

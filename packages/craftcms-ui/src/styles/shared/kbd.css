@@ -10,8 +10,6 @@ kbd {
   line-height: 1.4;
   text-align: center;
   white-space: nowrap;
-  color: inherit;
-  background-color: var(--c-color-neutral-fill-quiet);
   border: 1px solid var(--c-color-neutral-border-quiet);
   border-block-end-width: 2px;
   border-radius: var(--c-radius-sm);
