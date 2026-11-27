@@ -65,6 +65,9 @@
         return {symbol: '/', name: t('Slash')};
       case '.':
         return {symbol: '.', name: t('Period')};
+      // Shortcuts bound to the physical key have its code rather than a key.
+      case 'Backslash':
+        return {symbol: '\\', name: t('Backslash')};
       case '[':
         return {symbol: '[', name: t('Left bracket')};
       case ']':
