@@ -20,9 +20,9 @@ beforeEach(function () {
     $GLOBALS['duplicatesFolder'] = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
 });
 
-function hashedImage(?string $hash): Asset
+function hashedImage(?string $hash, ?VolumeFolderModel $folder = null): Asset
 {
-    $folder = $GLOBALS['duplicatesFolder'];
+    $folder ??= $GLOBALS['duplicatesFolder'];
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $folder->volumeId,
         'folderId' => $folder->id,
@@ -58,6 +58,19 @@ it('finds copies whose hashes differ in up to three bits, wherever they are', fu
     $copy = hashedImage('fcfaf8e6ecdbd4a3');
 
     expect(duplicateIds($original))->toBe([$copy->id]);
+});
+
+it('only finds images in the same volume', function () {
+    $volume = VolumeModel::factory()->create(['disk' => 'duplicates-test']);
+    app(Volumes::class)->reset();
+    $otherFolder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+
+    $original = hashedImage('fcfbf8e7ecdad4a3');
+    $copy = hashedImage('fcfbf8e7ecdad4a3');
+    $otherVolumeCopy = hashedImage('fcfbf8e7ecdad4a3', $otherFolder);
+
+    expect(duplicateIds($original))->toBe([$copy->id])
+        ->and(duplicateIds($otherVolumeCopy))->toBe([]);
 });
 
 it('forgets images’ hashes once they’re gone', function () {

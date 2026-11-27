@@ -96,7 +96,18 @@
     void openUiModal({
       modalUrl: scheduleModal.url({release: props.release.id}),
       actionUrl: schedule.url({release: props.release.id}),
-      onSubmitted: () => router.reload(),
+      // The server sends the release's state and controls with every
+      // response. These are the other props that scheduling changes.
+      onSubmitted: () =>
+        router.reload({
+          only: [
+            'ui',
+            'editUi',
+            'metadataHtml',
+            'publishDisabledReason',
+            'previewUrl',
+          ],
+        }),
     });
   }
 

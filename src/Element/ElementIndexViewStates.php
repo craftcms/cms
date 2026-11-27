@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Element;
+
+use DateTimeInterface;
+use Illuminate\Support\Facades\Cache;
+
+/**
+ * The element index view states the browser keeps in local storage, mirrored
+ * for the current session so a page load can render the rows for them.
+ *
+ * The control panel pushes every view state once per session, then each one
+ * again as it changes (see `view-state-sync.ts`). They live in the cache
+ * rather than in the session payload: Laravel writes the whole session back
+ * at the end of every request, so a prefetch that started before a push could
+ * otherwise put the old view state back.
+ *
+ * @since 6.0.0
+ */
+class ElementIndexViewStates
+{
+    /**
+     * Whether the browser has pushed its view states this session.
+     */
+    public function synced(): bool
+    {
+        return Cache::has($this->cacheKey());
+    }
+
+    /**
+     * Stores view states by their local storage key, such as
+     * `elementindex.CraftCms\Cms\Entry\Elements\Entry.index`.
+     *
+     * They're kept in one cache entry, so they expire together and the session
+     * is never synced with some of them missing. Until the browser has pushed
+     * all of them, nothing is rendered for them, so a single one isn't kept.
+     *
+     * @param  array<string, array<string, mixed>>  $states
+     * @param  bool  $all  Whether these are all of the browser's view states.
+     */
+    public function put(array $states, bool $all = false): void
+    {
+        $stored = $all ? [] : Cache::get($this->cacheKey());
+
+        if (is_array($stored)) {
+            Cache::put($this->cacheKey(), [...$stored, ...$states], $this->ttl());
+        }
+    }
+
+    /**
+     * An index's view state, or null when the browser has none for it.
+     *
+     * Reading it renews the view states, as activity renews the session, so
+     * indexes keep rendering with rows for as long as the session lasts.
+     *
+     * @param  class-string  $elementType
+     * @return array<string, mixed>|null
+     */
+    public function get(string $elementType, string $context): ?array
+    {
+        $state = Cache::get($this->cacheKey())["elementindex.$elementType.$context"] ?? null;
+        Cache::touch($this->cacheKey(), $this->ttl());
+
+        return is_array($state) ? $state : null;
+    }
+
+    private function ttl(): DateTimeInterface
+    {
+        return now()->addMinutes((int) config('session.lifetime', 120));
+    }
+
+    private function cacheKey(): string
+    {
+        return 'elementIndexViewStates:'.session()->getId();
+    }
+}

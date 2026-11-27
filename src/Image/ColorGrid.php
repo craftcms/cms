@@ -139,51 +139,83 @@ class ColorGrid
         $rows = count($colors);
         $columns = count($colors[0] ?? []);
 
-        // Interpolating across then down is the same as a bicubic filter, for a fraction of the work.
-        $wide = array_map(fn (array $row): array => self::interpolateLine($row, $columns * $scale, $scale), $colors);
-        $output = array_fill(0, $rows * $scale, []);
+        // Interpolating across then down is the same as a bicubic filter, for a fraction of the work. Rows of the same
+        // length share their taps, as do all columns, so each set is only worked out once.
+        $rowTaps = [];
+        $wide = [];
 
-        for ($x = 0; $x < $columns * $scale; $x++) {
-            $column = self::interpolateLine(array_column($wide, $x), $rows * $scale, $scale);
+        foreach ($colors as $row) {
+            $line = [];
 
-            foreach ($column as $y => $color) {
-                $output[$y][$x] = self::hex($color);
+            foreach ($rowTaps[count($row)] ??= self::taps(count($row), $columns * $scale, $scale) as [$a, $b, $c, $d, $wa, $wb, $wc, $wd]) {
+                $line[] = self::mix($row[$a], $row[$b], $row[$c], $row[$d], $wa, $wb, $wc, $wd);
             }
+
+            $wide[] = $line;
+        }
+
+        $output = [];
+
+        foreach (self::taps($rows, $rows * $scale, $scale) as [$a, $b, $c, $d, $wa, $wb, $wc, $wd]) {
+            $cells = [];
+
+            foreach ($wide[$a] as $x => $color) {
+                $cells[] = self::hex(self::mix($color, $wide[$b][$x], $wide[$c][$x], $wide[$d][$x], $wa, $wb, $wc, $wd));
+            }
+
+            $output[] = $cells;
         }
 
         return $output;
     }
 
     /**
-     * @param  list<array{float, float, float, float}>  $line
-     * @return list<array{float, float, float, float}>
+     * Returns which four inputs each output pixel of a line mixes, and their Catmull-Rom weights.
+     *
+     * @return list<array{int, int, int, int, float, float, float, float}>
      */
-    private static function interpolateLine(array $line, int $length, int $scale): array
+    private static function taps(int $count, int $length, int $scale): array
     {
-        $last = count($line) - 1;
-        $output = [];
+        $last = $count - 1;
+        $taps = [];
 
         for ($index = 0; $index < $length; $index++) {
             // Where this output pixel's center falls between the input's region centers
             $position = ($index + 0.5) / $scale - 0.5;
             $start = (int) floor($position);
             $t = $position - $start;
-            $weights = [
+            $taps[] = [
+                max(0, min($last, $start - 1)),
+                max(0, min($last, $start)),
+                max(0, min($last, $start + 1)),
+                max(0, min($last, $start + 2)),
                 ((-$t + 2) * $t - 1) * $t / 2,
                 ((3 * $t - 5) * $t * $t + 2) / 2,
                 ((-3 * $t + 4) * $t + 1) * $t / 2,
                 ($t - 1) * $t * $t / 2,
             ];
-            $sums = [0.0, 0.0, 0.0, 0.0];
-
-            foreach ($weights as $offset => $weight) {
-                $sums = self::add($sums, $line[max(0, min($last, $start - 1 + $offset))], $weight);
-            }
-
-            $output[] = $sums;
         }
 
-        return $output;
+        return $taps;
+    }
+
+    /**
+     * Sums four premultiplied colors by their weights.
+     *
+     * @param  array{float, float, float, float}  $a
+     * @param  array{float, float, float, float}  $b
+     * @param  array{float, float, float, float}  $c
+     * @param  array{float, float, float, float}  $d
+     * @return array{float, float, float, float}
+     */
+    private static function mix(array $a, array $b, array $c, array $d, float $wa, float $wb, float $wc, float $wd): array
+    {
+        return [
+            0.0 + $a[0] * $wa + $b[0] * $wb + $c[0] * $wc + $d[0] * $wd,
+            0.0 + $a[1] * $wa + $b[1] * $wb + $c[1] * $wc + $d[1] * $wd,
+            0.0 + $a[2] * $wa + $b[2] * $wb + $c[2] * $wc + $d[2] * $wd,
+            0.0 + $a[3] * $wa + $b[3] * $wb + $c[3] * $wc + $d[3] * $wd,
+        ];
     }
 
     /**
@@ -239,19 +271,22 @@ class ColorGrid
      */
     private static function hex(array $color): string
     {
-        // Unpremultiplied by the unclamped alpha, so an interpolated alpha that overshoots 1 doesn't brighten the color.
-        $channels = array_map(
-            fn (float $channel): int => $color[3] > 0 ? self::toSrgb($channel / $color[3]) : 0,
-            [$color[0], $color[1], $color[2]],
-        );
-        $alpha = max(0.0, min(1.0, $color[3]));
-        $alphaByte = (int) round($alpha * 255);
+        [$red, $green, $blue, $alpha] = $color;
 
-        if ($alphaByte < 255) {
-            $channels[] = $alphaByte;
+        // Unpremultiplied by the unclamped alpha, so an interpolated alpha that overshoots 1 doesn't brighten the color.
+        if ($alpha > 0) {
+            $red = self::toSrgb($red / $alpha);
+            $green = self::toSrgb($green / $alpha);
+            $blue = self::toSrgb($blue / $alpha);
+        } else {
+            $red = $green = $blue = 0;
         }
 
-        return '#'.implode('', array_map(fn (int $channel): string => sprintf('%02x', $channel), $channels));
+        $alphaByte = (int) round(max(0.0, min(1.0, $alpha)) * 255);
+
+        return $alphaByte < 255
+            ? sprintf('#%02x%02x%02x%02x', $red, $green, $blue, $alphaByte)
+            : sprintf('#%02x%02x%02x', $red, $green, $blue);
     }
 
     /**

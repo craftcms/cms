@@ -41,6 +41,7 @@ use Override;
  * @method static void applyFieldDelete(string $fieldUid)
  * @method static void refreshFields()
  * @method static \Illuminate\Support\Collection findFieldUsages(\CraftCms\Cms\Field\Contracts\FieldInterface $field)
+ * @method static int|null countElementsWithValues(\CraftCms\Cms\FieldLayout\FieldLayout $layout, \CraftCms\Cms\Field\Contracts\FieldInterface[] $fields)
  * @method static \CraftCms\Cms\Field\Data\FieldMergeResult merge(\CraftCms\Cms\Field\Contracts\FieldInterface&\CraftCms\Cms\Field\Contracts\MergeableFieldInterface $persistingField, \CraftCms\Cms\Field\Contracts\FieldInterface&\CraftCms\Cms\Field\Contracts\MergeableFieldInterface $outgoingField)
  * @method static \Illuminate\Support\Collection getAllLayouts()
  * @method static \CraftCms\Cms\FieldLayout\FieldLayout|null getLayoutById(int $layoutId, bool $withTrashed = false)

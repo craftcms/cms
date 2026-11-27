@@ -51,6 +51,7 @@ import './modules/element-selector-modal';
 import './modules/element-select-input';
 import './modules/preview-file-modal';
 import './modules/asset-select-input';
+import './modules/deletion-blockers-modal';
 import './modules/element-deletion-manager';
 import {installLegacyAdminTableShim} from './modules/admin-table/legacy-admin-table';
 

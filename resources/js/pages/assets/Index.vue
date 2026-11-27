@@ -55,7 +55,11 @@
     } else {
       url.searchParams.delete('includeSubfolders');
     }
-    router.visit(url.href, {preserveState: true, preserveScroll: true});
+    router.visit(url.href, {
+      only: page.props.filterProps,
+      preserveState: true,
+      preserveScroll: true,
+    });
   }
 
   // Preserve the current view query in each real href while leaving CpLink in

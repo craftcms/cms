@@ -60,6 +60,20 @@ abstract class ViewModel implements Arrayable, ProvidesInertiaProperties
     /** @return array<string, Closure> */
     private function publicMethodClosures(): array
     {
+        return collect($this->payloadMethods())
+            ->mapWithKeys(fn (ReflectionMethod $method): array => [
+                $method->getName() => $method->getClosure($this),
+            ])
+            ->all();
+    }
+
+    /**
+     * The methods whose values are payload keys.
+     *
+     * @return list<ReflectionMethod>
+     */
+    protected function payloadMethods(): array
+    {
         return collect(new ReflectionClass($this)->getMethods(ReflectionMethod::IS_PUBLIC))
             ->filter(fn (ReflectionMethod $method): bool => $method->getDeclaringClass()->getName() !== self::class
                 && ! $method->isConstructor()
@@ -68,9 +82,7 @@ abstract class ViewModel implements Arrayable, ProvidesInertiaProperties
                 // can still expose configuration setters without them being
                 // invoked — argument-less — as payload.
                 && $method->getNumberOfParameters() === 0)
-            ->mapWithKeys(fn (ReflectionMethod $method): array => [
-                $method->getName() => $method->getClosure($this),
-            ])
+            ->values()
             ->all();
     }
 }

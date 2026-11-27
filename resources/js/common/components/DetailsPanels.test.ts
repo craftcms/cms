@@ -1,4 +1,5 @@
 import {setIconResolver} from '@craftcms/ui/utilities/icons';
+import {detectPlatform} from '@tanstack/hotkeys';
 import {nothing} from 'lit';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vite-plus/test';
 import {
@@ -23,10 +24,18 @@ import {
   type ScreenPanels,
 } from '@/common/composables/screenPanels';
 import {useResizable} from '@/common/composables/useResizable';
+import {announcement} from '@/common/announcer';
 import DetailsPanels from './DetailsPanels.vue';
 import ScreenPanel from './ScreenPanel.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
+
+const stack = vi.hoisted(() => ({top: null as unknown}));
+
+vi.mock('@/common/slideouts/panel-stack', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  topStackedPanel: () => stack.top,
+}));
 
 let app: App | undefined;
 
@@ -38,6 +47,8 @@ afterEach(() => {
   document.body.innerHTML = '';
   window.history.replaceState(null, '', '/');
   localStorage.clear();
+  stack.top = null;
+  announcement.value = null;
 });
 
 let registry: ScreenPanels;
@@ -647,4 +658,187 @@ it('opens on a page panel that arrives later but comes first, until one is chose
   await settle();
 
   expect(panel('history').hidden).toBe(false);
+});
+
+describe('remembering a folded column on pages', () => {
+  it('opens the next page folded once the person folds the column', async () => {
+    await mount('#rail');
+    trigger('info').click();
+    await settle();
+
+    pageKey.value++;
+    await settle();
+
+    expect(panel('info').hidden).toBe(true);
+    expect(panel('history').hidden).toBe(true);
+  });
+
+  it('opens the next page on its first panel again once the person opens one', async () => {
+    await mount('#rail');
+    trigger('info').click();
+    await settle();
+    trigger('history').click();
+    await settle();
+
+    pageKey.value++;
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+  });
+
+  it('still opens the panel the URL hash names', async () => {
+    localStorage.setItem('Page.detailsFolded', 'true');
+    window.history.replaceState(null, '', '/#history');
+
+    await mount('#rail', {syncLocationHash: true});
+
+    expect(panel('history').hidden).toBe(false);
+  });
+
+  it('stays folded for a URL hash that names no panel', async () => {
+    localStorage.setItem('Page.detailsFolded', 'true');
+    window.history.replaceState(null, '', '/#content-main');
+
+    await mount('#rail', {syncLocationHash: true});
+
+    expect(panel('info').hidden).toBe(true);
+    expect(panel('history').hidden).toBe(true);
+  });
+
+  it('opens the panel the URL hash names once it arrives', async () => {
+    localStorage.setItem('Page.detailsFolded', 'true');
+    window.history.replaceState(null, '', '/#late');
+
+    await mount('#rail', {syncLocationHash: true});
+    expect(panel('info').hidden).toBe(true);
+
+    latePanel.value = true;
+    await settle();
+
+    expect(panel('late').hidden).toBe(false);
+  });
+
+  it('drops the folded panel from the URL hash', async () => {
+    window.history.replaceState(null, '', '/#info');
+    await mount('#rail', {syncLocationHash: true});
+
+    trigger('info').click();
+    await settle();
+
+    expect(window.location.hash).toBe('');
+  });
+
+  it('doesn’t remember a column closed while the shell overlays it', async () => {
+    await mount('#rail', {overlaid: true});
+    trigger('info').click();
+    await settle();
+    trigger('info').click();
+    await settle();
+
+    app!.unmount();
+    await mount('#rail');
+
+    expect(panel('info').hidden).toBe(false);
+  });
+});
+
+describe('Mod+Shift+Backslash', () => {
+  const mod = detectPlatform() === 'mac' ? 'metaKey' : 'ctrlKey';
+
+  function press(): void {
+    (document.activeElement ?? document.body).dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: '|',
+        code: 'Backslash',
+        shiftKey: true,
+        [mod]: true,
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      })
+    );
+  }
+
+  function focusField(): HTMLInputElement {
+    const field = document.createElement('input');
+    document.body.append(field);
+    field.focus();
+
+    return field;
+  }
+
+  it('folds the open panel and reopens it, leaving focus where it was', async () => {
+    await mount('#rail');
+    trigger('history').click();
+    await settle();
+    const field = focusField();
+
+    press();
+    await settle();
+
+    expect(panel('history').hidden).toBe(true);
+    expect(document.activeElement).toBe(field);
+    expect(announcement.value).toBe('Sidebar collapsed');
+
+    press();
+    await settle();
+
+    expect(panel('history').hidden).toBe(false);
+    expect(document.activeElement).toBe(field);
+    expect(announcement.value).toBe('Sidebar expanded');
+  });
+
+  it('opens the first panel on a page it didn’t fold', async () => {
+    localStorage.setItem('Page.detailsFolded', 'true');
+    await mount('#rail');
+    expect(panel('info').hidden).toBe(true);
+
+    press();
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+  });
+
+  it('hands focus to the panel’s trigger when it was inside the panel', async () => {
+    await mount('#rail');
+    trigger('history').click();
+    await settle();
+    panel('history').querySelector<HTMLElement>('.inner')!.focus();
+
+    press();
+    await settle();
+
+    expect(document.activeElement).toBe(trigger('history'));
+  });
+
+  it('remembers the fold for the next page', async () => {
+    await mount('#rail');
+    focusField();
+
+    press();
+    await settle();
+    pageKey.value++;
+    await settle();
+
+    expect(panel('info').hidden).toBe(true);
+  });
+
+  it('is left alone while a slideout is open over the page', async () => {
+    await mount('#rail');
+    stack.top = {};
+
+    press();
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+  });
+
+  it('leaves a slideout’s own column alone', async () => {
+    await mount('#rail', {screenMode: 'slideout'});
+
+    press();
+    await settle();
+
+    expect(panel('info').hidden).toBe(true);
+  });
 });

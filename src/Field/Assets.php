@@ -113,7 +113,7 @@ class Assets extends BaseRelationField
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
+        return sprintf('\\%1$s<\\%3$s>|\\%2$s<int, \\%3$s>', AssetQuery::class, ElementCollection::class, Asset::class);
     }
 
     /**
@@ -865,7 +865,7 @@ class Assets extends BaseRelationField
             // Reported by uiWarning(); the modal opens on its first source instead
         }
 
-        $uploadVolume = $this->_uploadVolume();
+        $uploadVolume = $this->getUploadVolume();
 
         $canUpload = (
             $this->allowUploads &&
@@ -938,7 +938,7 @@ class Assets extends BaseRelationField
     {
         $variables = parent::inputTemplateVariables($value, $element);
 
-        $uploadVolume = $this->_uploadVolume();
+        $uploadVolume = $this->getUploadVolume();
         $variables['showFolders'] = ! $this->restrictLocation || $this->allowSubfolders;
         $variables['canUpload'] = (
             $this->allowUploads &&
@@ -1295,9 +1295,10 @@ class Assets extends BaseRelationField
     }
 
     /**
-     * Returns the target upload volume for the field.
+     * Returns the volume the field uploads to, including uploads kept in the user’s temporary folder until their
+     * element is saved.
      */
-    private function _uploadVolume(): ?Volume
+    public function getUploadVolume(): ?Volume
     {
         if ($this->restrictLocation) {
             return $this->_volumeBySourceKey($this->restrictedLocationSource);

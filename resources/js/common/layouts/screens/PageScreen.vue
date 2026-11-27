@@ -343,6 +343,9 @@
                         :class="{
                           'cp-content--sidebar': hasSidebar(),
                           'cp-content--details': regions.hasDetails(),
+                          'cp-content--details-folded':
+                            screenPanels.panels.value.length > 0 &&
+                            screenPanels.openPanelId.value === null,
                         }"
                         :style="detailsResizer.style.value"
                       >
@@ -723,7 +726,8 @@ Content: the secondary nav, content, and details panes
     --cp-content-details-max: 40cqi;
   }
 
-  .cp-body:has(.cp-details-rail [data-open='false']) .cp-content--details {
+  /* Repeats `.cp-content` to outweigh the narrow-width fold rules below. */
+  .cp-content.cp-content--details.cp-content--details-folded {
     /* Definite widths, not `max-content` — see the container note above. The
        track goes with it, or its range would keep reserving the minimum. */
     --cp-content-details-width: 0px !important;

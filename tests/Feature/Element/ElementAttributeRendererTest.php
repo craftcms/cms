@@ -106,6 +106,15 @@ it('renders empty string for generatedField when not found', function () {
     expect($this->renderer->render($entry, 'generatedField:nonexistent-uid'))->toBe('');
 });
 
+it('renders numeric generatedField values as strings', function () {
+    Entry::factory()->create();
+    $entry = EntryElement::findOne();
+    $entry->setGeneratedFieldValues(['year-uid' => 2026, 'ratio-uid' => 1.5]);
+
+    expect($this->renderer->render($entry, 'generatedField:year-uid'))->toBe('2026')
+        ->and($this->renderer->render($entry, 'generatedField:ratio-uid'))->toBe('1.5');
+});
+
 it('renders empty string for contentBlock when not found', function () {
     Entry::factory()->create();
     $entry = EntryElement::findOne();

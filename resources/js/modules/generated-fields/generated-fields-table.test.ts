@@ -12,7 +12,7 @@ let table: CraftGeneratedFieldsTable;
 
 afterEach(() => form?.remove());
 
-async function mount(disabled = false): Promise<void> {
+async function mount(disabled = false, id = ''): Promise<void> {
   const path = ['settings', 'layout', 'generatedFields'];
   const fields: UiNodePayload[] = ['name', 'handle', 'template', 'uid'].map(
     (key) => ({
@@ -86,6 +86,7 @@ async function mount(disabled = false): Promise<void> {
   const container = document.createElement('div');
   container.className = 'fld-cvd';
   table = document.createElement('craft-generated-fields-table');
+  table.id = id;
   table.dataset.payload = JSON.stringify(payload);
   container.append(table);
   form.append(container);
@@ -210,5 +211,15 @@ describe('generated fields UI table', () => {
       table.querySelectorAll('craft-reorder-button, craft-button')
     ).toHaveLength(0);
     expect([...new FormData(form).keys()]).toEqual([]);
+  });
+
+  it('prefixes its field ids with its own id', async () => {
+    // Each designer's table has its own id, so stacked slideouts showing the
+    // same layout don't share field ids.
+    await mount(false, 'slideout-4-generated-fields-table');
+
+    expect(table.querySelector('craft-field')?.id).toBe(
+      'slideout-4-generated-fields-table-ui-settings-layout-generatedFields'
+    );
   });
 });

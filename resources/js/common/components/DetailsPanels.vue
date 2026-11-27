@@ -7,7 +7,9 @@
    *
    * On a full page the rail is teleported away from the panels, so opening a
    * panel from it moves focus to the panel's heading, and Escape or the
-   * panel's close button hands focus back to the rail.
+   * panel's close button hands focus back to the rail. Cmd/Ctrl+Shift+\
+   * folds or reopens a full page's column from anywhere, leaving focus where
+   * it is.
    */
   import '@craftcms/ui/components/disclosure/disclosure';
   import {t} from '@craftcms/ui';
@@ -31,6 +33,9 @@
     ScreenPanels,
   } from '@/common/composables/screenPanels';
   import {usePageClickOutside} from '@/common/composables/usePageClickOutside';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
+  import {useShortcut} from '@/common/shortcuts';
+  import {topStackedPanel} from '@/common/slideouts/panel-stack';
   import {initialOf} from '@/common/utils/initialIcon';
   import type {DetailsPanel} from './detailsPanels';
 
@@ -80,15 +85,36 @@
     ? useLocalStorage<string | null>('Slideout.detailsPanel', null)
     : null;
 
+  /**
+   * Full pages remember that the person folded the column, and open the next
+   * page folded too, until they open a panel again. A panel named in the URL
+   * hash still opens.
+   */
+  const pageFolded = isSlideout
+    ? null
+    : useLocalStorage<boolean>('Page.detailsFolded', false);
+
   /** The panel this column would rather open on, for the registry's policy. */
   function preferredPanelId(): PreferredPanel {
     if (slideoutPanelId) {
       return slideoutPanelId.value;
     }
 
+    // A folded column only opens for a hash that names one of its panels, not
+    // for one that points elsewhere on the page, such as the skip link's.
+    const hashPanelId = locationHashPanelId();
+    if (hashPanelId && (!pageFolded?.value || isVisible(hashPanelId))) {
+      return hashPanelId;
+    }
+
+    return pageFolded?.value ? null : undefined;
+  }
+
+  /** The panel the URL hash names, when the column follows the hash. */
+  function locationHashPanelId(): string | null {
     return props.syncLocationHash && window.location.hash
       ? window.location.hash.slice(1)
-      : undefined;
+      : null;
   }
 
   props.registry.start(preferredPanelId());
@@ -98,7 +124,23 @@
     props.registry.startPage(preferredPanelId(), overlaid?.value ?? false);
   });
 
-  watch(visiblePanels, () => props.registry.reconcile(preferredPanelId()));
+  watch(visiblePanels, () => {
+    // A folded column started without the panel the hash names, when it
+    // hadn't arrived yet, so it opens on that panel once it does. Closing a
+    // panel drops it from the hash, so this can't reopen one the person closed.
+    const hashPanelId = locationHashPanelId();
+    if (
+      pageFolded?.value &&
+      openPanelId.value === null &&
+      hashPanelId &&
+      isVisible(hashPanelId)
+    ) {
+      props.registry.startPage(hashPanelId, overlaid?.value ?? false);
+      return;
+    }
+
+    props.registry.reconcile(preferredPanelId());
+  });
 
   /**
    * The column folds to its rail once the shell overlays it. The width that
@@ -147,6 +189,10 @@
       slideoutPanelId.value = panelId;
     }
 
+    if (pageFolded) {
+      pageFolded.value = false;
+    }
+
     if (withFocus) {
       focusPanel(panelId, focus);
     }
@@ -160,6 +206,14 @@
     if (slideoutPanelId) {
       slideoutPanelId.value = null;
     }
+
+    // An overlaid column is folded by default, so closing it there says
+    // nothing about how the person wants the next page.
+    if (pageFolded && !(overlaid?.value ?? false)) {
+      pageFolded.value = true;
+    }
+
+    clearLocationHash(panelId);
 
     if (returnFocus) {
       focusAfterRender(triggerId(panelId));
@@ -230,6 +284,59 @@
       url.hash = openPanelId.value;
       window.history.replaceState(window.history.state, '', url);
     }
+  }
+
+  /** Drops a closed panel from the URL hash, so a reload doesn't reopen it. */
+  function clearLocationHash(panelId: string): void {
+    if (props.syncLocationHash && window.location.hash === `#${panelId}`) {
+      const url = new URL(window.location.href);
+      url.hash = '';
+      window.history.replaceState(window.history.state, '', url);
+    }
+  }
+
+  /** The panel the shortcut last folded on this page, to reopen in its place. */
+  let foldedPanelId: string | null = null;
+
+  watch(props.registry.pageGeneration, () => {
+    foldedPanelId = null;
+  });
+
+  const {announce} = useAnnouncer();
+
+  /**
+   * Folds the open panel, or reopens the one it folded (the first panel
+   * otherwise), as the person would from the rail but without moving focus:
+   * the keys are pressed from wherever they're working. Focus only moves when
+   * it was inside the panel going away, back to the panel's rail button.
+   */
+  function toggleFromShortcut(): void {
+    const openId = openPanelId.value;
+
+    if (openId) {
+      const section = document.getElementById(panelElementId(openId));
+      close(openId, !!section?.contains(document.activeElement));
+      foldedPanelId = openId;
+      announce(t('Sidebar collapsed'));
+      return;
+    }
+
+    const panelId =
+      foldedPanelId && isVisible(foldedPanelId)
+        ? foldedPanelId
+        : visiblePanels.value[0]?.id;
+
+    if (panelId) {
+      open(panelId, false);
+      announce(t('Sidebar expanded'));
+    }
+  }
+
+  if (!isSlideout) {
+    useShortcut('Mod+Shift+[Backslash]', toggleFromShortcut, {
+      description: () => t('Collapse or expand the sidebar'),
+      isAvailable: () => !topStackedPanel() && visiblePanels.value.length > 0,
+    });
   }
 
   const content = useTemplateRef<HTMLElement>('content');

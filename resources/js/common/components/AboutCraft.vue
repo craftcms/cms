@@ -167,6 +167,7 @@
     }
 
     /* The section's fill stands in for the row's own. */
+    /* stylelint-disable-next-line craft/has-subject-only -- anchored on one section */
     & :deep(.about-craft-row) {
       background: none;
     }

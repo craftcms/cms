@@ -48,7 +48,9 @@ readonly class AssetUploadHandler
 
     /**
      * @param  array<string, mixed>  $parameters
-     * @return array{VolumeFolder, ElementConditionInterface|null}
+     * @return array{VolumeFolder, ElementConditionInterface|null, int|null} The folder to upload to, the condition
+     *                                                                       uploads must match, and the volume they’ll end up in, which is the Assets
+     *                                                                       field’s upload volume when the folder is the user’s temporary folder
      */
     public function resolveTarget(array $parameters, bool $authorizedGuest = false): array
     {
@@ -70,6 +72,7 @@ readonly class AssetUploadHandler
                 $element = null;
             }
             $folderId = $field->resolveDynamicPathToFolderId($element);
+            $destinationVolumeId = $field->getUploadVolume()?->id;
 
             $selectionCondition = $field->getSelectionCondition();
             if ($selectionCondition instanceof ElementCondition) {
@@ -77,6 +80,7 @@ readonly class AssetUploadHandler
             }
         } else {
             $selectionCondition = null;
+            $destinationVolumeId = null;
         }
 
         abort_if(empty($folderId), 400, 'The target destination provided for uploading is not valid');
@@ -89,7 +93,7 @@ readonly class AssetUploadHandler
             Gate::authorize('uploadAsset', $folder);
         }
 
-        return [$folder, $selectionCondition];
+        return [$folder, $selectionCondition, $folder->volumeId ?? $destinationVolumeId];
     }
 
     /**
@@ -103,7 +107,10 @@ readonly class AssetUploadHandler
         ?int $uploaderId = null,
         ?ImageAnalysis $analysis = null,
     ): UploadResult {
-        [$folder, $selectionCondition] = $this->resolveTarget($parameters, $authorizedGuest);
+        $target = $this->resolveTarget($parameters, $authorizedGuest);
+        [$folder, $selectionCondition] = $target;
+        // Overrides written before the destination volume was returned only return the folder and condition
+        $destinationVolumeId = $target[2] ?? $folder->volumeId;
 
         // Save the asset in the site it was uploaded from
         $asset = null;
@@ -126,7 +133,7 @@ readonly class AssetUploadHandler
             asset: $asset,
         ));
 
-        return $this->uploadResult($result);
+        return $this->uploadResult($result, $destinationVolumeId);
     }
 
     public function ingest(AssetIngest $ingest): AssetIngestResult
@@ -259,7 +266,10 @@ readonly class AssetUploadHandler
         return new AssetIngestResult(AssetIngestStatus::Saved, $asset, $conflictingAsset);
     }
 
-    private function uploadResult(AssetIngestResult $result): UploadResult
+    /**
+     * @param  int|null  $destinationVolumeId  The volume the asset will end up in
+     */
+    private function uploadResult(AssetIngestResult $result, ?int $destinationVolumeId): UploadResult
     {
         if ($result->status === AssetIngestStatus::Invalid) {
             return $this->failure($result->asset);
@@ -290,7 +300,7 @@ readonly class AssetUploadHandler
                 'suggestedFilename' => $asset->suggestedFilename,
                 'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->sourceHasUrls()) ? $conflictingAsset->getUrl() : null,
                 'url' => $url,
-                'duplicates' => $this->duplicates($asset),
+                'duplicates' => $this->duplicates($asset, $destinationVolumeId),
             ]);
         }
 
@@ -298,7 +308,7 @@ readonly class AssetUploadHandler
             'filename' => $asset->getFilename(),
             'assetId' => $asset->id,
             'url' => $url,
-            'duplicates' => $this->duplicates($asset),
+            'duplicates' => $this->duplicates($asset, $destinationVolumeId),
         ]);
     }
 
@@ -308,7 +318,7 @@ readonly class AssetUploadHandler
      *
      * @return list<array{id: int, title: string, url: string, chipHtml: string}>
      */
-    private function duplicates(Asset $asset): array
+    private function duplicates(Asset $asset, ?int $destinationVolumeId): array
     {
         if ($asset->kind !== FileKind::Image->value) {
             return [];
@@ -326,7 +336,7 @@ readonly class AssetUploadHandler
                 ]),
             ],
             array_filter(
-                $this->imageDuplicates->find($asset),
+                $this->imageDuplicates->find($asset, volumeId: $destinationVolumeId),
                 static fn (Asset $duplicate): bool => Gate::check('view', $duplicate),
             ),
         ));
