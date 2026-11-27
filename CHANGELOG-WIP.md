@@ -40,9 +40,12 @@
 - Added the `condition_schema` MCP tool, which lists the rules a condition accepts for custom sources, field layout visibility, and relation field selection. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - MCP tools now reject condition rules that Craft would otherwise drop when saving field layouts and relation fields. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - MCP tools now return field settings as plain objects, and accept field layouts in the shape `configuration_get` returns them. ([#21112](https://github.com/craftcms/cms/pull/21112))
+- Twig’s deprecation warnings are now logged by the deprecator, along with Twig extensions, token parsers, and nodes that won’t be compatible with Twig 4. ([#21111](https://github.com/craftcms/cms/pull/21111))
 
 ### Extensibility
 
+- Added `craft\services\Deprecator::logTwigDeprecation()`. ([#21111](https://github.com/craftcms/cms/pull/21111))
+- Added `craft\web\twig\Compiler`. ([#21111](https://github.com/craftcms/cms/pull/21111))
 - Added `craft\services\Composer::MIN_VERSION`, `getIsAvailable()`, `getIsAvailableForUi()`, and `getUnavailableReason()`.
 - Added `craft\helpers\App::composerCommand()`. ([#20487](https://github.com/craftcms/cms/pull/20487))
 - Added `craft\helpers\App::craftCommand()`. ([#20487](https://github.com/craftcms/cms/pull/20487))

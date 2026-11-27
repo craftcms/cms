@@ -107,6 +107,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     public function handleError($code, $message, $file, $line): bool
     {
+        // Twig reports what will break in Twig 4 with trigger_deprecation()
+        if ($code === E_USER_DEPRECATED && str_starts_with($message, 'Since twig/twig ') && isset(Craft::$app)) {
+            Craft::$app->getDeprecator()->logTwigDeprecation($message, debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT));
+        }
+
         // Because: https://bugs.php.net/bug.php?id=74980
         if (str_contains($message, 'Narrowing occurred during type inference. Please file a bug report')) {
             return true;

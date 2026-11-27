@@ -7,6 +7,7 @@
 
 namespace craft\console;
 
+use Craft;
 use craft\events\ExceptionEvent;
 
 /**
@@ -35,5 +36,18 @@ class ErrorHandler extends \yii\console\ErrorHandler
         }
 
         parent::handleException($exception);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleError($code, $message, $file, $line): bool
+    {
+        // Twig reports what will break in Twig 4 with trigger_deprecation()
+        if ($code === E_USER_DEPRECATED && str_starts_with($message, 'Since twig/twig ') && isset(Craft::$app)) {
+            Craft::$app->getDeprecator()->logTwigDeprecation($message, debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT));
+        }
+
+        return parent::handleError($code, $message, $file, $line);
     }
 }
