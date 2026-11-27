@@ -84,6 +84,40 @@ it('includes table-row capabilities for page bulk actions', function () {
         );
 });
 
+it('checks each row’s capabilities once for the row and its chip or card', function (string $viewMode, string $htmlKey) {
+    $section = Section::factory()->create();
+    $denied = EntryModel::factory()->forSection($section)->title('Denied')->createElement();
+    $allowed = EntryModel::factory()->forSection($section)->title('Allowed')->createElement();
+
+    Gate::before(fn ($user, string $ability, array $arguments): ?bool => $ability === 'delete' && ($arguments[0]->id ?? null) === $denied->id ? false : null);
+
+    $deleteChecks = [];
+    Gate::after(function ($user, string $ability, $result, array $arguments) use (&$deleteChecks): void {
+        if ($ability === 'delete' && isset($arguments[0]->id)) {
+            $deleteChecks[$arguments[0]->id] = ($deleteChecks[$arguments[0]->id] ?? 0) + 1;
+        }
+    });
+
+    $rows = collect(get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'sectionHandle' => $section->handle,
+        'viewMode' => $viewMode,
+    ]), ['X-Inertia' => 'true'])->assertOk()->json('props.data'))->keyBy('id');
+
+    $deletable = fn (array $row): bool => $htmlKey === 'title'
+        ? new Crawler($row['title'])->filter('craft-chip')->attr('data-deletable') !== null
+        : ! empty($row['cardAttributes']['data']['deletable']);
+
+    expect($rows[$denied->id]['capabilities']['deletable'])->toBeFalse()
+        ->and($deletable($rows[$denied->id]))->toBeFalse()
+        ->and($rows[$allowed->id]['capabilities']['deletable'])->toBeTrue()
+        ->and($deletable($rows[$allowed->id]))->toBeTrue()
+        ->and($deleteChecks)->toEqual([$denied->id => 1, $allowed->id => 1]);
+})->with([
+    'table' => ['table', 'title'],
+    'cards' => ['cards', 'cardAttributes'],
+]);
+
 it('includes the field layout IDs of table rows that can be compared', function () {
     $fixture = EntryModel::factory()
         ->withField('compareText', PlainText::class)
