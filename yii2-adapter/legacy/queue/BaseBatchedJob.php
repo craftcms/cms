@@ -180,8 +180,9 @@ abstract class BaseBatchedJob extends BaseJob
 
         $this->afterBatch();
 
-        // Spawn another job if there are more items
-        if ($this->itemOffset < $this->totalItems()) {
+        // Spawn another job if there are more items, unless this batch didn't get any,
+        // such as when items were deleted after they were counted
+        if ($i > 0 && $this->itemOffset < $this->totalItems()) {
             $nextJob = clone $this;
             $nextJob->batchIndex++;
             QueueHelper::push($nextJob, $this->priority, 0, $this->ttr, $queue);

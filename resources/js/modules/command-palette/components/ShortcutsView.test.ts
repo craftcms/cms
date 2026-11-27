@@ -67,6 +67,26 @@ describe('ShortcutsView', () => {
     });
   });
 
+  it('shows a shortcut bound to the physical Backslash key as \\', () => {
+    cleanups.push(
+      registerShortcut('Mod+Shift+[Backslash]', noop, {
+        description: 'Collapse or expand the sidebar',
+      }).unregister
+    );
+
+    mount();
+
+    const row = [...container.querySelectorAll('tbody tr')].find((tr) =>
+      tr.textContent!.includes('Collapse or expand the sidebar')
+    )!;
+    const lastKey = [...row.querySelectorAll('kbd')].at(-1)!;
+
+    expect(lastKey.querySelector('[aria-hidden="true"]')!.textContent).toBe(
+      '\\'
+    );
+    expect(lastKey.querySelector('.sr-only')!.textContent).toBe('Backslash');
+  });
+
   it('lists a shortcut once, however many places register it', () => {
     for (let i = 0; i < 2; i++) {
       cleanups.push(

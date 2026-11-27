@@ -3,7 +3,7 @@
    * The Guidance page of the AI Guidance & Skills utility: the guidance for every
    * site and for each site the user can edit, saved together.
    */
-  import {useId} from 'vue';
+  import {inject, useId} from 'vue';
   import {t} from '@craftcms/ui';
   import {useForm} from '@inertiajs/vue3';
   import {store} from '@/actions/CraftCms/Cms/Ai/Http/Controllers/GuidanceController';
@@ -12,8 +12,11 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import type {AiGuidanceScope} from '@/modules/ai/guidance/types';
   import {instructionsToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
-  import {fieldId} from '@/modules/ui/runtime';
+  import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
   import '@/modules/markdown-field/markdown-field';
+
+  // Matches the ids the error summary links to, in a slideout as well.
+  const fieldIdScope = inject(UiFieldIdScope, undefined);
 
   const props = defineProps<{
     scopes: Array<AiGuidanceScope>;
@@ -95,7 +98,7 @@
   function errorTargetId(index: number): string | undefined {
     const path = errorPath(index);
 
-    return path ? fieldId(path) : undefined;
+    return path ? scopedId(fieldIdScope, fieldId(path)) : undefined;
   }
 </script>
 

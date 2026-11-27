@@ -105,6 +105,7 @@ async function mountPage() {
     source: {type: 'native', key: 'section:news', label: 'News'},
     sources: [],
     search: '',
+    filterProps: ['data', 'search'],
     status: '',
     currentCondition: {
       class: 'EntryCondition',
@@ -190,7 +191,7 @@ it.each([
     viewMode: 'table',
   });
   expect(options).toMatchObject({
-    only: [],
+    only: ['data', 'search'],
     replace,
     preserveState: true,
     preserveScroll: true,

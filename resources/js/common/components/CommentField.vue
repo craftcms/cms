@@ -200,6 +200,7 @@
     padding-block-start: var(--c-spacing-xs) !important;
   }
 
+  /* stylelint-disable-next-line craft/has-subject-only -- anchored on one comment field */
   .comment-field:has(.comment-field__footer)
     craft-markdown-field:defined
     :deep(:is(.overtype-input, .overtype-preview, .overtype-placeholder)) {

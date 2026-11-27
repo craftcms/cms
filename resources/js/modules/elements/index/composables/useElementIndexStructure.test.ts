@@ -230,4 +230,20 @@ describe('useElementIndexStructure', () => {
 
     expect(isStructure.value).toBe(false);
   });
+
+  // Rows rendered with a branch collapsed leave out its children, which an
+  // expanded parent would then show as missing.
+  it('requests rows with nothing collapsed when the URL has collapsed IDs', () => {
+    const {restore} = useElementIndexStructure(
+      {structure: null, source: {structureId: 1}},
+      viewState,
+      {...visitor, currentQuery: () => ({'collapsedElementIds[0]': '2'})},
+      () => 'structure'
+    );
+
+    expect(restore({})).toEqual({
+      params: {collapsedElementIds: []},
+      only: ['data', 'pagination'],
+    });
+  });
 });

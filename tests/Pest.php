@@ -11,7 +11,6 @@ use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\BrowserTestCase;
 use CraftCms\Cms\Tests\TestCase;
@@ -25,7 +24,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Testing\TestResponse;
 use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Playwright\Playwright;
 use Pest\Browser\Playwright\Servers\PlaywrightNpmServer;
@@ -99,33 +97,6 @@ function enableMcp(array $settings = []): void
     app(UrlGenerator::class)->setRoutes($routes);
     app(RouteRegistrar::class)->register();
 }
-
-/**
- * Asserts the response flashed a message of the given type, and optionally
- * text, to the next page — as a control panel message or,
- * on site requests, the plain session key.
- *
- *     post('/admin/settings/sites')->assertMessage('success', 'Site saved.');
- */
-TestResponse::macro('assertMessage', function (string $type, ?string $message = null): TestResponse {
-    /** @var TestResponse $this */
-    $messages = array_column(array_filter(
-        session()->get(Flash::SESSION_KEY, []),
-        fn (array $flashed): bool => $flashed['type'] === $type,
-    ), 'message');
-
-    if (is_string($plain = session()->get($type))) {
-        $messages[] = $plain;
-    }
-
-    Assert::assertNotEmpty($messages, "No [$type] message was flashed.");
-
-    if ($message !== null) {
-        Assert::assertContains($message, $messages, "No [$type] message with the expected text was flashed.");
-    }
-
-    return $this;
-});
 
 $tia = pest()->tia()
     ->defaultBranch('6.x')

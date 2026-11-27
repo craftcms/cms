@@ -209,7 +209,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
         expect($content)
             ->toContain("namespace CraftCms\\Cms\\Entry\\Elements {\n    use CraftCms\\Cms\\Element\\ElementCollection;")
             ->toContain('use CraftCms\\Cms\\Element\\Queries\\EntryQuery;')
-            ->toContain('EntryQuery<Heading|Image>|ElementCollection<Heading|Image>')
+            ->toContain('EntryQuery<Heading|Image>|ElementCollection<int, Heading|Image>')
             ->toContain('$contentBlocks');
     });
 

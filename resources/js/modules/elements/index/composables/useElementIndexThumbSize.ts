@@ -120,14 +120,20 @@ export function useElementIndexThumbSize(
   // default re-requests the rows as part of the page's mount-time restore
   // visit. Runs after the view-mode restore, so it sizes the mode that visit
   // will render.
-  function restore(): IndexRestore | null {
+  //
+  // `query` holds the params the link named. The URL can also hold a size the
+  // server filled in from the session, which the rows were rendered at, so
+  // only a size that differs from it is requested.
+  function restore(
+    query: IndexQueryParams = visitor.currentQuery()
+  ): IndexRestore | null {
     const view = viewFor(mode());
 
     if (!view) {
       return null;
     }
 
-    const requested = visitor.currentQuery().thumbSize;
+    const requested = query.thumbSize;
 
     if (requested !== undefined) {
       // The server falls back to the default for a size the view doesn't
@@ -143,8 +149,14 @@ export function useElementIndexThumbSize(
     }
 
     const size = param(mode());
+    const rendered = visitor.currentQuery().thumbSize ?? null;
 
-    return size ? {params: {thumbSize: size}, only: ['data']} : null;
+    if (size === rendered) {
+      return null;
+    }
+
+    // The default is named outright, so it replaces a size from the session.
+    return {params: {thumbSize: size ?? defaultSizes[view]}, only: ['data']};
   }
 
   /**

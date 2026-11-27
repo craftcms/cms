@@ -110,6 +110,7 @@ readonly class SitesController
                 ->createAction(t('New site'), route('craft.cp.settings.sites.create', isset($group) ? ['groupId' => $group->id] : []))
                 ->createActionInPageHeader()
                 ->deletable()
+                ->deletionBlockers('site')
                 ->when(isset($group), fn (Table $table) => $table->reorderable(route('craft.cp.settings.sites.reorder'), t('New order saved.'))));
 
         $crumbs = array_filter([

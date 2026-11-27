@@ -41,7 +41,7 @@ class Country extends Field implements InlineEditableFieldInterface, InputSchema
     #[Override]
     public static function phpType(): string
     {
-        return 'string|null';
+        return sprintf('\\%s|null', CountryModel::class);
     }
 
     #[Override]

@@ -1,7 +1,9 @@
 import {computed, type Ref} from 'vue';
-import type {
-  IndexVisitor,
-  IndexRestore,
+import {
+  queryHasParam,
+  type IndexQueryParams,
+  type IndexVisitor,
+  type IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
@@ -18,6 +20,8 @@ interface ElementIndexColumnsContext {
   source?: SourceItem | null;
   /** Element-type default columns, used when the source defines none. */
   defaultTableColumns?: Array<string>;
+  /** `tableColumns` lists the columns the rows were rendered with. */
+  viewState?: {tableColumns?: Array<string>};
 }
 
 interface TableColumn {
@@ -155,6 +159,11 @@ export function useElementIndexColumns(
     viewState.value.sources = sources;
   }
 
+  // Column visits also reload `viewState`, whose `tableColumns` names the
+  // columns the rows were rendered with; `restore()` reads it from the page's
+  // history state.
+  const COLUMN_PROPS = ['data', 'viewState'];
+
   // The server only renders the columns it's asked for, so any change to the
   // visible set refetches the rows with the new `columns` selection. Ordering
   // is purely presentational and stays client-side.
@@ -164,7 +173,7 @@ export function useElementIndexColumns(
   ) {
     visitor.merge(
       {columns: visible},
-      {only: ['data'], replace: options.replace ?? false}
+      {only: COLUMN_PROPS, replace: options.replace ?? false}
     );
   }
 
@@ -200,23 +209,47 @@ export function useElementIndexColumns(
   });
 
   // On load, if the user has a persisted column selection that differs from
-  // what the server rendered by default, restore it so the rows include those
+  // the columns the server rendered, restore it so the rows include those
   // columns' data. The page folds this into one mount-time restore visit
   // alongside the view-mode/sort restores (see `useElementIndex`), so they
-  // can't interrupt each other.
-  function restore(): IndexRestore | null {
-    const hasColumnsInQuery = visitor.currentQuery().columns !== undefined;
-    const persisted = sourceColumnState.value?.visible;
+  // can't interrupt each other. `query` holds the params the link named.
+  function restore(
+    query: IndexQueryParams = visitor.currentQuery()
+  ): IndexRestore | null {
+    const persisted = sourceColumnState.value?.visible?.filter((key) =>
+      columnsByKey.value.has(key)
+    );
+    const rendered = props.viewState?.tableColumns ?? defaultVisible.value;
+    // Rows have the same data whatever the columns' order, and reordering
+    // doesn't touch the URL, so only which columns show is compared.
+    const matches =
+      persisted?.length === rendered.length &&
+      rendered.every((key) => persisted.includes(key));
 
-    if (hasColumnsInQuery || !persisted?.length) {
+    // Columns the link names win, and become the source's, so the columns
+    // shown are the ones the rows have data for.
+    if (queryHasParam(query, 'columns')) {
+      if (props.viewState?.tableColumns && !matches) {
+        patchSourceColumnState({visible: props.viewState.tableColumns});
+      }
+
       return null;
     }
 
-    if (JSON.stringify(persisted) === JSON.stringify(defaultVisible.value)) {
+    // With nothing saved, the source's default columns show, so rows rendered
+    // for columns the URL holds, such as from an older session copy, are
+    // requested again without them.
+    if (!persisted?.length) {
+      return queryHasParam(visitor.currentQuery(), 'columns')
+        ? {params: {columns: null}, only: COLUMN_PROPS}
+        : null;
+    }
+
+    if (matches) {
       return null;
     }
 
-    return {params: {columns: persisted}, only: ['data']};
+    return {params: {columns: persisted}, only: COLUMN_PROPS};
   }
 
   function reorder(options: Array<{value: string}>) {
@@ -260,7 +293,7 @@ export function useElementIndexColumns(
     };
     viewState.value.sources = sources;
 
-    return {params: {columns: null}, only: ['data']};
+    return {params: {columns: null}, only: COLUMN_PROPS};
   }
 
   return {
