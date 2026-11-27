@@ -180,38 +180,14 @@ it('selects fit for index tiles and inline cards', function (string $viewMode, s
     'inline cards' => ['cards', 'cardThumbHtml', 'fit', 120],
 ]);
 
-it('preloads the thumbnail indexes for the images that entries’ thumbnails show', function () {
-    Queue::fake();
-    config()->set('filesystems.disks.test-disk', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/content-index-controller-test/test-disk'),
-    ]);
-    $volume = Volume::factory()->create(['disk' => 'test-disk']);
-    $folder = Folders::getRootFolderByVolumeId($volume->id);
-    $imageTransformer = new ImageTransformer;
-    $assetIds = [];
-
-    foreach (range(1, 3) as $number) {
-        $asset = Asset::factory()->createElement([
-            'volumeId' => $volume->id,
-            'folderId' => $folder->id,
-            'filename' => "image-{$number}.jpg",
-            'width' => 800,
-            'height' => 400,
-            'dateModified' => now()->subMinute(),
-        ]);
-
-        foreach ([30, 60] as $size) {
-            $imageTransformer->getTransformIndex($asset, new ImageTransform(['width' => $size, 'height' => $size, 'mode' => 'fit']));
-        }
-
-        $assetIds[] = $asset->id;
-    }
+it('preloads the thumbnail indexes for the images that entries’ thumbnails show', function (string $viewMode, string $cardThumbStyle, int $width, array $transforms, int $expectedQueries) {
+    $assetIds = createIndexThumbnailImages($width, $transforms);
 
     $entry = EntryModel::factory()->withField('photo', Assets::class, value: [$assetIds[0]])
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
     $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    $layout->setCardThumbStyle($cardThumbStyle);
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     foreach (array_slice($assetIds, 1) as $assetId) {
@@ -220,16 +196,30 @@ it('preloads the thumbnail indexes for the images that entries’ thumbnails sho
         expect(app(Elements::class)->saveElement($other))->toBeTrue();
     }
 
-    $queries = [];
-    DB::listen(function (QueryExecuted $query) use (&$queries): void {
-        if (str_starts_with($query->sql, 'select') && str_contains($query->sql, Table::IMAGETRANSFORMINDEX)) {
-            $queries[] = $query;
-        }
-    });
+    $queries = listenForTransformIndexSelects();
 
-    get(route('craft.cp.content.index', ['page' => 'entries', 'viewMode' => 'table']), ['X-Inertia' => 'true'])
+    get(route('craft.cp.content.index', ['page' => 'entries', 'viewMode' => $viewMode]), ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonCount(3, 'props.data');
+
+    expect($queries)->toHaveCount($expectedQueries)
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(3 * count($transforms));
+})->with([
+    'table' => ['table', 'normal', 800, [[30, 30, 'fit'], [60, 60, 'fit']], 2],
+    'cards with the cover style' => ['cards', 'cover', 400, [[120, 120, 'fit'], [240, 240, 'fit'], [800, 600, 'crop']], 3],
+    'cards with the normal style' => ['cards', 'normal', 800, [[120, 120, 'fit'], [240, 240, 'fit']], 2],
+]);
+
+it('preloads the cropped thumbnail indexes for users’ photos', function () {
+    foreach (createIndexThumbnailImages(800, [[30, 30, 'crop'], [60, 60, 'crop']]) as $photoId) {
+        UserModel::factory()->create(['photoId' => $photoId]);
+    }
+
+    $queries = listenForTransformIndexSelects();
+
+    get("/{$this->cpTrigger}/users/all?viewMode=table", ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonCount(4, 'props.data');
 
     expect($queries)->toHaveCount(2)
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(6);
@@ -1788,4 +1778,52 @@ function saveUnpublishedEntryDraft(EntryElement $sibling): EntryElement
     app(Drafts::class)->saveElementAsDraft($draft, auth()->id());
 
     return $draft;
+}
+
+/**
+ * @param  list<array{int, int, string}>  $transforms  The widths, heights, and modes of the transform indexes each image already has
+ * @return list<int> The images' asset IDs
+ */
+function createIndexThumbnailImages(int $width, array $transforms): array
+{
+    Queue::fake();
+    config()->set('filesystems.disks.test-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/content-index-controller-test/test-disk'),
+    ]);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $folder = Folders::getRootFolderByVolumeId($volume->id);
+    $imageTransformer = new ImageTransformer;
+
+    return array_map(function (int $number) use ($volume, $folder, $width, $transforms, $imageTransformer): int {
+        $asset = Asset::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => "image-{$number}.jpg",
+            'width' => $width,
+            'height' => $width * 3 / 4,
+            'dateModified' => now()->subMinute(),
+        ]);
+
+        foreach ($transforms as [$transformWidth, $transformHeight, $mode]) {
+            $imageTransformer->getTransformIndex($asset, new ImageTransform(['width' => $transformWidth, 'height' => $transformHeight, 'mode' => $mode]));
+        }
+
+        return $asset->id;
+    }, range(1, 3));
+}
+
+/**
+ * @return ArrayObject<int, QueryExecuted> The transform index lookups made from now on
+ */
+function listenForTransformIndexSelects(): ArrayObject
+{
+    $queries = new ArrayObject;
+    DB::listen(function (QueryExecuted $query) use ($queries): void {
+        if (str_starts_with($query->sql, 'select') && str_contains($query->sql, Table::IMAGETRANSFORMINDEX)) {
+            $queries[] = $query;
+        }
+    });
+
+    return $queries;
 }

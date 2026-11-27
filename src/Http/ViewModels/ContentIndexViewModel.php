@@ -32,6 +32,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
@@ -925,47 +926,49 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * Loads the transform indexes for the images in the rows' thumbnails with one query per thumbnail size, rather than
-     * one per row.
+     * Loads the transform indexes for the images in the rows' thumbnails and card covers with one query per size,
+     * rather than one per row.
      *
      * @param  list<ElementInterface|array<string, mixed>>  $elements
      */
     protected function prepareElements(array $elements): void
     {
-        $assets = [];
+        $cards = $this->mode() === ElementIndexViewMode::Cards->value;
+        $thumbs = [];
+        $covers = [];
 
         foreach ($elements as $element) {
-            if ($element instanceof ElementInterface && $asset = $element->getThumb()?->getAsset()) {
-                $assets[] = $asset;
+            if (! $element instanceof ElementInterface || ! $asset = $element->getThumb()?->getAsset()) {
+                continue;
+            }
+
+            // Users' own photos are always cropped
+            $mode = $element instanceof User && $asset === $element->getPhoto() ? ImageTransformMode::Crop : ImageTransformMode::Fit;
+            $thumbs[$mode->value][] = $asset;
+
+            // The same styles as ElementHtml::cardAttributes() shows covers for
+            $coverStyle = $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'auto' : 'normal');
+
+            if ($cards && ($coverStyle === 'cover' || ($coverStyle === 'auto' && $asset->canCoverCard()))) {
+                $covers[] = $asset;
             }
         }
 
-        if ($assets === []) {
-            return;
-        }
-
-        match ($this->mode()) {
-            ElementIndexViewMode::Cards->value => $this->preloadCardThumbs($assets),
-            ElementIndexViewMode::Thumbs->value => Assets::preloadThumbs($assets, [
+        $sizes = match ($this->mode()) {
+            ElementIndexViewMode::Cards->value => [120, 240],
+            ElementIndexViewMode::Thumbs->value => [
                 $size = $this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE,
                 $size * 2,
-            ]),
+            ],
             // Table rows show plain chips, whose small thumbnails are 30px
-            default => Assets::preloadThumbs($assets, [$size = $this->thumbSize()->pixels() ?? 30, $size * 2]),
+            default => [$size = $this->thumbSize()->pixels() ?? 30, $size * 2],
         };
-    }
 
-    /**
-     * @param  list<Asset>  $assets
-     */
-    private function preloadCardThumbs(array $assets): void
-    {
-        Assets::preloadThumbs($assets, [120, 240]);
-        Assets::preloadThumbs(
-            array_values(array_filter($assets, fn (Asset $asset): bool => $asset->canCoverCard())),
-            [Asset::CARD_COVER_SIZE],
-            ImageTransformMode::Crop,
-        );
+        foreach ($thumbs as $mode => $assets) {
+            Assets::preloadThumbs($assets, $sizes, ImageTransformMode::from($mode));
+        }
+
+        Assets::preloadThumbs($covers, [Asset::CARD_COVER_SIZE], ImageTransformMode::Crop);
     }
 
     /** @return array<int, array<string, mixed>>|null */

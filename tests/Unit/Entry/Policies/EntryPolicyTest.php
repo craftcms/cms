@@ -495,7 +495,7 @@ it('does not treat a missing user id as the draft creator when moving drafts', f
     $compatibleSection = createEntryTestSectionWithEntryTypes(4, 'target-section-uid', [$entryType]);
     SectionsFacade::shouldReceive('getAllSections')->andReturn(collect([$compatibleSection]));
 
-    $user = createEntryTestUser(['saveEntries:channel-section-uid']);
+    $user = createEntryTestUser(['saveEntries:channel-section-uid', 'viewEntries:target-section-uid']);
     $user->id = null;
     $entry = createEntryTestEntry($this->channelSection, typeId: 7);
     $entry->draftId = 100;
