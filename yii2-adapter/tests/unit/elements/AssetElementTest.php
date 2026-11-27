@@ -41,12 +41,14 @@ class AssetElementTest extends TestCase
             'getVolume' => $this->make(Volume::class, [
                 'hasUrls' => true,
                 'getResolvedDisk' => 'asset-element-test',
+                'getAssetTransformer' => 'test',
             ]),
             'folderId' => 2,
             'filename' => 'foo.jpg',
         ]);
 
-        config()->set('filesystems.disks.asset-element-test', ['driver' => 'local', 'asset_transformer' => 'test']);
+        config()->set('filesystems.disks.asset-element-test', ['driver' => 'local']);
+        \CraftCms\Cms\Cms::config()->assets->addTransformer('test', ['driver' => 'test']);
         app(AssetTransformers::class)->extend('test', fn() => new class() implements AssetTransformDriver {
             public function definition(): AssetTransformDriverDefinition
             {

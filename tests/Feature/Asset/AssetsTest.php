@@ -130,7 +130,7 @@ it('uses ThumbUrlResolving event url when set', function () {
 it('renders non-image thumbnails and previews through the selected driver', function () {
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
-    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
+    useAssetTransformer('test');
     $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -154,7 +154,7 @@ it('uses file-kind images only when the selected driver does not support the sou
     new ControlPanelAssetTransformDriver(
         new NotSupportedException('unsupported'),
     )->register();
-    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
+    useAssetTransformer('test');
     $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -173,7 +173,7 @@ it('uses file-kind images only when the selected driver does not support the sou
 });
 
 it('does not disguise control-panel transform configuration failures as file-kind images', function () {
-    config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
+    useAssetTransformer('missing');
     $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -477,7 +477,7 @@ it('resets caches', function () {
 it('passes explicit modes and bounds to the driver without treating event mode as a control', function (ImageTransformMode $mode) {
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
-    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
+    useAssetTransformer('test');
     $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
     $requests = [];
@@ -498,7 +498,7 @@ it('passes explicit modes and bounds to the driver without treating event mode a
 ]);
 
 it('honors empty thumbnail URL overrides without calling the driver', function () {
-    config()->set('filesystems.disks.local.asset_transformer', 'missing');
+    useAssetTransformer('missing');
     $asset = AssetModel::factory()->createElement();
     Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) {
         $event->url = '';

@@ -299,7 +299,7 @@ test('falls back to a manual TODO for a missing filesystem of an unrecognized ty
         ->toContain('create this manually'));
 });
 
-test('doesn’t require a disk or asset_transformer for a Craft 5 volume’s transform filesystem', function () {
+test('doesn’t require a disk for a Craft 5 volume’s transform filesystem', function () {
     config()->set('filesystems.disks.volume-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/migrations/volume-source'),

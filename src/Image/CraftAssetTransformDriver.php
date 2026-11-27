@@ -26,7 +26,18 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
      */
     public const string IMMEDIATE_TRANSFORMS_CONTEXT = AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT;
 
-    public function __construct(private readonly ImageTransformer $imageTransformer) {}
+    /**
+     * @param  string|null  $outputDisk  The disk to store transforms on, or `null` for the volume’s own disk.
+     * @param  bool  $generateBeforePageLoad  Whether to generate transforms before returning their URLs by default.
+     * @param  bool|null  $hasUrls  Whether transforms get direct URLs, set only by a disk’s deprecated
+     *                              `asset_transformer` key, or `null` to follow the volume.
+     */
+    public function __construct(
+        private readonly ImageTransformer $imageTransformer,
+        public readonly ?string $outputDisk = null,
+        public readonly bool $generateBeforePageLoad = false,
+        public readonly ?bool $hasUrls = null,
+    ) {}
 
     public function definition(): AssetTransformDriverDefinition
     {
@@ -40,15 +51,14 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         }
 
         $transform = $request->namedTransform ?? ImageTransform::fromParameters($request->parameters);
-        $immediately = $request->immediately
-            ?? ($request->transformer->settings['generate_transforms_before_page_load'] ?? false) === true;
+        $immediately = $request->immediately ?? $this->generateBeforePageLoad;
         $source = clone $request->asset;
         if (method_exists($source, 'setTransform')) {
             $source->setTransform(null);
         }
 
         try {
-            $url = $this->imageTransformer->getTransformUrl($source, $transform, $immediately, $request->transformer);
+            $url = $this->imageTransformer->getTransformUrl($source, $transform, $immediately, $this);
         } catch (ImageTransformException $exception) {
             throw new AssetTransformFailedException($exception->getMessage(), previous: $exception);
         }

@@ -57,11 +57,8 @@ describe('generate', function () {
         config()->set('filesystems.disks.configured-private-source', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-source'),
-            'asset_transformer' => [
-                'driver' => 'craft',
-                'output_disk' => 'configured-private-target',
-            ],
         ]);
+        configureCraftTransformer(['outputDisk' => 'configured-private-target']);
         config()->set('filesystems.disks.configured-private-target', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-target'),
@@ -146,7 +143,7 @@ describe('generate', function () {
             }
         };
         app(AssetTransformers::class)->extend('controller-test', fn () => $driver);
-        config()->set('filesystems.disks.test-disk.asset_transformer', 'controller-test');
+        useAssetTransformer('controller-test');
         app(ImageTransforms::class)->saveTransform(new ImageTransform([
             'name' => 'Card',
             'handle' => 'controllerCard',
@@ -165,7 +162,7 @@ describe('generate', function () {
             'handle' => 'controllerCard',
         ])->assertOk()->assertJson(['url' => '/plugin/card.jpg']);
 
-        expect($driver->request?->transformer->driver)->toBe('controller-test');
+        expect($driver->request?->transformer->name)->toBe('controller-test');
     });
 
     it('returns error for missing asset id', function () {

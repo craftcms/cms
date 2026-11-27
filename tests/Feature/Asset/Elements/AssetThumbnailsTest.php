@@ -21,7 +21,7 @@ beforeEach(function () {
 it('uses square bounds and explicit modes regardless of source dimensions or divisibility by 128', function (ImageTransformMode $mode, int $size, int $doubleSize, ?int $width, ?int $height) {
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
-    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
+    useAssetTransformer('test');
     $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id, 'width' => $width, 'height' => $height]);
 
     $thumbnail = new Crawler($asset->getThumbHtml($size, $mode))->filter('craft-thumbnail');
@@ -50,7 +50,7 @@ it('uses square bounds and explicit modes regardless of source dimensions or div
 it('defaults native asset thumbnails to fit', function () {
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
-    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
+    useAssetTransformer('test');
     $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id]);
 
     expect($asset->getThumbHtml(128))->toContainTag('craft-thumbnail', ['mode' => 'fit'])
@@ -62,7 +62,7 @@ it('defaults native asset thumbnails to fit', function () {
 
 it('gives fit thumbnails the size they’re displayed at, so placeholders match them', function (ImageTransformMode $mode, ?int $width, ?int $height, ?string $thumbWidth, ?string $thumbHeight) {
     new ControlPanelAssetTransformDriver()->register();
-    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
+    useAssetTransformer('test');
     $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id, 'width' => $width, 'height' => $height]);
 
     $thumbnail = new Crawler($asset->getThumbHtml(120, $mode))->filter('craft-thumbnail');
@@ -79,7 +79,7 @@ it('gives fit thumbnails the size they’re displayed at, so placeholders match 
 
 it('shows image thumbnails’ placeholders while they load', function (?ImageColors $colors, bool $hasPlaceholder) {
     new ControlPanelAssetTransformDriver()->register();
-    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
+    useAssetTransformer('test');
     $asset = Asset::factory()->createElement(['volumeId' => $this->volume->id]);
     $asset->analysis = new ImageAnalysis(colors: $colors);
 

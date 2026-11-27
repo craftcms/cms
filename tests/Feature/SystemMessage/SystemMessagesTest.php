@@ -28,7 +28,7 @@ beforeEach(function () {
 it('requests immediate transforms while rendering system messages', function () {
     $driver = new SystemMessageAssetTransformDriver;
     app(AssetTransformers::class)->extend('system-message', fn () => $driver);
-    config()->set('filesystems.disks.local.asset_transformer', 'system-message');
+    useAssetTransformer('system-message');
     $asset = Asset::factory()->createElement();
     $this->systemMessages->register('asset-transform', fn () => new SystemMessage([
         'key' => 'asset-transform',

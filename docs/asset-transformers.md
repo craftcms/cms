@@ -1,40 +1,90 @@
 # Asset Transformers
 
-A **transformer** turns an Asset and a transform definition into an `AssetTransformResult` with a URL and MIME type. Each
-transformer is a **driver**, registered under a name such as `craft` or `remote-images`, plus optional inline settings.
-
-## Choosing a transformer per disk
-
-Set `asset_transformer` on a disk in `config/filesystems.php`. Use a driver name, or an array with a `driver` key and
-inline settings, the same way a disk is written:
+A **transformer** turns an Asset and a transform definition into an `AssetTransformResult` with a URL and MIME type.
+Transformers are set with the `assets` setting in `config/craft/general.php`. Each transformer has a name, a
+`driver` such as `craft` or `imgix`, and that driver's settings. Craft defines the `craft` transformer. Plugins register
+other drivers.
 
 ```php
-'disks' => [
-    // No key: the `craft` driver with its defaults.
-    'local' => ['driver' => 'local', 'root' => storage_path('app/public')],
+use CraftCms\Cms\Config\AssetsConfig;
+use CraftCms\Cms\Config\GeneralConfig;
 
-    's3' => ['driver' => 's3', /* ... */, 'asset_transformer' => 'remote-images'],
-
-    'uploads' => ['driver' => 's3', /* ... */, 'asset_transformer' => [
-        'driver' => 'craft',
-        'output_disk' => 'transforms',
-    ]],
-
-    // A scoped disk without the key uses the key of the disk it wraps: `remote-images`.
-    'blog' => ['driver' => 'scoped', 'disk' => 's3', 'prefix' => 'blog'],
-],
+return GeneralConfig::create()
+    ->assets(AssetsConfig::create()
+        ->defaultTransformer('imgix')
+        ->addTransformer('craft', ['outputDisk' => 'transforms'])
+        ->addTransformer('imgix', [
+            'driver' => 'imgix',
+            'domain' => env('IMGIX_DOMAIN'),
+            'key' => env('IMGIX_KEY'),
+        ])
+    );
 ```
 
-Volumes on the same disk share its transformer. To give one volume a different transformer, point it at its own disk,
-such as a `scoped` disk that wraps the shared one.
+`AssetsConfig` has these transformer settings:
+
+| Setting | Meaning |
+| --- | --- |
+| `defaultTransformer($name)` | The transformer for volumes that don't choose one. Without one, they use `craft`. |
+| `addTransformer($name, $config)` | Defines a transformer. `$config` needs a `driver`. |
+| `transformers($transformers)` | Replaces all transformers with an array of configs keyed by name. |
+
+Craft always defines the `craft` transformer. `addTransformer('craft', [...])` sets its settings, and can leave out
+`driver`. Giving it another driver throws. Adding a name that's already defined replaces its config.
+
+Names can't be empty, integers, or start with `disk:`, which is reserved for disks' deprecated `asset_transformer`
+keys.
+
+## Choosing a transformer
+
+Each volume uses one transformer. Craft picks it in this order:
+
+1. The volume's **Asset Transformer** setting, if it names a transformer. It accepts an environment variable, such as
+   `$IMAGES_TRANSFORMER`. An unset variable counts as no setting.
+2. The `assets` setting's `defaultTransformer`.
+3. The `craft` transformer.
+
+Most sites use one transformer per environment, so they set `defaultTransformer` with `env()` and leave the volume
+setting empty:
+
+```php
+->assets(AssetsConfig::create()
+    ->defaultTransformer(env('ASSET_TRANSFORMER'))
+    ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
+)
+```
+
+An unset variable leaves it `null`, so that environment uses `craft`. Set the volume setting when one volume needs a different transformer than the rest, such as a Cloud
+volume next to an S3 volume.
+
+A hosting package can set its own default, as Craft Cloud's does, by setting it only when it's `null`. That way it
+doesn't override a project that chose one.
+
+### Multiple transformers of the same type
+
+Two transformers can use the same driver with different settings, such as two imgix sources. Name the second one and
+choose it in the volumes that need it:
+
+```php
+->assets(AssetsConfig::create()
+    ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
+    ->addTransformer('imgix-products', ['driver' => 'imgix', 'domain' => env('IMGIX_PRODUCTS_DOMAIN')])
+)
+```
+
+Craft builds one driver instance per transformer.
+
+6.0.0-beta.1 and beta.2 set transformers with an `asset_transformer` key on disks in `config/filesystems.php`. Craft still reads
+it, after a volume's Asset Transformer setting and before the `defaultTransformer`, and logs a deprecation warning. Its `has_urls`
+setting still applies, and still defaults to `false` when `output_disk` names a disk other than the volume's. Move the value to the volume's setting or to the `assets` setting, then remove the key.
 
 ### Invalid configuration
 
-Craft checks a transformer when it's first used, not at boot. If an `asset_transformer` value isn't a driver name or an
-array with a `driver` key, or names a driver that isn't registered:
+Craft checks a transformer when it's first used, not at boot. If a volume or the `defaultTransformer` names a transformer that
+isn't defined, whose driver isn't registered, or whose driver rejects its settings:
 
-- With debug mode on, Craft throws an `InvalidAssetTransformException` or `AssetTransformDriverNotFoundException`.
-- Otherwise, Craft logs a warning once per process, and the disk falls back to the `craft` driver with its defaults.
+- With debug mode on, Craft throws the exception, such as an `AssetTransformDriverNotFoundException`.
+- Otherwise, Craft logs a warning once per process, and the volume uses the `craft` transformer.
 
 ## Transform definitions
 
@@ -67,42 +117,53 @@ A driver can declare more parameters or replace a core parameter's rules. A Clou
 `quality` also accept presets such as `high`. Craft validates core and declared parameters, passes others through
 unchanged, and sorts parameters by name before calling the driver.
 
-Named Image Transforms store a driver's custom parameter values under its driver name, so every disk using that driver
-shares them.
+Named Image Transforms store custom parameter values under the transformer's name, so every volume using that
+transformer shares them. Two transformers with the same driver keep separate values.
 
 ## The `craft` driver
 
-The `craft` driver generates transforms with Craft's own image processing. It accepts these inline settings:
+The `craft` driver generates transforms with Craft's own image processing. Transformers that use it, including the
+`craft` transformer, take these keys, with `generateTransformsBeforePageLoad` as a boolean. They ignore other keys.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `output_disk` | The volume's disk | The disk to store generated transforms on, at its root rather than below the volume's subpath. To store them below a path, use a `scoped` disk. |
-| `has_urls` | The volume's setting on the volume's disk, otherwise `false` | Whether `output_disk` serves public URLs. |
-| `generate_transforms_before_page_load` | `false` | Generate each transform before returning its URL, instead of on its first request. |
+| `outputDisk` | The volume's disk | The disk to store generated transforms on, at its root rather than below the volume's subpath. To store them below a path, use a `scoped` disk. |
+| `generateTransformsBeforePageLoad` | `false` | Generate each transform before returning its URL, instead of on its first request. |
+
+`outputDisk` applies to every volume that uses the transformer, including volumes without public URLs. Their
+transforms are served through Craft's action URL, but the files are only as private as the output disk. If the output
+disk is publicly readable, point it at a private disk, or give private volumes a second `craft` transformer without an
+output disk, as in [Different output disks per volume](#different-output-disks-per-volume). Temporary uploads always
+keep their transforms on the temporary upload disk.
+
+Transforms have URLs when the volume does, built by the disk they're stored on, the same way the volume's own files
+get theirs. The output disk must serve its files at those URLs, such as with a `url` in its config in
+`config/filesystems.php`. A local disk without a `url` builds `/storage/...` URLs, which only work after
+`php artisan storage:link`. Transforms of volumes without public URLs are served through an action URL.
+
+A Craft 5 volume's Transform Filesystem and Transform Subpath become `outputDisk`, pointing at a `scoped` disk when
+there was a subpath. Craft doesn't carry them over. The Yii2 Loose Ends utility lists volumes that had a
+separate transform filesystem.
+
+### Different output disks per volume
+
+To give some volumes another output disk, add a second transformer that uses the `craft` driver, and choose it in those
+volumes' Asset Transformer setting:
 
 ```php
-'transforms' => ['driver' => 'scoped', 'disk' => 's3', 'prefix' => '_transforms'],
-
-'uploads' => [
-    'driver' => 's3',
-    // ...
-    'asset_transformer' => [
-        'driver' => 'craft',
-        'output_disk' => 'transforms',
-        'has_urls' => true,
-    ],
-],
+->addTransformer('craft-private', ['driver' => 'craft', 'outputDisk' => null])
 ```
 
-A Craft 5 volume's Transform Filesystem and Transform Subpath become a `scoped` disk like this one.
+### Changing where transforms are stored
 
-Use `env()` for values that differ between environments.
-
-Craft doesn't record where each transform is stored. After pointing `output_disk` at a different disk, or changing
+Craft doesn't record where each transform is stored. After pointing `outputDisk` at a different disk, or changing
 where a disk stores files, such as a `scoped` disk's `prefix` or a bucket, clear the asset transform index with
 `php artisan craft:clear-caches transform-indexes` or Utilities → Caches, so transforms are generated again in the new
-location. Craft doesn't delete the old files, so clear them yourself. Changing `has_urls` or
-`generate_transforms_before_page_load` keeps existing transforms.
+location. Craft doesn't delete the old files, so clear them yourself. Changing
+`generateTransformsBeforePageLoad` keeps existing transforms.
+
+Changing a volume's Asset Transformer setting clears that volume's transform index for you. Changing which transformer
+an environment variable or the `defaultTransformer` names doesn't, so clear the index after those changes too.
 
 To generate transforms immediately inside a callback, whatever the setting, use
 `AssetTransformers::withImmediateTransforms()`. GraphQL queries can do the same with the `immediately`
@@ -132,6 +193,10 @@ use function CraftCms\Cms\t;
 
 class RemoteImageDriver implements AssetTransformDriver
 {
+    public function __construct(
+        private readonly ?string $endpoint,
+    ) {}
+
     public function definition(): AssetTransformDriverDefinition
     {
         return new AssetTransformDriverDefinition(
@@ -149,7 +214,7 @@ class RemoteImageDriver implements AssetTransformDriver
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
     {
-        $endpoint = $request->transformer->settings['endpoint'] ?? config('services.remote_images.endpoint');
+        $endpoint = $this->endpoint;
         $sourceUrl = $request->asset->getUrl();
 
         if (! is_string($endpoint) || $endpoint === '' || $sourceUrl === null) {
@@ -168,6 +233,10 @@ class RemoteImageDriver implements AssetTransformDriver
 ```
 
 This example needs a public source URL. For private Assets, upload the source or sign the request.
+
+The `defaultTransformer` applies to volumes without public URLs too, including the temporary uploads volume. If your driver can't serve them, check
+`$request->asset->getVolume()->sourceHasUrls()` and hand the request to the `craft` transformer with
+`app(AssetTransformers::class)->transformer('craft')->transform($request)`.
 
 ### Definition
 
@@ -190,26 +259,25 @@ first requested can honor it; others can ignore it.
 
 ### Settings
 
-A driver gets the disk's inline settings, credentials included, in `$request->transformer->settings`:
+A driver's settings, credentials included, are the config of each transformer that uses it. Its `extend()` callback
+receives that config, `driver` key included, the way a `Storage::extend()` callback receives a disk's config:
 
 ```php
-'asset_transformer' => [
+->addTransformer('remote-images', [
     'driver' => 'remote-images',
     'endpoint' => env('REMOTE_IMAGES_ENDPOINT'),
     'key' => env('REMOTE_IMAGES_KEY'),
-],
+])
 ```
 
-Craft passes settings through unchanged, so validate them. A driver can fall back to shared config, such as
-`config/services.php`, so disks on the same account don't repeat it. Let inline settings win, the way Laravel's mail
-transports merge mailer settings over `services.php`.
+Craft passes settings through unchanged, so validate them.
 
 ### Request and result
 
 An `AssetTransformRequest` has:
 
 - `asset`: the source Asset;
-- `transformer`: the driver name and inline settings;
+- `transformer`: the transformer, whose `name` is its name in the `assets` setting;
 - `parameters`: the validated parameters.
 
 An `AssetTransformResult` needs a URL and MIME type. It can also give the output's `filename`, `width`, `height`, and
@@ -228,14 +296,21 @@ public function boot(AssetTransformers $transformers): void
 {
     $transformers->extend(
         'remote-images',
-        fn (Container $container) => $container->make(RemoteImageDriver::class),
+        fn (Container $container, array $config) => new RemoteImageDriver($config['endpoint'] ?? null),
     );
 }
 ```
 
-Then set `'asset_transformer' => 'remote-images'` on a disk.
+Volumes can only choose transformers that are defined in config, so registering a driver doesn't make it available
+yet. Like a Flysystem adapter package that documents the disk to add to `config/filesystems.php`, document the
+`addTransformer()` call users should add to `config/craft/general.php`, as in [Settings](#settings). Don't add it to the
+project's config from your plugin. Once it's defined, users choose `remote-images` in a volume's Asset Transformer
+setting, or make it the `defaultTransformer`.
 
-Craft reuses one driver instance per name, so don't keep request state on it.
+`craft` is a reserved driver name. For a second set of settings, add a second transformer with the same driver, as in
+[Multiple transformers of the same type](#multiple-transformers-of-the-same-type).
+
+Craft reuses one driver instance per transformer, so don't keep request state on it.
 
 ### Preloading
 
@@ -253,15 +328,14 @@ class RemoteImageDriver implements AssetTransformDriver, PreloadsAssetTransforms
 }
 ```
 
-Asset queries using `withTransforms()` call it once per driver. A batch can include several disks, so read settings
-from each request. Preloading is a hint; the driver doesn't have to generate anything.
+Asset queries using `withTransforms()` call it once per transformer. A batch can include assets from several volumes. Preloading is a hint; the driver doesn't have to generate anything.
 
 ### Cache invalidation
 
 Craft fires `AssetTransformsInvalidating` when an Asset's transforms are out of date, such as after its file changes.
 Drivers with their own index or cache should listen for it.
 
-Craft doesn't fire an event when settings change, since they're in config files. If results depend on settings,
+Craft doesn't fire an event when settings change, since they're in a config file. If results depend on settings,
 include them in your cache keys. The `craft` driver doesn't, so clear its index after changing where it stores transforms.
 
 ### Failures

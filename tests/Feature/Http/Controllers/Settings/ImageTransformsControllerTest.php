@@ -78,6 +78,7 @@ function validTransformData(array $overrides = []): array
 function registerControllerAssetTransformDriver(string $driver = 'custom'): string
 {
     app(AssetTransformers::class)->extend($driver, fn () => new ControllerAssetTransformDriver);
+    defineAssetTransformer($driver);
 
     return $driver;
 }

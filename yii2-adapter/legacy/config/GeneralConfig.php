@@ -109,7 +109,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * ```
      *
      * @group Image Handling
-     * @deprecated in 6.0.0. Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.
+     * @deprecated in 6.0.0. Use `assets(AssetsConfig::create()->addTransformer('craft', ['generateTransformsBeforePageLoad' => true]))` instead.
      */
     public ?bool $generateTransformsBeforePageLoad = null {
         set {
@@ -1051,12 +1051,12 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @group Image Handling
      * @see $generateTransformsBeforePageLoad
      * @since 4.2.0
-     * @deprecated in 6.0.0. Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.
+     * @deprecated in 6.0.0. Use `assets(AssetsConfig::create()->addTransformer('craft', ['generateTransformsBeforePageLoad' => true]))` instead.
      */
-    #[Deprecated(message: 'in 6.0.0. Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.')]
+    #[Deprecated(message: 'in 6.0.0. Use `assets(AssetsConfig::create()->addTransformer("craft", ["generateTransformsBeforePageLoad" => true]))` instead.')]
     public function generateTransformsBeforePageLoad(?bool $value = true): self
     {
-        $this->deprecate('generateTransformsBeforePageLoad', 'Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.');
+        $this->deprecate('generateTransformsBeforePageLoad', 'Use `assets(AssetsConfig::create()->addTransformer("craft", ["generateTransformsBeforePageLoad" => true]))` instead.');
 
         $this->generateTransformsBeforePageLoad = $value;
 

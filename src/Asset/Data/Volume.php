@@ -29,6 +29,7 @@ use function CraftCms\Cms\t;
 
 /**
  * @property string|null $fsHandle Deprecated in 6.0.0. [[disk]] should be used instead.
+ * @property string|null $assetTransformer
  * @property string $subpath
  *
  * @since 6.0.0
@@ -90,6 +91,12 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     public bool $hasUrls = false;
 
+    /**
+     * The asset transformer for this volume’s assets, or an environment variable that names one. `null` uses the
+     * `default` in the `assets` general config setting.
+     */
+    public ?string $assetTransformer = null;
+
     private string $_subpath = '';
 
     private ?string $_disk = null;
@@ -134,6 +141,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return array_merge(parent::validationData(), [
             'fieldLayout' => $fieldLayout,
             'disk' => $this->getDisk(false),
+            'assetTransformer' => $this->assetTransformer,
             'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),
         ]);
     }
@@ -145,6 +153,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'handle' => t('Handle'),
             'name' => t('Name'),
             'disk' => t('Disk'),
+            'assetTransformer' => t('Asset Transformer'),
             'subpath' => t('Subpath'),
             'propagationMethod' => t('Propagation Method'),
         ];
@@ -293,7 +302,18 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return $this->getResolvedDisk($parse);
     }
 
-    /** @return array<string, array<string, array<string, list<array<string, mixed>|string>|string|null>>|int|string|null> */
+    /**
+     * Returns the asset transformer name the volume sets, with environment variables resolved, or `null` if it
+     * doesn’t set one.
+     */
+    public function getAssetTransformer(bool $parse = true): ?string
+    {
+        $name = $parse ? Env::parse($this->assetTransformer) : $this->assetTransformer;
+
+        return is_string($name) && $name !== '' ? $name : null;
+    }
+
+    /** @return array<string, mixed> */
     public function getConfig(): array
     {
         $config = [
@@ -302,6 +322,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             'disk' => $this->_disk,
             'hasUrls' => $this->hasUrls,
             'subpath' => $this->_subpath,
+            'assetTransformer' => $this->assetTransformer ?: null,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'altTranslationMethod' => $this->altTranslationMethod->value,

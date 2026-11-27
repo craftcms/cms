@@ -42,10 +42,7 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
     bool $immediate,
 ): void {
     if ($immediate) {
-        config()->set('filesystems.disks.transform-preview.asset_transformer', [
-            'driver' => 'craft',
-            'generate_transforms_before_page_load' => true,
-        ]);
+        configureCraftTransformer(['generateTransformsBeforePageLoad' => true]);
     }
 
     app(ImageTransforms::class)->saveTransform(new ImageTransform([
@@ -85,7 +82,7 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
         ->and($dimensions[1])->toBe(80);
 })->with([
     'named transform with deferred generation' => ['thumbnail', false],
-    'inline transform on a disk that generates immediately' => [['width' => 160, 'height' => 80, 'format' => 'png'], true],
+    'inline transform with immediate generation' => [['width' => 160, 'height' => 80, 'format' => 'png'], true],
 ]);
 
 it('returns absolute transform URLs for volumes with root-relative URLs', function (): void {
@@ -94,8 +91,8 @@ it('returns absolute transform URLs for volumes with root-relative URLs', functi
         'driver' => 'local',
         'root' => $root,
         'url' => '/transforms',
-        'asset_transformer' => ['driver' => 'craft', 'generate_transforms_before_page_load' => true],
     ]);
+    configureCraftTransformer(['generateTransformsBeforePageLoad' => true]);
     $asset = Asset::factory()->createElement([
         'volumeId' => Volume::factory()->create(['disk' => 'transform-relative', 'hasUrls' => true])->id,
         'filename' => 'café.png',
