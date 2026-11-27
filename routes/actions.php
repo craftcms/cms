@@ -51,6 +51,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementActivityController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexSourcesController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexViewStateController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
@@ -321,6 +322,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('element-indexes/element-table-html', [ElementIndexController::class, 'elementTableHtml']);
         Route::post('element-indexes/save-elements', SaveElementIndexElementsController::class);
         Route::post('element-indexes/export', ExportElementIndexController::class);
+        Route::post('element-indexes/view-state', ElementIndexViewStateController::class);
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
         Route::post('element-search/search', ElementSearchController::class);
         Route::post('element-selector-modals/body', ElementSelectorModalController::class);

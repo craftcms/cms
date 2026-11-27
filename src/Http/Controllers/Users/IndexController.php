@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Concerns\AppliesStoredViewState;
 use CraftCms\Cms\Http\Controllers\Concerns\RedirectsToShownSource;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\UserIndexViewModel;
@@ -18,6 +19,7 @@ use Inertia\Response;
  */
 readonly class IndexController
 {
+    use AppliesStoredViewState;
     use AuthorizesRequests;
     use RedirectsToShownSource;
 
@@ -27,12 +29,13 @@ readonly class IndexController
 
         Edition::require(Edition::Team);
 
-        $viewModel = new UserIndexViewModel(
+        $makeViewModel = fn (): UserIndexViewModel => new UserIndexViewModel(
             $request,
             slug: $slug,
         );
+        $viewModel = $makeViewModel();
 
         return $this->shownSourceRedirect($request, $viewModel, $slug !== null && $slug !== '')
-            ?? Inertia::render('users/Index', [$viewModel]);
+            ?? Inertia::render('users/Index', [$this->withStoredViewState($request, $viewModel, $makeViewModel)]);
     }
 }

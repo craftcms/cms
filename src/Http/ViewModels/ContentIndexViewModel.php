@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementIndexSourceSettings;
 use CraftCms\Cms\Element\ElementIndexState;
+use CraftCms\Cms\Element\ElementIndexViewStates;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -63,6 +64,16 @@ use function Termwind\render;
 abstract class ContentIndexViewModel extends ViewModel
 {
     protected const string RENDER_CONTEXT = 'index';
+
+    /**
+     * The URL params the page's rows were rendered for that came from the
+     * session's view state rather than the request (see
+     * {@see storedViewStateQuery()}). The index treats them as its own view
+     * state, not as the link's choice, so local storage still wins over them.
+     *
+     * @var string[]
+     */
+    public array $sessionViewStateParams = [];
 
     private ?ElementIndexSourceSettings $resolvedSourceSettings = null;
 
@@ -126,6 +137,10 @@ abstract class ContentIndexViewModel extends ViewModel
      * the page draws placeholders instead and requests the rows itself once it
      * has read its view state (see `useElementIndex`'s `restore()`). That visit
      * puts `viewMode` in the URL, so later visits come with rows again.
+     *
+     * Once the browser has pushed its view states for the session, index
+     * pages render such a load for them instead (see
+     * {@see storedViewStateQuery()}), so this only applies until then.
      */
     #[\Override]
     public function toInertiaProperties(RenderContext $context): array
@@ -153,6 +168,88 @@ abstract class ContentIndexViewModel extends ViewModel
         unset($properties['data'], $properties['pagination'], $properties['structure']);
 
         return $properties;
+    }
+
+    /**
+     * The query params that render the rows for the view state the browser
+     * pushed this session, or null when the server doesn't know it.
+     *
+     * An index page renders a load that names no view mode as though it named
+     * these params, and gives the page a URL with them, so the response,
+     * prefetched ones included, comes with rows. They're the params
+     * `useElementIndex`'s `restore()` would request, so it has nothing left to
+     * request unless local storage changed since they were pushed.
+     *
+     * Takes the view states as a parameter, which also keeps it out of the
+     * page's props.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function storedViewStateQuery(ElementIndexViewStates $viewStates): ?array
+    {
+        $sourceKey = $this->source()['key'] ?? null;
+
+        if (! is_string($sourceKey) || ! $viewStates->synced()) {
+            return null;
+        }
+
+        $viewState = $viewStates->get($this->elementType, $this->context()) ?? [];
+        $sourceState = $viewState['sources'][$sourceKey] ?? [];
+
+        if (! is_array($sourceState)) {
+            $sourceState = [];
+        }
+
+        $structureId = $this->source()['structureId'] ?? null;
+        $modes = array_column(array_filter(
+            $this->viewModes(),
+            fn (array $viewMode): bool => empty($viewMode['structuresOnly']) || $structureId,
+        ), 'mode');
+        $mode = collect([$sourceState['mode'] ?? null, $this->mode(), $modes[0] ?? null])
+            ->first(fn (mixed $mode): bool => in_array($mode, $modes, true))
+            ?? ElementIndexViewMode::Table->value;
+        $query = ['viewMode' => $mode];
+
+        [$thumbView, $defaultThumbSize] = match ($mode) {
+            ElementIndexViewMode::Table->value, ElementIndexViewMode::Structure->value => ['table', ChipThumbSize::Sm->value],
+            ElementIndexViewMode::Thumbs->value => ['thumbs', ChipThumbSize::Lg->value],
+            default => [null, null],
+        };
+        $thumbSize = $thumbView !== null ? ($sourceState['thumbSizes'][$thumbView] ?? null) : null;
+
+        if (is_string($thumbSize) && $thumbSize !== $defaultThumbSize) {
+            $query['thumbSize'] = $thumbSize;
+        }
+
+        // Unknown and malformed columns are dropped when the rows are rendered.
+        $columns = (array) ($sourceState['visible'] ?? []);
+
+        if ($columns !== []) {
+            $query['columns'] = $columns;
+        }
+
+        $sort = array_values(array_filter(array_map(
+            fn (mixed $item): ?array => is_array($item) && is_string($item['field'] ?? null) && $item['field'] !== 'score'
+                ? ['field' => $item['field'], 'direction' => ($item['direction'] ?? null) === 'desc' ? 'desc' : 'asc']
+                : null,
+            (array) ($sourceState['sort'] ?? []),
+        )));
+
+        if ($sort !== []) {
+            $query['sort'] = $sort;
+        }
+
+        if (is_int($sourceState['pageSize'] ?? null) && $sourceState['pageSize'] > 0) {
+            $query['per_page'] = $sourceState['pageSize'];
+        }
+
+        $collapsedElementIds = array_values(array_filter((array) ($viewState['collapsedElementIds'] ?? []), is_numeric(...)));
+
+        if ($mode === ElementIndexViewMode::Structure->value && $collapsedElementIds !== []) {
+            $query['collapsedElementIds'] = $collapsedElementIds;
+        }
+
+        return $query;
     }
 
     /**
