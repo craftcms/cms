@@ -10,8 +10,9 @@ afterEach(function () {
     app()->maintenanceMode()->deactivate();
 });
 
-it('reports the scheduler as running until three minutes after its last run', function () {
-    expect(SchedulerHeartbeat::isRunning())->toBeFalse();
+it('reports the scheduler as running until three minutes after its last run, and when it last ran', function () {
+    expect(SchedulerHeartbeat::isRunning())->toBeFalse()
+        ->and(SchedulerHeartbeat::lastRanAt())->toBeNull();
 
     Date::setTestNow('2026-10-01 12:00:00');
     $this->artisan('schedule:run')->assertSuccessful();
@@ -21,6 +22,10 @@ it('reports the scheduler as running until three minutes after its last run', fu
 
     Date::setTestNow('2026-10-01 12:03:01');
     expect(SchedulerHeartbeat::isRunning())->toBeFalse();
+
+    Date::setTestNow('2026-10-01 14:00:00');
+    expect(SchedulerHeartbeat::isRunning())->toBeFalse()
+        ->and(SchedulerHeartbeat::lastRanAt()?->toDateTimeString())->toBe('2026-10-01 12:00:00');
 });
 
 it('keeps reporting the scheduler as running while the system is offline or the scheduler is paused', function () {

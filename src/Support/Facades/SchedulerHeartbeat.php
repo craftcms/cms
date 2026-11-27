@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Support\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @method static \Carbon\CarbonInterface|null lastRanAt()
  * @method static bool isRunning()
  *
  * @see \CraftCms\Cms\Console\SchedulerHeartbeat

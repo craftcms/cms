@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console;
 
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 
 /**
  * Tracks whether Laravel’s scheduler is running.
@@ -27,7 +29,17 @@ class SchedulerHeartbeat
      */
     public function record(): void
     {
-        Cache::put(self::CACHE_KEY, true, self::TIMEOUT);
+        Cache::forever(self::CACHE_KEY, Date::now()->getTimestamp());
+    }
+
+    /**
+     * Returns when something last ran `schedule:run`, or `null` if nothing has since the cache was last cleared.
+     */
+    public function lastRanAt(): ?CarbonInterface
+    {
+        $timestamp = Cache::get(self::CACHE_KEY);
+
+        return is_int($timestamp) ? Date::createFromTimestamp($timestamp, date_default_timezone_get()) : null;
     }
 
     /**
@@ -39,6 +51,8 @@ class SchedulerHeartbeat
      */
     public function isRunning(): bool
     {
-        return Cache::has(self::CACHE_KEY);
+        $lastRanAt = $this->lastRanAt();
+
+        return $lastRanAt !== null && $lastRanAt->getTimestamp() > Date::now()->getTimestamp() - self::TIMEOUT;
     }
 }
