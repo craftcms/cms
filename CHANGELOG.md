@@ -24,6 +24,7 @@
 - Soft-deleting elements no longer asks for a second confirmation after the deletion blockers modal. ([#21104](https://github.com/craftcms/cms/pull/21104), [#21141](https://github.com/craftcms/cms/pull/21141))
 - Added keyboard shortcuts for collapsing and expanding the global navigation (<kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>\</kbd>) and a page’s sidebar (<kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>\</kbd>). They leave focus where it is, and announce the change to screen readers. ([#21160](https://github.com/craftcms/cms/pull/21160))
 - Full pages now remember when their sidebar was collapsed, and open later pages with it collapsed too, until a sidebar panel is opened again. ([#21160](https://github.com/craftcms/cms/pull/21160))
+- Command palette actions now show their keyboard shortcuts. ([#21194](https://github.com/craftcms/cms/pull/21194))
 - `{% expires %}` and Craft’s no-cache headers no longer send the legacy `Expires` and `Pragma` headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - `csrfInput()` no longer sets no-cache headers itself. Responses containing the CSRF token get them instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added the `element_sources_get` and `element_sources_save` MCP tools, for reading and saving element index sidebars. ([#21112](https://github.com/craftcms/cms/pull/21112))
