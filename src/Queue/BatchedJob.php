@@ -127,8 +127,9 @@ abstract class BatchedJob extends Job
 
         $this->afterBatch();
 
-        // Spawn another job if there are more items
-        if ($this->itemOffset < $this->totalItems()) {
+        // Spawn another job if there are more items, unless this batch didn't get any,
+        // such as when items were deleted after they were counted
+        if ($i > 0 && $this->itemOffset < $this->totalItems()) {
             $this->spawnNextBatch();
         } else {
             $this->after();
