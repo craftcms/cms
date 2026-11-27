@@ -1,7 +1,9 @@
 import {t, type CraftActionItem} from '@craftcms/ui';
 import type {BreadcrumbItem} from '@/common/types';
 import type {ActionItem} from '@/common/types';
+import {parseHotkey} from '@tanstack/hotkeys';
 import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
+import {listedShortcuts} from '@/common/shortcuts';
 import {labelScore, normalize} from '../rank';
 import {getNotifications} from '../../notifications/store';
 import {fieldLabel, trail} from './on-this-page';
@@ -12,6 +14,18 @@ import type {CommandPaletteItem, CommandPaletteProvider} from '../types';
  * Put it on an element containing a `craft-action-menu`.
  */
 export const PAGE_ACTIONS_ATTRIBUTE = 'data-command-palette-actions';
+
+/**
+ * The shortcut, when one is registered for it that works where the palette
+ * was opened, as the “Keyboard shortcuts” view lists it.
+ */
+function workingShortcut(hotkey: string): string | null {
+  const chord = JSON.stringify(parseHotkey(hotkey));
+
+  return listedShortcuts().some(({keys}) => JSON.stringify(keys) === chord)
+    ? hotkey
+    : null;
+}
 
 function globalNavigationAction(): CommandPaletteItem {
   const {sidebar, toggle} = useGlobalSidebar();
@@ -24,6 +38,7 @@ function globalNavigationAction(): CommandPaletteItem {
       : t('Expand the global navigation'),
     description: t('This page'),
     icon: expanded ? 'arrow-left-to-line' : 'arrow-right-from-line',
+    shortcut: workingShortcut('Mod+[Backslash]'),
     run: toggle,
   };
 }
@@ -74,6 +89,7 @@ function sidebarActions(): CommandPaletteItem[] {
       label: open ? t('Collapse the sidebar') : t('Expand the sidebar'),
       description: t('This page'),
       icon: 'sidebar-flip',
+      shortcut: workingShortcut('Mod+Shift+[Backslash]'),
       run: () => {
         const trigger = open ?? triggers[0];
         trigger?.click();
@@ -232,6 +248,9 @@ function pageMenuActions(): CommandPaletteItem[] {
       return [];
     }
 
+    // The menu shows it with Cmd/Ctrl implied.
+    const keys = item.shortcutKeys;
+
     return [
       {
         id: `page-action-${index}`,
@@ -239,6 +258,9 @@ function pageMenuActions(): CommandPaletteItem[] {
         description: t('This page'),
         icon: item.icon ?? null,
         variant: item.variant ?? null,
+        shortcut: keys
+          ? `Mod+${keys.alt ? 'Alt+' : ''}${keys.shift ? 'Shift+' : ''}${keys.key}`
+          : null,
         run: () => (item.closest<HTMLElement>('a') ?? item).click(),
       },
     ];
