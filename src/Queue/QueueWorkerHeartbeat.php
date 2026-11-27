@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
+use Carbon\CarbonInterface;
 use CraftCms\Cms\Cms;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
@@ -62,22 +63,40 @@ class QueueWorkerHeartbeat
                 continue;
             }
 
-            Cache::put(self::CACHE_KEY_PREFIX.$queue, true, self::TIMEOUT);
+            Cache::forever(self::CACHE_KEY_PREFIX.$queue, $now);
             $this->recordedAt[$queue] = $now;
         }
     }
 
     /**
-     * Returns whether `queue:work` workers, other than ones run with `--once`, have polled both the `queueName` and
-     * `lowPriorityQueueName` queues on the default connection in the last three minutes.
+     * Returns when a `queue:work` worker, other than one run with `--once`, last polled both the `queueName` and
+     * `lowPriorityQueueName` queues on the default connection: the earlier of the two queues’ last polls, or `null`
+     * if either hasn’t been polled since the cache was last cleared.
+     */
+    public function lastRanAt(): ?CarbonInterface
+    {
+        $timestamps = collect([Cms::config()->queueName, Cms::config()->lowPriorityQueueName])
+            ->unique()
+            ->map(fn (string $queue) => Cache::get(self::CACHE_KEY_PREFIX.$queue));
+
+        if ($timestamps->contains(fn (mixed $timestamp) => ! is_int($timestamp))) {
+            return null;
+        }
+
+        return Date::createFromTimestamp($timestamps->min(), date_default_timezone_get());
+    }
+
+    /**
+     * Returns whether a worker has polled both of Craft’s queues in the last three minutes.
      *
-     * It turns `false` while a worker spends more than three minutes on one job, and it needs a cache store shared
-     * with the server that runs the workers, so treat `false` as a reason to fall back, not as an error.
+     * A worker only polls between jobs, so this turns `false` while one spends more than three minutes on a job. The
+     * browser queue runner still stays off then, because it skips while any job is reserved. It needs a cache store
+     * shared with the server that runs the workers, so treat `false` as a reason to fall back, not as an error.
      */
     public function isRunning(): bool
     {
-        return collect([Cms::config()->queueName, Cms::config()->lowPriorityQueueName])
-            ->unique()
-            ->every(fn (string $queue) => Cache::has(self::CACHE_KEY_PREFIX.$queue));
+        $lastRanAt = $this->lastRanAt();
+
+        return $lastRanAt !== null && $lastRanAt->getTimestamp() > Date::now()->getTimestamp() - self::TIMEOUT;
     }
 }
