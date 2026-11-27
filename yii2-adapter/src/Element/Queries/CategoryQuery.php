@@ -6,7 +6,6 @@ namespace CraftCms\Yii2Adapter\Element\Queries;
 
 use Craft;
 use craft\elements\Category;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -66,10 +65,6 @@ class CategoryQuery extends ElementQuery
         $this->query->addSelect([
             'categories.groupId as groupId',
         ]);
-
-        if (Cms::config()->staticStatuses) {
-            $this->query->addSelect(['categories.status as status']);
-        }
 
         $this->beforeQuery(function(self $query) {
             $this->applyAuthParam($query, $query->editable, 'viewCategories');
