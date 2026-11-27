@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a bug where MCP field layout updates could save layouts without their mandatory fields. ([#21185](https://github.com/craftcms/cms/issues/21185))
+- Fixed a bug where MCP field layout updates could save layouts without their mandatory fields. ([#21185](https://github.com/craftcms/cms/issues/21185), [#21192](https://github.com/craftcms/cms/pull/21192))
 
 ## 5.12.4 - 2026-11-25
 
