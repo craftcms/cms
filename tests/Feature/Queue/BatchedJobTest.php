@@ -219,6 +219,31 @@ it('queues the next batch without the running queue job', function () {
         && $pushedJob->itemOffset === 2);
 });
 
+it('finishes when the query runs out of items before reaching its total', function () {
+    Queue::fake()->serializeAndRestore();
+
+    // The query counts 5 items but only returns 3.
+    $job = new TestBatchedJob([1, 2, 3]);
+    $job->count = 5;
+    $job->batchSize = 2;
+    $job->handle();
+
+    $handled = [$job];
+
+    // Run each queued batch in turn, giving up after 10 so a job that keeps spawning batches can't hang the test.
+    while (count($handled) < 10 && ($next = Queue::pushed(TestBatchedJob::class)->get(count($handled) - 1)) !== null) {
+        $next->handle();
+        $handled[] = $next;
+    }
+
+    $last = end($handled);
+
+    expect($handled)->toHaveCount(3)
+        ->and($last->processedItems)->toBe([1, 2, 3])
+        ->and($last->afterBatchCalls)->toBe(3)
+        ->and($last->afterCalled)->toBeTrue();
+});
+
 it('stops processing when cancelled between items', function () {
     $progressService = app(JobProgress::class);
     $testUuid = 'test-cancellation-'.uniqid();
