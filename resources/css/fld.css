@@ -858,8 +858,9 @@ body:not(.dragging) .fld-element {
 /* Likewise where a form gives the designer and the card view designer tabs of
    their own (see FieldLayoutDesignerControl.vue), while one of theirs is
    selected. Those panels follow the tab strip rather than sit inside it. */
-:has(> [role='tabpanel'][selected] :is(.fld-pane, .card-view-designer))
-  > .ui-node-list__tabs {
+.ui-node-list__tabs:has(
+  ~ [role='tabpanel'][selected] :is(.fld-pane, .card-view-designer)
+) {
   --c-tabs-gap: 0;
 }
 

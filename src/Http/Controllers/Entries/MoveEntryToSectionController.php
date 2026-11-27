@@ -72,6 +72,27 @@ readonly class MoveEntryToSectionController
         ]);
     }
 
+    /**
+     * Returns the IDs of a section’s entries, including unpublished drafts, for moving them all to another section.
+     */
+    public function sectionEntryIds(): JsonResponse
+    {
+        ['sectionId' => $sectionId] = $this->request->validate([
+            'sectionId' => ['required', 'integer', Rule::exists(Table::SECTIONS, 'id')],
+        ]);
+
+        return new JsonResponse([
+            'entryIds' => Entry::find()
+                ->sectionId((int) $sectionId)
+                ->drafts(null)
+                ->draftOf(false)
+                ->site('*')
+                ->unique()
+                ->status(null)
+                ->ids(),
+        ]);
+    }
+
     public function move(): Response
     {
         [
@@ -83,7 +104,7 @@ readonly class MoveEntryToSectionController
             'sectionId' => ['required', 'integer', Rule::exists(Table::SECTIONS, 'id')],
         ]);
 
-        $section = $this->sections->getSectionById($sectionId);
+        $section = $this->sections->getSectionById((int) $sectionId);
 
         abort_if(is_null($section), 400, 'Cannot find the section to move the entries to.');
 

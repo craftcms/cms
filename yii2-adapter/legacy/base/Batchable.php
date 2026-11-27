@@ -7,24 +7,14 @@
 
 namespace craft\base;
 
-use Countable;
-
 /**
  * Batchable defines the common interface to be implemented by classes that
  * provide items which can be counted and accessed in slices.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
- * @deprecated 6.0.0
+ * @deprecated in Craft 6.0.0. Use [[\CraftCms\Cms\Queue\Contracts\Batchable]] instead.
  */
-interface Batchable extends Countable
+interface Batchable extends \CraftCms\Cms\Queue\Contracts\Batchable
 {
-    /**
-     * Returns a slice of the items
-     *
-     * @param int $offset
-     * @param int $limit
-     * @return iterable
-     */
-    public function getSlice(int $offset, int $limit): iterable;
 }

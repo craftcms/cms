@@ -90,7 +90,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|null', ContentBlockElement::class);
+        return sprintf('\\%s', ContentBlockElement::class);
     }
 
     #[Override]

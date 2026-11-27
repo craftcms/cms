@@ -79,7 +79,8 @@ class ImageTransformsController extends BaseAssetSettingsController
             ->unless($readOnly, fn (Table $table) => $table
                 ->createAction(t('New image transform'), route('craft.cp.settings.assets.transforms.create'))
                 ->createActionInPageHeader()
-                ->deletable());
+                ->deletable()
+                ->deletionBlockers('image-transform'));
 
         return new CpScreenResponse()
             ->title(t('Image Transforms'))

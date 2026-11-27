@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
+use CraftCms\Cms\Queue\Contracts\Batchable;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Queue\Jobs\SyncJob;
 use InvalidArgumentException;
+use LogicException;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -18,6 +20,9 @@ use function CraftCms\Cms\t;
  *
  * Batched jobs process items in chunks and spawn follow-up jobs for remaining items.
  * This prevents memory issues and timeout errors for large data sets.
+ *
+ * Items come from a database or element query returned by `getQuery()`, or from any
+ * other {@see Batchable} data source returned by `loadData()`, such as a {@see CsvBatcher}.
  *
  * Spawned jobs are cloned from the current job, so any public properties that are set
  * to objects which aren't `serialize()`-friendly should be excluded via `__sleep()`,
@@ -53,7 +58,38 @@ abstract class BatchedJob extends Job
 
     private ?int $totalItems = null;
 
-    abstract protected function getQuery(): Builder;
+    private ?Batchable $data = null;
+
+    /**
+     * Returns the query that items should be fetched from.
+     *
+     * Jobs that override `loadData()` don't need to implement this.
+     */
+    protected function getQuery(): Builder
+    {
+        throw new LogicException(sprintf('%s must override getQuery() or loadData().', static::class));
+    }
+
+    /**
+     * Loads the data source that items should be fetched from.
+     *
+     * By default, items are fetched from `getQuery()`.
+     */
+    protected function loadData(): Batchable
+    {
+        return new QueryBatcher($this->getQuery(), $this->queryOffset(), $this->queryLimit());
+    }
+
+    /**
+     * Returns the data source for the current batch.
+     *
+     * It's loaded once per batch, so each batch reads it with the job's current
+     * state, such as a saved position.
+     */
+    final protected function data(): Batchable
+    {
+        return $this->data ??= $this->loadData();
+    }
 
     /**
      * Processes a single item.
@@ -70,10 +106,19 @@ abstract class BatchedJob extends Job
 
     public function handle(): void
     {
-        $items = $this->getQuery()
-            ->offset($this->queryOffset() + $this->itemOffset)
-            ->limit(min($this->batchSize, $this->totalItems() - $this->itemOffset))
-            ->get();
+        try {
+            $this->handleBatch();
+        } finally {
+            $this->data = null;
+        }
+    }
+
+    private function handleBatch(): void
+    {
+        $items = $this->data()->getSlice(
+            $this->itemOffset,
+            min($this->batchSize, $this->totalItems() - $this->itemOffset),
+        );
 
         $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit !== -1 ? memory_get_usage() : null;
@@ -143,6 +188,7 @@ abstract class BatchedJob extends Job
     {
         $nextJob = clone $this;
         $nextJob->batchIndex++;
+        $nextJob->data = null;
 
         if ($nextJob->job instanceof SyncJob) {
             $nextJob->handle();
@@ -193,6 +239,8 @@ abstract class BatchedJob extends Job
 
     /**
      * Returns the initial query offset before batch pagination is applied.
+     *
+     * This only applies to items fetched from `getQuery()`.
      */
     protected function queryOffset(): int
     {
@@ -201,6 +249,8 @@ abstract class BatchedJob extends Job
 
     /**
      * Returns the maximum number of items to process across all batches.
+     *
+     * This only applies to items fetched from `getQuery()`.
      */
     protected function queryLimit(): ?int
     {
@@ -212,13 +262,7 @@ abstract class BatchedJob extends Job
      */
     final protected function totalItems(): int
     {
-        if (! isset($this->totalItems)) {
-            $this->totalItems = max($this->getQuery()->count() - $this->queryOffset(), 0);
-
-            if ($this->queryLimit() !== null) {
-                $this->totalItems = min($this->totalItems, $this->queryLimit());
-            }
-        }
+        $this->totalItems ??= ($this->data ?? $this->loadData())->count();
 
         return $this->totalItems;
     }

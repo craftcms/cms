@@ -29,6 +29,8 @@ export interface CpUser {
   showPermissions: boolean;
   /** Whether the user's account has a Tokens screen. */
   showTokens: boolean;
+  /** Whether the browser has pushed its element index view states this session. */
+  elementIndexViewStatesSynced: boolean;
 }
 
 export interface CraftData {

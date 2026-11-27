@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexViewStateController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
@@ -262,6 +264,111 @@ it('leaves the rows out of a page load that names no view mode until they are re
         ->assertOk()
         ->assertJsonCount(2, 'props.data')
         ->assertJsonPath('props.pagination.total', 2);
+});
+
+it('renders a page load that names no view mode for the view state the browser pushed this session', function (array $sourceState, array $expectedQuery, array $requestQuery = []) {
+    EntryModel::factory()->count(2)->create();
+    $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
+
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => $sourceState]]],
+        'all' => true,
+    ])->assertNoContent();
+
+    $response = get("/{$this->cpTrigger}/content/entries".($requestQuery ? '?'.http_build_query($requestQuery) : ''))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('data', 2)
+            ->where('viewState.mode', $expectedQuery['viewMode'])
+            ->where('pagination.per_page', (int) ($expectedQuery['per_page'] ?? 50))
+            ->where('sessionViewStateParams', array_keys(array_diff_key($expectedQuery, $requestQuery)))
+        );
+    parse_str((string) parse_url($response->viewData('page')['url'], PHP_URL_QUERY), $query);
+
+    expect($query)->toEqual($expectedQuery);
+})->with([
+    'saved settings' => [
+        [
+            'mode' => 'cards',
+            'thumbSizes' => ['table' => 'lg'],
+            'visible' => ['postDate'],
+            'sort' => [['field' => 'score', 'direction' => 'desc'], ['field' => 'title', 'direction' => 'desc']],
+            'pageSize' => 7,
+        ],
+        [
+            'viewMode' => 'cards',
+            'columns' => ['postDate'],
+            'sort' => [['field' => 'title', 'direction' => 'desc']],
+            'per_page' => '7',
+        ],
+    ],
+    'a mode the source does not offer' => [
+        ['mode' => 'structure', 'thumbSizes' => ['table' => 'lg', 'thumbs' => 'xl']],
+        ['viewMode' => 'table', 'thumbSize' => 'lg'],
+    ],
+    'nothing saved for the source' => [
+        [],
+        ['viewMode' => 'table'],
+    ],
+    'params the URL names' => [
+        ['mode' => 'cards', 'pageSize' => 7],
+        ['per_page' => '25', 'viewMode' => 'cards'],
+        ['per_page' => '25'],
+    ],
+]);
+
+it('waits for every view state before rendering page loads for them', function () {
+    $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
+
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
+    ])->assertNoContent();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.currentUser.elementIndexViewStatesSynced', false)
+            ->missing('data')
+        );
+});
+
+it('keeps rendering page loads for the view states for as long as the session is active', function () {
+    EntryModel::factory()->count(2)->create();
+    $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
+    $lifetime = (int) config('session.lifetime');
+
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
+        'all' => true,
+    ])->assertNoContent();
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.User::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
+    ])->assertNoContent();
+
+    $this->travel($lifetime - 1)->minutes();
+    get("/{$this->cpTrigger}/content/entries")->assertOk();
+    $this->travel($lifetime - 1)->minutes();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.currentUser.elementIndexViewStatesSynced', true)
+            ->where('viewState.mode', 'cards')
+            ->has('data', 2)
+        );
+
+    // A push renews every view state too.
+    $this->travel($lifetime - 1)->minutes();
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'table']]]],
+    ])->assertNoContent();
+    $this->travel($lifetime - 1)->minutes();
+
+    // An index not visited in that time keeps its view state.
+    Edition::set(Edition::Pro);
+    get("/{$this->cpTrigger}/users/all")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('viewState.mode', 'cards'));
 });
 
 it('includes the active source exporters in the page payload', function () {

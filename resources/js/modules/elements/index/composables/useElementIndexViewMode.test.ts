@@ -72,6 +72,24 @@ describe('useElementIndexViewMode', () => {
     expect(persisted(viewState)).toBe('table');
   });
 
+  // A mode the server filled in from an older session copy isn't the link's
+  // choice, so the persisted one still wins.
+  it('re-requests the persisted mode over one filled in from the session', () => {
+    const viewState = viewStateRef('table');
+    const {restore} = useElementIndexViewMode(
+      viewState,
+      {...visitor, currentQuery: () => ({viewMode: 'cards'})},
+      sourceA,
+      () => 'cards'
+    );
+
+    expect(restore({})).toEqual({
+      params: {viewMode: 'table'},
+      only: ['data', 'pagination', 'structure', 'viewState'],
+    });
+    expect(persisted(viewState)).toBe('table');
+  });
+
   it('re-requests the persisted mode when the source renders another by default', () => {
     const {restore} = useElementIndexViewMode(
       viewStateRef('table'),

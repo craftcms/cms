@@ -373,13 +373,18 @@ export function useElementIndex(options: UseElementIndexOptions) {
   const pending = computed(() => elementIndex.data === undefined);
 
   function restore(): void {
+    // The params the link named. The server can fill in others from the
+    // session's view state, which local storage may have changed since.
+    const query = visitor.currentQuery(
+      elementIndex.sessionViewStateParams ?? []
+    );
     const restores = [
-      restoreColumns(),
-      restoreSort(),
-      restorePageSize(),
-      restoreViewMode(),
-      restoreThumbSize(),
-      ...(options.structure ? [structureView.restore()] : []),
+      restoreColumns(query),
+      restoreSort(query),
+      restorePageSize(query),
+      restoreViewMode(query),
+      restoreThumbSize(query),
+      ...(options.structure ? [structureView.restore(query)] : []),
     ].filter((restore): restore is IndexRestore => restore !== null);
 
     // Requested after the others have read the URL into the view state, so the

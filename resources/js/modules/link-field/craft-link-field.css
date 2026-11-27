@@ -20,11 +20,11 @@
   > :has(craft-select) {
     flex: none;
     max-width: 100%;
+  }
 
-    craft-select {
-      width: max-content;
-      max-width: 100%;
-    }
+  > * craft-select {
+    width: max-content;
+    max-width: 100%;
   }
 
   > :not(:has(craft-select)) {
