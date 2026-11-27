@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\CacheCollectors;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -12,6 +13,7 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Support\Facades\Date;
 use RuntimeException;
 
 /**
@@ -21,7 +23,7 @@ use RuntimeException;
 class DependencyCollector implements CacheCollectorInterface
 {
     /**
-     * @var array<int, array{tags: array<string, bool>, expiryTimestamp: int|null}>
+     * @var array<int, array{tags: array<string, bool>, expiryTimestamp: int|null, collectsStatusChanges: bool}>
      */
     private array $buffers = [];
 
@@ -31,6 +33,8 @@ class DependencyCollector implements CacheCollectorInterface
     private ?array $tags = null;
 
     private ?int $expiryTimestamp = null;
+
+    private bool $collectsStatusChanges = true;
 
     public static function key(): string
     {
@@ -43,11 +47,13 @@ class DependencyCollector implements CacheCollectorInterface
             $this->buffers[] = [
                 'tags' => $this->tags,
                 'expiryTimestamp' => $this->expiryTimestamp,
+                'collectsStatusChanges' => $this->collectsStatusChanges,
             ];
         }
 
         $this->tags = [];
         $this->expiryTimestamp = null;
+        $this->collectsStatusChanges = true;
     }
 
     /**
@@ -110,6 +116,89 @@ class DependencyCollector implements CacheCollectorInterface
         }
     }
 
+    /**
+     * Registers the time an element’s status changes in a way that changes the result being cached, such as when an
+     * entry goes live.
+     *
+     * Entry queries treat “now” as the end of the current minute, so their statuses change at the start of a date’s
+     * minute. A change that’s already happened means the result is stale, so it isn’t cached at all.
+     *
+     * @internal
+     */
+    public function setStatusChangeDate(DateTimeInterface $date): void
+    {
+        if ($this->isCollecting()) {
+            $this->mergeExpiryTimestamp(max(now()->getTimestamp(), Date::instance($date)->startOfMinute()->getTimestamp()));
+        }
+    }
+
+    /**
+     * Registers an element’s expiry date, if it’s expirable and has one.
+     *
+     * The cache expires at the start of the date’s minute, as entry queries treat “now” as the end of the current
+     * minute, unless that’s already passed. For element types that compare to the exact time, that’s up to 59 seconds
+     * early.
+     *
+     * @internal
+     */
+    public function collectElementExpiry(ElementInterface $element): void
+    {
+        if (
+            ! $this->isCollecting() ||
+            ! $element instanceof ExpirableElementInterface ||
+            ($expiryDate = $element->getExpiryDate()) === null
+        ) {
+            return;
+        }
+
+        $startOfMinute = Date::instance($expiryDate)->startOfMinute();
+
+        $this->setExpiryDate($startOfMinute->isFuture() ? $startOfMinute : $expiryDate);
+    }
+
+    /**
+     * Stops element queries from looking up when their results will change without a save, such as when a pending
+     * entry goes live, for the cache being collected. Their tags are still collected.
+     *
+     * @internal
+     */
+    public function skipStatusChanges(): void
+    {
+        $this->collectsStatusChanges = false;
+    }
+
+    /**
+     * Returns whether element queries should look up when their results will change without a save.
+     *
+     * @internal
+     */
+    public function collectsStatusChanges(): bool
+    {
+        return $this->isCollecting() && $this->collectsStatusChanges;
+    }
+
+    /**
+     * Runs a callback without collecting anything it registers, such as a query run only to work out cache info.
+     *
+     * @internal
+     *
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    public function withoutCollecting(Closure $callback): mixed
+    {
+        [$tags, $expiryTimestamp] = [$this->tags, $this->expiryTimestamp];
+        $this->tags = null;
+
+        try {
+            return $callback();
+        } finally {
+            [$this->tags, $this->expiryTimestamp] = [$tags, $expiryTimestamp];
+        }
+    }
+
     private function mergeExpiryTimestamp(int $expiryTimestamp): void
     {
         if ($this->expiryTimestamp === null || $expiryTimestamp < $this->expiryTimestamp) {
@@ -131,12 +220,7 @@ class DependencyCollector implements CacheCollectorInterface
             "element::{$element->id}",
         ]);
 
-        if (
-            $element instanceof ExpirableElementInterface &&
-            ($expiryDate = $element->getExpiryDate()) !== null
-        ) {
-            $this->setExpiryDate($expiryDate);
-        }
+        $this->collectElementExpiry($element);
     }
 
     /**
@@ -165,6 +249,7 @@ class DependencyCollector implements CacheCollectorInterface
             $parent = array_pop($this->buffers);
             $this->tags = $parent['tags'];
             $this->expiryTimestamp = $parent['expiryTimestamp'];
+            $this->collectsStatusChanges = $parent['collectsStatusChanges'];
             $this->collectTags($tags);
 
             if ($expiryTimestamp !== null) {
@@ -173,6 +258,7 @@ class DependencyCollector implements CacheCollectorInterface
         } else {
             $this->tags = null;
             $this->expiryTimestamp = null;
+            $this->collectsStatusChanges = true;
         }
 
         if (empty($tags)) {

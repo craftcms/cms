@@ -26,6 +26,10 @@ class ExecutedGqlQuery
         public ?array $result = null,
         /** @var array<int, string>|null */
         public ?array $cacheTags = null,
+        /**
+         * The number of seconds the result can be cached for. When GraphQL caching is disabled, it leaves out when
+         * entries will go live or expire, since looking those up takes extra queries.
+         */
         public ?int $cacheDuration = null,
         public bool $debugMode = false,
     ) {}

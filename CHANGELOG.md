@@ -27,9 +27,13 @@
 - Added the `element_sources_get` and `element_sources_save` MCP tools, for reading and saving element index sidebars. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - Added the `condition_schema` MCP tool, which lists the rules a condition accepts for custom sources, field layout visibility, and relation field selection. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - The `configuration_*` MCP tools now reject condition rules that Craft would drop, and accept field layouts in the shape `configuration_get` returns them. ([#21112](https://github.com/craftcms/cms/pull/21112))
+- `{% cache %}` tags and cached GraphQL results now refresh when an entry they could include goes live or expires, without a scheduled job. ([#978](https://github.com/craftcms/cms/issues/978), [#9170](https://github.com/craftcms/cms/discussions/9170), [#11743](https://github.com/craftcms/cms/issues/11743), [#16038](https://github.com/craftcms/cms/issues/16038))
 - Added the `output` argument to the `@formatDateTime` GraphQL directive. It can be set to `date` or `time` to output only the date or time, using the locale’s date or time format for `short`, `medium`, `long`, and `full`. ([#21084](https://github.com/craftcms/cms/pull/21084))
 - Added the `assertCpMessage()`, `assertNoCpMessages()`, and `cpMessages()` `Illuminate\Testing\TestResponse` macros, for testing the control panel messages a response delivers. ([#21161](https://github.com/craftcms/cms/pull/21161))
 - Added `CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters`. ([#21170](https://github.com/craftcms/cms/pull/21170))
+- Added `CraftCms\Cms\Element\Queries\ElementQuery::collectStatusChangeExpiry()` and `nextStatusChangeDate()`.
+- Added the `$withStatusChanges` argument to `CraftCms\Cms\Element\ElementCaches::startCollectingCacheInfo()`.
+- While GraphQL caching is disabled, GraphQL requests don’t look up when entries go live or expire, so `CraftCms\Cms\Gql\Events\ExecutedGqlQuery::$cacheDuration` leaves those out.
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\Events\LazySessionSaved`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `Craft.Grid::queueRefreshCols()`. ([#21062](https://github.com/craftcms/cms/pull/21062))
@@ -70,6 +74,7 @@
 - Added `CraftCms\Cms\Cp\Alerts::areCached()`. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Control panel alerts can now have `title`, `actions`, and `refreshable` keys, which are shown in the alert’s heading and buttons. Plugins can pass them from `CpAlertsResolving` to show their links as buttons. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - `CraftCms\Cms\License\License::issues()` can now return a fourth item per issue, with link buttons for its alert. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- Fixed a bug where `{% cache %}` tags and cached GraphQL results built with element queries’ `exists()`, `ids()`, `pluck()`, or aggregate methods weren’t refreshed when elements were saved.
 - Fixed a bug where control panel alerts weren’t shown on Inertia pages. ([#21083](https://github.com/craftcms/cms/issues/21083), [#21108](https://github.com/craftcms/cms/pull/21108))
 - Fixed a bug where licensing and critical update alerts could be missing from the control panel once the cached update info expired. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))

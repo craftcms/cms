@@ -304,11 +304,16 @@ trait QueriesEagerly
             );
         }
 
-        if ($count) {
-            return $this->eagerLoadSourceElement->getEagerLoadedElementCount($alias);
+        $result = $count
+            ? $this->eagerLoadSourceElement->getEagerLoadedElementCount($alias)
+            : $this->eagerLoadSourceElement->getEagerLoadedElements($alias);
+
+        // The elements may have been loaded before the caches being collected began
+        if ($result !== null) {
+            $count ? $this->collectCacheInfoForLoadedElements() : $this->collectCacheInfoForLoadedElements($result);
         }
 
-        return $this->eagerLoadSourceElement->getEagerLoadedElements($alias);
+        return $result;
     }
 
     /**

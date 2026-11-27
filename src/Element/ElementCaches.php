@@ -149,13 +149,22 @@ class ElementCaches
         return $this->dependencyCollector()->isCollecting();
     }
 
-    public function startCollectingCacheInfo(): void
+    /**
+     * @param  bool  $withStatusChanges  Whether element queries should look up when their results will change without
+     *                                   a save, such as when a pending entry goes live. Pass `false` when the collected
+     *                                   info won’t be used to cache anything, to skip the lookups’ queries.
+     */
+    public function startCollectingCacheInfo(bool $withStatusChanges = true): void
     {
         $this->dependencyCollector()->begin(new TemplateCacheContext(
             cacheKey: '',
             global: false,
             resources: false,
         ));
+
+        if (! $withStatusChanges) {
+            $this->dependencyCollector()->skipStatusChanges();
+        }
     }
 
     /** @param list<string> $tags */

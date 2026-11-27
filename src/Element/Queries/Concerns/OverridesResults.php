@@ -49,6 +49,23 @@ trait OverridesResults
     }
 
     /**
+     * Returns the resulting elements set by [[setResultOverride()]] for the query to use as its result, registering
+     * them with the caches being collected.
+     *
+     * @return TValue[]|null
+     */
+    protected function useResultOverride(): ?array
+    {
+        $result = $this->getResultOverride();
+
+        if ($result !== null) {
+            $this->collectCacheInfoForLoadedElements($result);
+        }
+
+        return $result;
+    }
+
+    /**
      * Sets the resulting elements.
      *
      * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,

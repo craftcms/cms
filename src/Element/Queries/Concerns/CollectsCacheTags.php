@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Events\ElementQueryCacheTagsResolving;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
+use DateTimeInterface;
 
 /**
  * @internal
@@ -26,18 +30,28 @@ trait CollectsCacheTags
         $this->beforeQuery(static function (ElementQuery $elementQuery) {
             $elementQuery->cacheTags = null;
         });
+    }
 
-        $this->afterQuery(static function (mixed $result, ElementQuery $elementQuery) {
-            if (empty($cacheTags = $elementQuery->getCacheTags())) {
-                return;
-            }
+    /**
+     * Registers this query’s cache tags with the caches being collected, along with the time its result will next
+     * change without a save.
+     *
+     * It’s called when the query is prepared, so it covers every way of running it against the database. When
+     * preparing the query aborts it, only the tags are registered, since the result can’t change until a save.
+     */
+    protected function collectCacheInfo(bool $aborted = false): void
+    {
+        $collector = app(DependencyCollector::class);
 
-            $collector = app(DependencyCollector::class);
+        if (! $collector->isCollecting()) {
+            return;
+        }
 
-            if ($collector->isCollecting()) {
-                $collector->collectTags($cacheTags);
-            }
-        });
+        $collector->collectTags($this->getCacheTags());
+
+        if (! $aborted && $collector->collectsStatusChanges()) {
+            $this->collectStatusChangeExpiry($collector);
+        }
     }
 
     /**
@@ -93,6 +107,73 @@ trait CollectsCacheTags
         }
 
         return $this->cacheTags;
+    }
+
+    /**
+     * Registers this query’s cache tags, and its elements’ expiry dates, with the caches being collected when its
+     * result comes from elements that were already loaded rather than from the database.
+     *
+     * Unlike [[collectCacheInfo()]], this doesn’t look up when other elements’ statuses change, such as when a pending
+     * entry that would join the result goes live, since that would take the query the loaded elements saved.
+     *
+     * @param  iterable<ElementInterface>  $elements
+     */
+    protected function collectCacheInfoForLoadedElements(iterable $elements = []): void
+    {
+        $collector = app(DependencyCollector::class);
+
+        if (! $collector->isCollecting()) {
+            return;
+        }
+
+        $collector->collectTags($this->getCacheTags());
+
+        foreach ($elements as $element) {
+            $collector->collectElementExpiry($element);
+        }
+    }
+
+    /**
+     * Registers the time this query’s result will change without any element being saved, such as when a pending
+     * entry goes live, as the expiry date of the caches being collected.
+     */
+    protected function collectStatusChangeExpiry(DependencyCollector $collector): void {}
+
+    /**
+     * Returns the earliest value of a date column after the given time among the elements this query could match with
+     * the given statuses, on any of the sites it queries, for [[collectStatusChangeExpiry()]].
+     *
+     * The lookup skips the query’s events and the conditions their listeners add, its search, which it would otherwise
+     * repeat, and its selects, orders, groups, and unions. That can only find an earlier date, or miss elements a union
+     * adds.
+     *
+     * @param  string[]  $statuses
+     */
+    protected function nextStatusChangeDate(array $statuses, string $column, DateTimeInterface $after): ?DateTimeInterface
+    {
+        $query = (clone $this)->status($statuses)->search(null)->unique(false);
+        $query->preparesSilently = true;
+
+        // The structure join keeps MySQL from reading the date index in order, so leave it out unless a param or
+        // condition of the query’s own could need it
+        if (
+            $query->query->wheres === [] &&
+            ! array_any(self::STRUCTURE_PARAMS, fn (string $param) => ! in_array($query->$param, [null, false], true))
+        ) {
+            $query->withStructure(false);
+        }
+
+        // The prepared query keeps its own conditions grouped, so the date condition applies to all of them.
+        // Ordering by the date lets the database stop at the first match.
+        // Subqueries, such as relatedTo() ones, would still collect their own cache info.
+        $date = app(DependencyCollector::class)->withoutCollecting(fn () => $query->toBase()
+            ->cloneWithout(['columns', 'orders', 'limit', 'offset', 'groups', 'havings', 'unions', 'unionLimit', 'unionOffset', 'unionOrders', 'lock'])
+            ->cloneWithoutBindings(['select', 'order', 'groupBy', 'having', 'union', 'unionOrder'])
+            ->where($column, '>', Query::prepareDateForDb($after))
+            ->orderBy($column)
+            ->value($column));
+
+        return DateTimeHelper::toDateTime($date) ?: null;
     }
 
     /**

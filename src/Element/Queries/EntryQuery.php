@@ -22,6 +22,8 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
+use DateTimeInterface;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -152,7 +154,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         // Always consider “now” to be the current time @ 59 seconds into the minute.
         // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
-        $currentTime = now()->endOfMinute();
+        $currentTime = $this->statusTime ??= now()->endOfMinute()->toImmutable();
 
         return match ($status) {
             Entry::STATUS_LIVE => fn (Builder $query) => $query
@@ -351,6 +353,50 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 return;
             }
         }, boolean: $value ? 'and' : 'and not');
+    }
+
+    /**
+     * The “now” the status conditions compare dates to, set the first time they’re applied, so copies of the query
+     * made to look up when statuses change compare to the same time.
+     */
+    private ?DateTimeInterface $statusTime = null;
+
+    /**
+     * Expires the caches being collected when the next entry this query could match changes status in a way that
+     * changes the result: a pending entry going live, when the query matches live or pending entries but not both, or
+     * a live or pending entry expiring, when it matches live or expired entries but not both.
+     */
+    #[Override]
+    protected function collectStatusChangeExpiry(DependencyCollector $collector): void
+    {
+        if (Cms::config()->staticStatuses || $this->archived || ! $this->status) {
+            return;
+        }
+
+        // A `not` or `or` glue is ignored: negating the statuses flips both sides of each comparison below
+        $statuses = array_diff(array_map(
+            fn (string $status) => strtolower(trim($status)),
+            is_array($this->status) ? $this->status : explode(',', $this->status),
+        ), ['not', 'or']);
+        $matches = fn (string $status) => in_array($status, $statuses, true) || in_array(Entry::STATUS_ENABLED, $statuses, true);
+
+        // Compare to the “now” the status conditions used, so an entry going live as the minute changes isn’t missed
+        $after = $this->statusTime ?? now()->endOfMinute();
+
+        if (
+            $matches(Entry::STATUS_LIVE) !== $matches(Entry::STATUS_PENDING) &&
+            ($date = $this->nextStatusChangeDate([Entry::STATUS_PENDING], 'entries.postDate', $after))
+        ) {
+            $collector->setStatusChangeDate($date);
+        }
+
+        // Pending entries can expire too, once they’ve gone live
+        if (
+            $matches(Entry::STATUS_LIVE) !== $matches(Entry::STATUS_EXPIRED) &&
+            ($date = $this->nextStatusChangeDate([Entry::STATUS_LIVE, Entry::STATUS_PENDING], 'entries.expiryDate', $after))
+        ) {
+            $collector->setStatusChangeDate($date);
+        }
     }
 
     #[Override]
