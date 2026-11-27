@@ -40,7 +40,7 @@ class Json extends Field implements MergeableFieldInterface
     #[Override]
     public static function phpType(): string
     {
-        return 'array|null';
+        return sprintf('\\%s|null', JsonData::class);
     }
 
     #[Override]
