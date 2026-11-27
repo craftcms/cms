@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Address\Models\Address;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -34,6 +35,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use Tpetry\QueryExpressions\Language\Alias;
 
 it('preserves select expressions bindings and mapped aliases across element types', function (Closure $factory) {
@@ -427,6 +429,39 @@ it('sources concrete element queries from their element tables first', function 
     'addresses' => [fn () => new AddressQuery()->getQuery(), 'addresses'],
     'contentblocks' => [fn () => new ContentBlockQuery()->getQuery(), 'contentblocks'],
 ]);
+
+it('reads elements first on MySQL only when draft or revision IDs are required', function (Closure $query, string $firstTable) {
+    expect($query()->toSql())->toStartWith('select ')->toMatch('/ from `'.$firstTable.'`(?: as `\w+`)? straight_join /');
+})->skip(fn () => ! DB::isMysql(), 'Only MySQL straight-joins elements.')->with([
+    'drafts of an element' => [fn () => Entry::find()->draftOf(5)->status(null), 'elements'],
+    'revisions of an element' => [fn () => Entry::find()->revisionOf(5)->status(null), 'elements'],
+    'draft ID' => [fn () => Entry::find()->draftId(5), 'elements'],
+    'revision ID' => [fn () => Entry::find()->revisionId(5), 'elements'],
+    'nested revision ID' => [fn () => Entry::find()->where(fn (Builder $q) => $q->where('elements.revisionId', 5))->revisions(null), 'elements'],
+    'section listing' => [fn () => Entry::find()->sectionId(1)->orderByDesc('postDate')->limit(100), 'entries'],
+    'element IDs' => [fn () => Entry::find()->id([5, 6]), 'entries'],
+    'any draft' => [fn () => Entry::find()->drafts(), 'entries'],
+    'canonical ID or section' => [fn () => Entry::find()->revisions(null)->where('elements.canonicalId', 5)->orWhere('entries.sectionId', 1), 'entries'],
+    'not a draft ID' => [fn () => Entry::find()->drafts(null)->whereNot(fn (Builder $q) => $q->where('elements.draftId', 5)), 'entries'],
+]);
+
+it('keeps a replaced source table when looking up drafts', function () {
+    $entry = EntryModel::factory()->createElement();
+    $draft = app(Drafts::class)->createDraft($entry);
+
+    expect(Entry::find()->draftOf($entry->id)->status(null)->ids())->toBe([$draft->id])
+        ->and(Entry::find()->fromSub(DB::table(Table::ENTRIES)->where('id', '<>', $draft->id), 'entries')->draftOf($entry->id)->status(null)->ids())->toBe([])
+        ->and(Entry::find()->fromRaw('('.DB::table(Table::ENTRIES)->where('id', '<>', $draft->id)->toRawSql().') as '.DB::getQueryGrammar()->wrapTable('entries'))->draftOf($entry->id)->status(null)->ids())->toBe([]);
+});
+
+it('keeps an index hint on the source table when looking up drafts', function () {
+    $entry = EntryModel::factory()->createElement();
+    $draft = app(Drafts::class)->createDraft($entry);
+
+    $typeIdIndex = collect(Schema::getIndexes(Table::ENTRIES))->firstWhere('columns', ['typeId'])['name'];
+
+    expect(Entry::find()->useIndex($typeIdIndex)->draftOf($entry->id)->status(null)->ids())->toBe([$draft->id]);
+})->skip(fn () => ! DB::isMysql(), 'Only MySQL compiles index hints this way.');
 
 it('does not duplicate pending before query callbacks when cloned while preparing', function () {
     $query = new ElementQuery;
