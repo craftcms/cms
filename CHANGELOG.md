@@ -68,6 +68,8 @@
 - Fixed a bug where licensing and critical update alerts could be missing from the control panel once the cached update info expired. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))
 - `CraftCms\Cms\Element\Queries\AssetQuery` now has a template type for the asset class it returns, like `EntryQuery`, so static analysis can type queries for asset subclasses. ([#21138](https://github.com/craftcms/cms/pull/21138))
+- Added `CraftCms\Cms\Field\Assets::getUploadVolume()`. ([#21151](https://github.com/craftcms/cms/pull/21151))
+- Fixed a bug where images uploaded to a volume were reported as copies of images in other volumes. ([#21151](https://github.com/craftcms/cms/pull/21151))
 - Fixed an error that occurred when moving entries to another section. ([#21141](https://github.com/craftcms/cms/pull/21141))
 - Fixed a bug where macros imported within `{% namespace %}` tags weren’t available after the closing tag. ([#21117](https://github.com/craftcms/cms/pull/21117))
 - Fixed a bug where Number fields’ inputs didn’t format their values for the user’s formatting locale. ([#21080](https://github.com/craftcms/cms/issues/21080), [#21107](https://github.com/craftcms/cms/pull/21107))
