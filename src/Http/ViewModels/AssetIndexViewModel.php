@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets;
@@ -74,6 +75,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
      * in the URL instead of bouncing to the root. The resolved source key
      * (`volume:{uid}`) is available on the base `source` payload.
      */
+    #[UnaffectedByFilters]
     public function defaultSource(): ?string
     {
         return $this->defaultSource;
@@ -93,6 +95,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return $this->includeSubfolders() ? ['includeSubfolders' => true] : [];
     }
 
+    #[UnaffectedByFilters]
     public function canSearchSubfolders(): bool
     {
         return ($this->subfolder() ?? $this->rootFolder())?->getHasChildren() ?? false;
@@ -256,6 +259,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
      *
      * @return array<int, array<string, mixed>>
      */
+    #[UnaffectedByFilters]
     public function breadcrumbs(): array
     {
         $current = $this->subfolder() ?? $this->rootFolder();
@@ -319,6 +323,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
      *
      * @return list<array<string, mixed>>
      */
+    #[UnaffectedByFilters]
     public function folderActions(): array
     {
         $folder = $this->subfolder() ?? $this->rootFolder();

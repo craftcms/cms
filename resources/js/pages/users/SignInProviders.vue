@@ -63,7 +63,7 @@
       );
 
       if (response) {
-        router.reload();
+        router.reload({only: ['providers']});
       }
     } finally {
       processingProvider.value = null;

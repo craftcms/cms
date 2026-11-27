@@ -175,6 +175,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     status: elementIndex.statusMenuValue,
     conditions: elementIndex.currentCondition,
     busy: options.busy,
+    only: () => elementIndex.filterProps,
     preferredSort: () => {
       const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
         ({field}) => field !== 'score'
