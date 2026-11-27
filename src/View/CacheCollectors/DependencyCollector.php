@@ -160,11 +160,14 @@ class DependencyCollector implements CacheCollectorInterface
      * Stops element queries from looking up when their results will change without a save, such as when a pending
      * entry goes live, for the cache being collected. Their tags are still collected.
      *
+     * The lookups still run when an enclosing cache collects them, since it caches what this one collects too.
+     *
      * @internal
      */
     public function skipStatusChanges(): void
     {
-        $this->collectsStatusChanges = false;
+        $parent = end($this->buffers);
+        $this->collectsStatusChanges = $parent !== false && $parent['collectsStatusChanges'];
     }
 
     /**

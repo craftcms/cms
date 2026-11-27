@@ -578,3 +578,24 @@ it('only looks up when entries go live when results are cached', function (bool 
     'caching enabled' => [true, 1800],
     'caching disabled' => [false, null],
 ]);
+
+it('looks up when entries go live for an enclosing cache when results are not cached', function () {
+    Cms::config()->enableGraphqlCaching = false;
+    travelTo(Date::parse('2026-01-01 09:30:00'));
+
+    $entryType = CraftCms\Cms\Entry\Models\EntryType::factory()->create(['handle' => 'article']);
+    $section = CraftCms\Cms\Section\Models\Section::factory()
+        ->withEntryTypes($entryType)
+        ->create(['handle' => 'news', 'type' => SectionType::Channel->value]);
+    Entry::factory()->forSection($section)->forEntryType($entryType)->create([
+        'postDate' => Date::parse('2026-01-01 10:00:30'),
+    ]);
+    $gql = app(Gql::class);
+    $gql->flushCaches();
+
+    ElementCaches::startCollectingCacheInfo();
+    $gql->executeQuery(GqlHelper::createFullAccessSchema(), '{ entryCount(section: "news") }');
+    [, $cacheDuration] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($cacheDuration)->toBe(1800);
+});
