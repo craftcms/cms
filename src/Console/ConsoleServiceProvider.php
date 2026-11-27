@@ -30,6 +30,7 @@ use CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand;
 use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use CraftCms\Cms\GarbageCollection\Commands\RunCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -82,6 +83,15 @@ class ConsoleServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $schedule
+                ->call(fn () => $this->app->make(SchedulerHeartbeat::class)->record())
+                ->name('craft:scheduler-heartbeat')
+                ->everyMinute()
+                ->evenInMaintenanceMode()
+                ->evenWhenPaused();
+        });
+
         if (! $this->app->runningInConsole()) {
             return;
         }

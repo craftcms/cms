@@ -234,6 +234,7 @@
         "ProjectConfig": "CraftCms\\Cms\\Support\\Facades\\ProjectConfig",
         "ResponseHeaders": "CraftCms\\Cms\\Support\\Facades\\ResponseHeaders",
         "Revisions": "CraftCms\\Cms\\Support\\Facades\\Revisions",
+        "SchedulerHeartbeat": "CraftCms\\Cms\\Support\\Facades\\SchedulerHeartbeat",
         "Search": "CraftCms\\Cms\\Support\\Facades\\Search",
         "Sections": "CraftCms\\Cms\\Support\\Facades\\Sections",
         "Security": "CraftCms\\Cms\\Support\\Facades\\Security",
