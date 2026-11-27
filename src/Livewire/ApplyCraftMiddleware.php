@@ -77,7 +77,9 @@ readonly class ApplyCraftMiddleware
             // An expired or deleted preview token no longer gives access to the previewed draft.
             abort_if($this->tokens->getTokenRoute($context['preview']['token']) === false, 403, 'The preview has expired.');
 
-            $this->setHeader($request, 'X-Craft-Preview-Token', $context['preview']['param']);
+            if ($context['preview']['param'] !== null) {
+                $this->setHeader($request, 'X-Craft-Preview-Token', $context['preview']['param']);
+            }
 
             if ($token === null) {
                 $this->setHeader($request, HandleTokenRequest::TOKEN_HEADER, $context['preview']['token']);
@@ -111,7 +113,7 @@ readonly class ApplyCraftMiddleware
      * Each snapshot’s checksum is checked first, so a client can’t mark the app’s own components as Craft’s.
      * Livewire checks them again, and rejects the request, when it hydrates the components.
      *
-     * @return array{siteId: int, siteToken: string|null, preview: array{token: string, param: string}|null}|null
+     * @return array{siteId: int, siteToken: string|null, preview: array{token: string, param: string|null}|null}|null
      */
     private function craftContext(Request $request): ?array
     {
@@ -132,7 +134,7 @@ readonly class ApplyCraftMiddleware
     }
 
     /**
-     * @return array{siteId: int, siteToken: string|null, preview: array{token: string, param: string}|null}|null
+     * @return array{siteId: int, siteToken: string|null, preview: array{token: string, param: string|null}|null}|null
      */
     private function snapshotContext(mixed $snapshot): ?array
     {
@@ -160,8 +162,8 @@ readonly class ApplyCraftMiddleware
         return [
             'siteId' => $siteId,
             'siteToken' => is_string($siteToken) ? $siteToken : null,
-            'preview' => is_string($preview['token'] ?? null) && is_string($preview['param'] ?? null)
-                ? ['token' => $preview['token'], 'param' => $preview['param']]
+            'preview' => is_string($preview['token'] ?? null)
+                ? ['token' => $preview['token'], 'param' => is_string($preview['param'] ?? null) ? $preview['param'] : null]
                 : null,
         ];
     }

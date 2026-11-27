@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\PageLifecycle;
 use Livewire\Drawer\Utils;
 use Livewire\Features\SupportPageComponents\PageComponentConfig;
 use Livewire\Features\SupportPageComponents\SupportPageComponents;
@@ -62,16 +63,23 @@ class LivewireComponents
     }
 
     /**
-     * Mounts a component as a full page, in its layout.
+     * Mounts a component as a full page, in its layout and Craft’s page lifecycle, so the layout can output
+     * Craft’s queued assets with `@craftHead`, `@craftBeginBody`, and `@craftEndBody`.
      *
      * @param  array<string, mixed>  $variables
      */
     public function mountPage(string $name, array $variables): Response
     {
-        [$html, $layout] = $this->renderPage($name, $variables);
-        $response = response($html);
+        $layout = null;
 
-        if (is_callable($layout->response)) {
+        // Section templates are already rendered in the page lifecycle, by TemplateManager.
+        $response = response(app(PageLifecycle::class)->wrap(function () use ($name, $variables, &$layout): string {
+            [$html, $layout] = $this->renderPage($name, $variables);
+
+            return $html;
+        }));
+
+        if ($layout instanceof PageComponentConfig && is_callable($layout->response)) {
             ($layout->response)($response);
         }
 

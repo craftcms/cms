@@ -23,6 +23,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
 use Illuminate\Support\Facades\Crypt;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Livewire;
 use Livewire\Mechanisms\HandleRequests\EndpointResolver;
@@ -92,6 +94,22 @@ it('mounts Livewire class components used as controller routes', function () {
         ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, "class:{$entry->id}:{$entry->id}:1"));
 });
 
+it('renders class component routes in Craft’s page lifecycle', function () {
+    createLivewireEntry('lw-lifecycle', 'entries/show');
+    Event::listen(function (SetRoute $event) {
+        $event->route = new ControllerRoute(LivewireLifecycleTestComponent::class);
+        $event->handled = true;
+    });
+
+    $html = $this->get('/lw-lifecycle')->assertOk()->getContent();
+
+    expect($html)
+        ->toContain('>lifecycle</div>')
+        ->not->toContain(PageLifecycle::HEAD_PLACEHOLDER)
+        ->not->toContain(PageLifecycle::BODY_BEGIN_PLACEHOLDER)
+        ->not->toContain(PageLifecycle::BODY_END_PLACEHOLDER);
+});
+
 it('embeds components in Twig templates', function () {
     $entry = createLivewireEntry('lw-twig', 'livewire/embed');
 
@@ -120,6 +138,10 @@ it('keeps update requests on the site the component was rendered for', function 
     livewireCall($this, $response, 'like', ['X-Craft-Site' => (string) Sites::getPrimarySite()->id])
         ->assertOk()
         ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'count:1:site:french'));
+
+    livewireCall($this, $response, 'like', ['X-Craft-Site' => 'not-a-site'])
+        ->assertOk()
+        ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'count:1:site:french'));
 });
 
 it('keeps site tokens across update requests', function () {
@@ -146,7 +168,7 @@ it('keeps site tokens across update requests', function () {
     livewireCall($this, $response, 'like', ['X-Craft-Site-Token' => Crypt::encrypt((string) Sites::getPrimarySite()->id)])->assertBadRequest();
 });
 
-it('keeps previews across update requests', function () {
+it('keeps previews across update requests', function (bool $withPreviewParam) {
     $entry = createLivewireEntry('lw-preview', 'livewire/entry.blade.php');
     $draft = app(Drafts::class)->createDraft($entry, 1);
     $draft->title = 'Draft title';
@@ -161,24 +183,28 @@ it('keeps previews across update requests', function () {
 
     $response = $this->get('/lw-preview?'.http_build_query([
         Cms::config()->tokenParam => $token,
-        'x-craft-preview' => Crypt::encrypt('preview'),
+        ...($withPreviewParam ? ['x-craft-preview' => Crypt::encrypt('preview')] : []),
     ]))->assertOk();
+    $preview = ':preview:'.($withPreviewParam ? 1 : 0);
 
-    expect($response->getContent())->toContain('entry:Draft title:')->toContain(':likes:0:')->toContain(':preview:1');
+    expect($response->getContent())->toContain('entry:Draft title:')->toContain(':likes:0:')->toContain($preview);
 
     // The update is a preview request too, so caches skip it and drafts stay previewed.
     livewireCall($this, $response, 'like')
         ->assertOk()
         ->assertHeader('Cache-Control', 'max-age=0, must-revalidate, no-cache, no-store, private')
         ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'entry:Draft title:')
-            && str_contains($html, ':likes:1:') && str_contains($html, ':preview:1'));
+            && str_contains($html, ':likes:1:') && str_contains($html, $preview));
 
     // Once the preview token is gone, the snapshot no longer gives access to the draft.
     DB::table(Table::ROUTETOKENS)->where('token', $token)->delete();
     app()->forgetScopedInstances();
 
     livewireCall($this, $response, 'like')->assertForbidden();
-});
+})->with([
+    'with the preview param' => [true],
+    'with only the token' => [false],
+]);
 
 it('keeps the response a page component sets for section templates', function () {
     createLivewireEntry('lw-status', 'livewire/status.blade.php');
@@ -343,5 +369,14 @@ class LivewireRouteTestComponent extends Component
     public function render(): string
     {
         return '<div>class:{{ $entry->id }}:{{ $elementId }}:{{ $likes }}</div>';
+    }
+}
+
+#[Layout('layouts::lifecycle')]
+class LivewireLifecycleTestComponent extends Component
+{
+    public function render(): string
+    {
+        return '<div>lifecycle</div>';
     }
 }

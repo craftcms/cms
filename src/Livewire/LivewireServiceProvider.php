@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Livewire;
 
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance;
+use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Routing\Route as IlluminateRoute;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Livewire\ComponentHookRegistry;
 use Livewire\Livewire;
+use Livewire\Mechanisms\HandleRequests\RequireLivewireHeaders;
 use Override;
 
 /**
@@ -43,6 +46,13 @@ class LivewireServiceProvider extends ServiceProvider
         Livewire::propertySynthesizer(ElementSynth::class);
 
         Twig::registerExtension(new LivewireTwigExtension, TemplateMode::Site);
+
+        // Craft adds ResolveSite to site requests' routes, including the update route, so the components' site
+        // has to be restored before it runs.
+        // Livewire's header guard still comes first, so requests it rejects never reach Craft's middleware.
+        $kernel = $this->app->make(HttpKernel::class);
+        $kernel->addToMiddlewarePriorityBefore(ResolveSite::class, ApplyCraftMiddleware::class);
+        $kernel->addToMiddlewarePriorityBefore(ApplyCraftMiddleware::class, RequireLivewireHeaders::class);
 
         // Livewire registers one update route for every component in the app, with only the `web` group.
         // This adds Craft's middleware to updates for components rendered on Craft routes only. It goes on

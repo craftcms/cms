@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Livewire;
 
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
+use CraftCms\Cms\Http\Routing\ActionRoute;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -48,12 +50,21 @@ class SupportCraftSites extends ComponentHook
             $context->addMemo(self::SITE_TOKEN_MEMO_KEY, $request->siteToken());
         }
 
-        if ($request->isPreview()) {
+        // A preview token shows the previewed draft even without the preview param, so it's recorded either way.
+        if (self::isPreviewToken($token = Context::getHidden(HandleTokenRequest::TOKEN_KEY))) {
             $context->addMemo(self::PREVIEW_MEMO_KEY, [
-                'token' => Context::getHidden(HandleTokenRequest::TOKEN_KEY),
-                'param' => $request->previewParam(),
+                'token' => $token,
+                'param' => $request->isPreview() ? $request->previewParam() : null,
             ]);
         }
+    }
+
+    private static function isPreviewToken(mixed $token): bool
+    {
+        $route = is_string($token) ? app(RouteTokens::class)->getTokenRoute($token) : false;
+
+        return is_array($route)
+            && '/'.trim((string) $route[0], '/') === ActionRoute::uriForSegments(['preview', 'preview'], false);
     }
 
     private static function isCraftRequest(Request $request): bool
