@@ -55,6 +55,9 @@ Ui::make([
 ```
 
 Each trigger has the `trigger` character, its `boundary`, and either its `options` or a `source`, a controller action that suggestions are fetched from as the person types.
+
+A query may only contain letters, numbers, `_`, `-` and `.` unless the trigger sets a `pattern`, a regular expression the whole query has to match — `[^\s]*` to let a path's `/` through, for example.
+An option with `continues: true` keeps the suggestions open once it's inserted, so choosing a folder goes on to suggest what's inside it.
 For object template variables, `CraftCms\Cms\Cp\SelectOptions::getObjectTemplateTextExpanderTriggers()` builds the triggers for you.
 
 ## Accessibility

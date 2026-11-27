@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Assets\AltField;
@@ -341,4 +342,13 @@ it('names each of an image’s colors once on hover, while still giving each its
 
     expect($bar->attr('title'))->toBe('Red, Blue')
         ->and($bar->attr('aria-label'))->toBe('Red 50%, Blue 30%, Red 20%');
+});
+
+it('compares the alt text set on another copy of the asset, which doesn’t mark it as dirty', function () {
+    $edited = Asset::find()->id($this->asset->id)->one();
+    $edited->alt = 'A new description';
+
+    $rows = app(FieldChangeComparisons::class)->compareElements($this->asset, $edited)['rows'];
+
+    expect(collect($rows)->firstWhere('toUid', 'asset-alt')?->changed)->toBeTrue();
 });

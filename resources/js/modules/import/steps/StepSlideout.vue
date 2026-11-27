@@ -1,0 +1,407 @@
+<script setup lang="ts">
+  /**
+   * One import step's settings, as a slideout panel.
+   *
+   * Opened with `openSlideoutWith()` — see `step-slideout.ts` for why. The panel edits
+   * a copy of the step and hands it back on Apply; the step only reaches the database
+   * when the import itself is saved.
+   */
+  import '@craftcms/ui/components/field-group/field-group';
+  import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/spinner/spinner';
+  import {computed, onMounted, ref, shallowRef} from 'vue';
+  import {useForm} from '@inertiajs/vue3';
+  import {t} from '@craftcms/ui';
+  import CpContainer from '@/common/components/CpContainer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
+  import {useSlideout} from '@/common/slideouts';
+  import UiRenderer from '@/modules/ui/UiRenderer.vue';
+  import type {UiPayload} from '@/modules/ui/types';
+  import type {MappingValues, ImportStep} from '@/modules/import/mapping/types';
+  import {dirtyState} from '@/modules/import/mapping/paths';
+  import {
+    fetchStepUi,
+    StepSaveError,
+    takeStepSlideoutContext,
+    validateStep,
+    type StepSlideoutContext,
+  } from './step-slideout';
+  import InlineStepMapping from './InlineStepMapping.vue';
+
+  const props = defineProps<{
+    /** A slideout claims its context by id; a page hands it over directly. */
+    contextId?: string;
+    context?: StepSlideoutContext;
+    title: string;
+  }>();
+
+  const context = props.context ?? takeStepSlideoutContext(props.contextId!);
+  const slideout = useSlideout();
+  const payload = shallowRef<UiPayload>(context.payload);
+  const errors = shallowRef<UiPayload['errors']>([]);
+  /** The errors the step's plan couldn't be saved with, by path, for the screen's summary. */
+  const saveErrors = shallowRef<Record<string, string>>({});
+  const renderer = ref<{
+    currentValues(): UiPayload['values'];
+    setValues(
+      changes: {path: string[]; value: unknown; refreshable?: boolean}[]
+    ): void;
+  } | null>(null);
+
+  /** The step as it currently stands, including mapping the form doesn't render. */
+  const step = ref<ImportStep>(context.step);
+
+  /**
+   * Backs the shell's Apply button and gives it an accurate dirty check for the
+   * unsaved-changes prompt. Serialized with `dirtyState()`, since folding the form's
+   * values back into the step reorders and fills in keys without changing anything.
+   */
+  const form = useForm({state: dirtyState(context.step)});
+
+  useAppLayout(() => ({
+    title: props.title,
+    submitButtonLabel: context.submitLabel ?? t('Apply'),
+    editUrl: context.editUrl ?? null,
+    form,
+    defaultFormActions: [],
+    onSave: done,
+  }));
+
+  /**
+   * The form fills in defaults the stored step may not have yet, so the baseline is the
+   * step as the form reports it, not as it was handed in; otherwise the first
+   * `syncFromForm()` would read as an edit.
+   */
+  onMounted(() => {
+    syncFromForm();
+    form.defaults();
+  });
+
+  /**
+   * Whether the step can be mapped, as the server last reported it. An element importer
+   * has no destination columns until its field layout resolves from what it imports into,
+   * so this tracks every refresh rather than being derived from the step here.
+   */
+  const canMap = ref(context.canMap);
+  /** Why the data source can't be used, as the server last reported it. */
+  const sourceError = ref(context.sourceError);
+  /** The step at a glance, as the server last reported it. */
+  const summary = ref(context.summary);
+
+  /** The validation errors, plus the data source's own problem under its field. */
+  const formErrors = computed<UiPayload['errors']>(() => {
+    const message = sourceError.value;
+
+    if (
+      !message ||
+      errors.value.some((error) => error.path.join('.') === 'source')
+    ) {
+      return errors.value;
+    }
+
+    return [...errors.value, {path: ['source'], messages: [message]}];
+  });
+
+  /**
+   * The importer type the rendered form was built for. The form's own type field changes
+   * first, and the fields that depend on it only arrive with the refresh.
+   */
+  const formType = ref(context.step.type);
+  const loadingType = ref(false);
+  const showLoadingType = useDelayedLoading(loadingType);
+  let latestRefresh = 0;
+
+  /**
+   * The data source `canMap` was last checked against. The source isn't reactive, so it isn't
+   * checked on every keystroke; leaving its field refreshes the form instead, as the source
+   * decides which data type fields it shows.
+   */
+  let checkedSource = context.step.source;
+  /** Shared by refreshes and source checks, so whichever started last sets `canMap`. */
+  let latestCanMap = 0;
+
+  function mappingValues(): MappingValues {
+    // PHP sends empty settings as `[]`, whose `map` would be `Array.prototype.map`
+    const settings = Array.isArray(step.value.settings)
+      ? {}
+      : (step.value.settings ?? {});
+
+    return {
+      map: (settings.map ?? {}) as Record<string, unknown>,
+      matchCriteria: (settings.matchCriteria ?? {}) as Record<string, unknown>,
+      clearableItems: (settings.clearableItems ?? {}) as Record<
+        string,
+        unknown
+      >,
+      defaultValues: (settings.defaultValues ?? {}) as Record<string, unknown>,
+      keepMissingNestedElements: (settings.keepMissingNestedElements ??
+        {}) as Record<string, unknown>,
+      fieldSettings: (settings.fieldSettings ?? {}) as Record<string, unknown>,
+      templates: (settings.templates ?? {}) as Record<string, unknown>,
+      matchMode: (settings.matchMode as string | undefined) ?? null,
+    };
+  }
+
+  /** Folds the form's current values back into the step. */
+  function syncFromForm(): void {
+    const values = renderer.value?.currentValues() ?? {};
+    const settings = (values.settings ?? {}) as Record<string, unknown>;
+    const batchSize = values.batchSize;
+
+    step.value = {
+      ...step.value,
+      type: (values.type as string) || null,
+      source: (values.source as string) || null,
+      transformer: (values.transformer as string) || null,
+      batchSize:
+        batchSize === null || batchSize === undefined || batchSize === ''
+          ? null
+          : Number(batchSize),
+      // the mapping trees live on the step, not in the form, so they're carried over
+      settings: {...settings, ...mappingValues()},
+    };
+
+    form.state = dirtyState(step.value);
+  }
+
+  function onChange(): void {
+    syncFromForm();
+  }
+
+  /** The mapping is edited in place, so each change goes straight into the step. */
+  function onMappingChange(values: MappingValues): void {
+    step.value = {...step.value, settings: {...step.value.settings, ...values}};
+    form.state = dirtyState(step.value);
+  }
+
+  /** The step as the settings form endpoint expects it, with the mapping trees carried over. */
+  function stepForRequest(settings: Record<string, unknown>): ImportStep {
+    return {...step.value, settings: {...settings, ...mappingValues()}};
+  }
+
+  async function refresh(values: UiPayload['values']): Promise<UiPayload> {
+    syncFromForm();
+
+    const request = ++latestRefresh;
+    const canMapRequest = ++latestCanMap;
+    const type = step.value.type;
+    checkedSource = step.value.source;
+
+    if (type !== formType.value) {
+      loadingType.value = true;
+    }
+
+    try {
+      const response = await fetchStepUi(
+        stepForRequest((values.settings ?? {}) as Record<string, unknown>)
+      );
+
+      // the form drops a response a newer refresh has overtaken, so this does too
+      if (request === latestRefresh) {
+        formType.value = type;
+        summary.value = response.summary;
+      }
+
+      if (canMapRequest === latestCanMap) {
+        canMap.value = response.canMap;
+        sourceError.value = response.sourceError;
+      }
+
+      return response.ui;
+    } finally {
+      if (request === latestRefresh) {
+        loadingType.value = false;
+      }
+    }
+  }
+
+  function onFocusOut(event: FocusEvent): void {
+    const control =
+      event.target instanceof Element
+        ? event.target.closest('[data-ui-control-path]')
+        : null;
+
+    if (
+      control?.getAttribute('data-ui-control-path') !== '["source"]' ||
+      (event.relatedTarget instanceof Node &&
+        control.contains(event.relatedTarget))
+    ) {
+      return;
+    }
+
+    syncFromForm();
+
+    if (step.value.source === checkedSource) {
+      return;
+    }
+
+    if (payload.value.refreshable && renderer.value) {
+      renderer.value.setValues([
+        {path: ['source'], value: step.value.source, refreshable: true},
+      ]);
+
+      return;
+    }
+
+    checkedSource = step.value.source;
+    void checkCanMap();
+  }
+
+  /** Asks the server whether the step can be mapped, without rebuilding the form. */
+  async function checkCanMap(): Promise<void> {
+    const request = ++latestCanMap;
+
+    try {
+      const response = await fetchStepUi(
+        stepForRequest(step.value.settings ?? {})
+      );
+
+      if (request === latestCanMap) {
+        canMap.value = response.canMap;
+        sourceError.value = response.sourceError;
+      }
+    } catch {
+      // the last reported `canMap` still stands
+    }
+  }
+
+  const mapping = ref<InstanceType<typeof InlineStepMapping> | null>(null);
+
+  /**
+   * Shows the server's errors on the form, and those about the templates, which the form
+   * doesn't render, on their columns in the mapping, focusing the first.
+   */
+  async function showErrors(
+    next: Record<string, string | string[]>
+  ): Promise<void> {
+    const prefix = 'settings.templates.';
+    const formEntries: Array<[string, string[]]> = [];
+    const templateErrors: Record<string, string[]> = {};
+
+    for (const [path, messages] of Object.entries(next)) {
+      const list = Array.isArray(messages) ? messages : [messages];
+
+      if (path.startsWith(prefix)) {
+        templateErrors[path.slice(prefix.length)] = list;
+      } else {
+        formEntries.push([path, list]);
+      }
+    }
+
+    errors.value = formEntries.map(([path, messages]) => ({
+      path: path.split('.'),
+      messages,
+    }));
+
+    if (Object.keys(templateErrors).length) {
+      await mapping.value?.showTemplateErrors(templateErrors);
+    }
+  }
+
+  /**
+   * Shows the errors the step's plan couldn't be saved with: the step's own on the form,
+   * and all of them in the screen's summary, the only place one about another step or
+   * the plan itself can go.
+   */
+  async function showSaveErrors(
+    planErrors: Record<string, string | string[]>
+  ): Promise<void> {
+    const prefix = `steps.${step.value.uid}.`;
+    const own: Record<string, string | string[]> = {};
+    const summary: Record<string, string> = {};
+
+    for (const [path, messages] of Object.entries(planErrors)) {
+      const message = [messages].flat()[0] ?? '';
+
+      if (path.startsWith(prefix)) {
+        own[path.slice(prefix.length)] = messages;
+        summary[path.slice(prefix.length)] = message;
+      } else {
+        summary[path] = path.startsWith('steps.')
+          ? t('Another step: {message}', {message})
+          : message;
+      }
+    }
+
+    saveErrors.value = summary;
+    await showErrors(own);
+  }
+
+  async function done(): Promise<void> {
+    syncFromForm();
+    errors.value = [];
+    saveErrors.value = {};
+
+    if (context.editable) {
+      try {
+        await validateStep(step.value);
+      } catch (error: any) {
+        const responseErrors: Record<string, string | string[]> | undefined =
+          error?.response?.data?.errors;
+
+        if (responseErrors) {
+          await showErrors(responseErrors);
+        }
+
+        return;
+      }
+    }
+
+    try {
+      await context.apply(
+        JSON.parse(JSON.stringify(step.value)) as ImportStep,
+        summary.value
+      );
+    } catch (error) {
+      if (!(error instanceof StepSaveError)) {
+        throw error;
+      }
+
+      await showSaveErrors(error.errors);
+
+      return;
+    }
+
+    // Before close(): closing drops the panel from the store, and its handler with it.
+    slideout?.saved();
+    slideout?.close({force: true});
+  }
+</script>
+
+<template>
+  <CpContainer @focusout="onFocusOut" class="py-lg">
+    <LayoutSlot v-if="Object.keys(saveErrors).length" name="error-summary">
+      <ErrorSummary
+        :errors="saveErrors"
+        :title="t('Couldn’t save import step')"
+      />
+    </LayoutSlot>
+
+    <craft-field-group>
+      <UiRenderer
+        ref="renderer"
+        :payload="payload"
+        :errors="formErrors"
+        :refresh="payload.refreshable ? refresh : undefined"
+        @change="onChange"
+      >
+        <template #mapping>
+          <InlineStepMapping
+            ref="mapping"
+            :step="step"
+            :editable="context.editable"
+            :can-map="canMap"
+            @change="onMappingChange"
+          />
+        </template>
+      </UiRenderer>
+    </craft-field-group>
+
+    <craft-spinner v-if="showLoadingType" role="status">
+      {{ t('Loading') }}
+    </craft-spinner>
+  </CpContainer>
+</template>

@@ -1,0 +1,14 @@
+[
+    {
+        "key": "run_plan_first",
+        "language": "en",
+        "subject": "First subject",
+        "body": "First body"
+    },
+    {
+        "key": "run_plan_second",
+        "language": "en",
+        "subject": "Second subject",
+        "body": "Second body"
+    }
+]

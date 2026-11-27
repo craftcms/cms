@@ -112,4 +112,10 @@ class Users extends BaseRelationField
     {
         return User::createCondition();
     }
+
+    #[Override]
+    protected function importMatchAttributes(): array
+    {
+        return ['id' => t('ID'), 'username' => t('Username'), 'email' => t('Email')];
+    }
 }

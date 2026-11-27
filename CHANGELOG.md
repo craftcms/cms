@@ -472,6 +472,19 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where queue jobs whose worker died stayed reserved. ([#20792](https://github.com/craftcms/cms/pull/20792))
 - Fixed a bug where one failed queue job stopped control panel requests from running the queue. ([#20792](https://github.com/craftcms/cms/pull/20792))
 - Fixed a bug where image transforms, search index updates, and asset indexing entries were never finished if their worker died. ([#20792](https://github.com/craftcms/cms/pull/20792))
+- Added `CraftCms\Cms\Shared\Enums\ModelIdentifier`.
+- Added `CraftCms\Cms\Validation\Rules\ModelReferenceRule`.
+- Added `CraftCms\Cms\Asset\Validation\Rules\VolumeRule`.
+- Added `CraftCms\Cms\Entry\Validation\Rules\EntryTypeRule`.
+- Added `CraftCms\Cms\Section\Validation\Rules\SectionRule`.
+- Added `CraftCms\Cms\Site\Validation\Rules\SiteRule`.
+- Added `CraftCms\Cms\User\Validation\Rules\UserGroupRule`.
+- Added `CraftCms\Cms\Asset\Volumes::resolveVolume()`.
+- Added `CraftCms\Cms\Entry\EntryTypes::resolveEntryType()`.
+- Added `CraftCms\Cms\Section\Sections::resolveSection()`.
+- Added `CraftCms\Cms\Site\Sites::resolveSite()`.
+- `CraftCms\Cms\User\UserGroups::resolveGroup()` now accepts `CraftCms\Cms\User\Data\UserGroup` objects, and has a `$by` argument for limiting which identifier types are accepted.
+- Removed `CraftCms\Cms\Validation\Rules\SiteIdRule`. `CraftCms\Cms\Site\Validation\Rules\SiteRule` should be used instead.
 - Fixed a bug where two requests could generate the same image transform at once. ([#20792](https://github.com/craftcms/cms/pull/20792))
 - Fixed a bug where image transforms that failed once kept their error after they were generated. ([#20792](https://github.com/craftcms/cms/pull/20792))
 - Fixed a bug where a late progress update could mark a finished queue job as running again. ([#20792](https://github.com/craftcms/cms/pull/20792))

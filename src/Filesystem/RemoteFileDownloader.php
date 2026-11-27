@@ -29,7 +29,7 @@ readonly class RemoteFileDownloader
      *
      * @param  int  $maxRedirects  The number of redirects to follow. Redirects from HTTPS to HTTP are never followed.
      */
-    public function download(string $url, string $path, int $maxBytes, int $maxRedirects = 0): void
+    public function download(string $url, string $path, int $maxBytes, int $maxRedirects = 0): Response
     {
         $https = strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https';
 
@@ -67,6 +67,8 @@ readonly class RemoteFileDownloader
         if ($size > $maxBytes) {
             throw new RuntimeException('The file exceeds the maximum upload size.');
         }
+
+        return $response;
     }
 
     private function request(string $url, string $path, int $maxBytes): Response
@@ -78,13 +80,11 @@ readonly class RemoteFileDownloader
         }
 
         try {
-            $ips = $this->urls->validate($url);
+            // validate the URL and pin its hostname/port to the validated IPs *before* opening any connection
+            $curlResolve = $this->urls->curlResolve($url);
         } catch (UrlValidationException) {
             throw new RuntimeException('The file URL must resolve to a public HTTP or HTTPS address.');
         }
-
-        $host = $parts['host'];
-        $port = $parts['port'] ?? (strtolower($parts['scheme']) === 'https' ? 443 : 80);
 
         try {
             return Http::createPendingRequest()
@@ -111,10 +111,7 @@ readonly class RemoteFileDownloader
                         }
                     },
                     'curl' => [
-                        CURLOPT_RESOLVE => ["$host:$port:".implode(',', array_map(
-                            static fn (string $ip): string => str_contains($ip, ':') ? "[$ip]" : $ip,
-                            $ips,
-                        ))],
+                        CURLOPT_RESOLVE => $curlResolve,
                         CURLOPT_MAXFILESIZE_LARGE => $maxBytes,
                     ],
                 ])

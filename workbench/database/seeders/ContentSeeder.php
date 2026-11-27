@@ -253,6 +253,8 @@ class ContentSeeder extends Seeder
         $this->createSampleEntries($site);
         $this->seedWorkflow(Sections::getSectionByHandle('posts') ?? throw new RuntimeException('Posts section not found.'));
         $this->call(MatrixPlaygroundSeeder::class);
+        $this->call(GuidesSeeder::class);
+        $this->call(ImportPlansSeeder::class);
         $this->call(FieldShowcaseSeeder::class);
         $this->seedSettings();
     }
