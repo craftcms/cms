@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => '「{tagGroup}」 タググループからタグを削除',
     'Delete them' => 'これらを削除',
     'Delete users' => 'ユーザーを削除する',
+    'Delete {name}' => '{name}を削除',
     'Delete {site}' => '{site} を削除',
     'Delete {types}' => '{types}を削除',
     'Delete {type} for site' => 'このサイトの{type}を削除',

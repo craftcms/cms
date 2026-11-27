@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Dileu tagiau o’r grŵp tagiau “{tagGroup}”',
     'Delete them' => 'Eu dileu',
     'Delete users' => 'Dileu defnyddwyr',
+    'Delete {name}' => 'Dileu {name}',
     'Delete {site}' => 'Dileu {site}',
     'Delete {types}' => 'Dileu {types}',
     'Delete {type} for site' => 'Dileu {type} ar gyfer y wefan',

@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Tags verwijderen uit de taggroep “{tagGroup}”',
     'Delete them' => 'Verwijderen',
     'Delete users' => 'Gebruikers verwijderen',
+    'Delete {name}' => '{name} verwijderen',
     'Delete {site}' => '{site} verwijderen',
     'Delete {types}' => '{types} verwijderen',
     'Delete {type} for site' => '{type} verwijderen voor site',

@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Slett stikkord i stikkordsgruppen «{tagGroup}»',
     'Delete them' => 'Slett disse',
     'Delete users' => 'Slett brukere',
+    'Delete {name}' => 'Slett {name}',
     'Delete {site}' => 'Slett {site}',
     'Delete {types}' => 'Slett {types}',
     'Delete {type} for site' => 'Slett {type} for nettstedet',

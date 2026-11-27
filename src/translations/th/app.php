@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'ลบแท็กจากกลุ่มแท็ก “{tagGroup}”',
     'Delete them' => 'ลบรายการเหล่านี้',
     'Delete users' => 'ลบผู้ใช้',
+    'Delete {name}' => 'ลบ {name}',
     'Delete {site}' => 'ลบ {site}',
     'Delete {types}' => 'ลบ{types}',
     'Delete {type} for site' => 'ลบ {type} สำหรับเว็บไซต์',

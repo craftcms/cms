@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'حذف العلامات من مجموعة علامات “{tagGroup}”',
     'Delete them' => 'حذفهم',
     'Delete users' => 'حذف المستخدمين',
+    'Delete {name}' => 'حذف {name}',
     'Delete {site}' => 'حذف {site}',
     'Delete {types}' => 'حذف {types}',
     'Delete {type} for site' => 'حذف {type} للموقع',

@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Zmazať značky zo skupiny značiek „{tagGroup}“',
     'Delete them' => 'Odstrániť ich',
     'Delete users' => 'Zmazať používateľov',
+    'Delete {name}' => 'Zmazať {name}',
     'Delete {site}' => 'Odstrániť {site}',
     'Delete {types}' => 'Odstrániť {types}',
     'Delete {type} for site' => 'Zmazať pre web: {type}',

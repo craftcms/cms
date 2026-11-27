@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => '«{tagGroup}» белгилер тобунан белгилерди өчүрүү',
     'Delete them' => 'Аларды өчүрүү',
     'Delete users' => 'Колдонуучуларды өчүрүү',
+    'Delete {name}' => '{name} өчүрүү',
     'Delete {site}' => '{site} өчүрүү',
     'Delete {types}' => '{types} өчүрүү',
     'Delete {type} for site' => 'Сайт үчүн өчүрүү: {type}',

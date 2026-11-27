@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => '从“{tagGroup}”标签组中删除标签',
     'Delete them' => '删除',
     'Delete users' => '删除用户',
+    'Delete {name}' => '删除{name}',
     'Delete {site}' => '删除“{site}”',
     'Delete {types}' => '删除{types}',
     'Delete {type} for site' => '为站点删除{type}',

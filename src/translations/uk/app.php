@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Видалити теги з групи тегів «{tagGroup}»',
     'Delete them' => 'Видалити',
     'Delete users' => 'Видаляти користувачів',
+    'Delete {name}' => 'Видалити {name}',
     'Delete {site}' => 'Видалити {site}',
     'Delete {types}' => 'Видалити: {types}',
     'Delete {type} for site' => 'Видалити об’єкт ({type}) для сайту',
