@@ -1479,7 +1479,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (params && !$.isEmptyObject(params)) {
         data.push($.param(params));
       }
-      await this.updateFieldLayout(data.join('&'));
+      // The draft changed elsewhere, so its blocks' UIs can't be reused.
+      await this.updateFieldLayout(data.join('&'), {reuseUis: false});
     },
 
     isPreviewActive: function () {
@@ -1819,9 +1820,12 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {Object} data
+     * @param {Object} [options]
+     * @param {boolean} [options.reuseUis=true] Whether the server can send
+     *   placeholders for the nested UIs the request didn't change.
      * @returns {Promise}
      */
-    updateFieldLayout: async function (data) {
+    updateFieldLayout: async function (data, {reuseUis = true} = {}) {
       // Ignore if we're already submitting the main form
       if (this.submittingForm) {
         throw 'Form already being submitted.';
@@ -1857,7 +1861,10 @@ Craft.ElementEditor = Garnish.Base.extend(
           'elements/update-field-layout',
           {
             signal: this.abortController.signal,
-            headers: {...this._saveHeaders, ...this._uiReuseHeaders},
+            headers: {
+              ...this._saveHeaders,
+              ...(reuseUis ? this._uiReuseHeaders : {}),
+            },
             data: preparedData,
           }
         );

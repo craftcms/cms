@@ -810,10 +810,13 @@ export function useElementEditor({
    * Re-renders the field layout from the server, keeping unsaved values.
    *
    * Resolves with the server's response once it's been applied, or nothing
-   * when a newer refresh superseded it.
+   * when a newer refresh superseded it. Pass `reuseUis: false` when nested UIs
+   * may have changed without their values changing, such as the cards of a
+   * nested element saved from its own editor.
    */
   async function refreshUi(
-    scope: string[] = uiPayload.value?.scope ?? []
+    scope: string[] = uiPayload.value?.scope ?? [],
+    {reuseUis = true}: {reuseUis?: boolean} = {}
   ): Promise<UiValues | undefined> {
     const generation = ++refreshGeneration;
     const rootScope = uiPayload.value?.scope ?? [];
@@ -837,7 +840,8 @@ export function useElementEditor({
         headers: {
           'X-Craft-Ui-Root-Scope': JSON.stringify(rootScope),
           'X-Craft-Ui-Scope': JSON.stringify(scope),
-          ...(canReuseUis(uiPayload.value) && {[UI_REUSE_HEADER]: '1'}),
+          ...(reuseUis &&
+            canReuseUis(uiPayload.value) && {[UI_REUSE_HEADER]: '1'}),
         },
       }
     );
@@ -1401,7 +1405,7 @@ export function useElementEditor({
       return refreshForChangesElsewhere();
     }
 
-    const response = await refreshUi();
+    const response = await refreshUi(undefined, {reuseUis: false});
 
     if (!changedElsewhere && response && 'updatedTimestamp' in response) {
       activity.rebase({
@@ -1423,7 +1427,7 @@ export function useElementEditor({
     refreshForElsewhere ??= new Promise((resolve) => setTimeout(resolve))
       .then(() => {
         refreshForElsewhere = null;
-        return refreshUi();
+        return refreshUi(undefined, {reuseUis: false});
       })
       .then(() => undefined);
 

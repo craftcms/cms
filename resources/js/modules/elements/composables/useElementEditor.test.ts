@@ -1773,6 +1773,17 @@ describe('useElementEditor', () => {
     expect(postSpy.mock.calls[3]?.[1]?.fields).toBeUndefined();
     expect(postSpy.mock.calls[3]?.[2]?.headers?.['X-Craft-Ui-Reuse']).toBe('1');
     expect([heading('a').value, heading('b').value]).toEqual(['A', 'B4']);
+
+    // A nested element saved from its own editor can change a block's cards
+    // without changing its values.
+    postSpy.mockResolvedValueOnce({
+      data: {ui: nestedBlocksPayload({a: 'A', b: 'B4'})},
+    });
+    await editor.nestedOwnerEditor.refresh!();
+
+    expect(postSpy.mock.calls[4]?.[2]?.headers?.['X-Craft-Ui-Reuse']).toBe(
+      undefined
+    );
   });
 
   it('drops the autosaved screen once a visit brings a newer payload', async () => {
