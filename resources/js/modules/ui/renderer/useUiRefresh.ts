@@ -24,11 +24,14 @@ export function useUiRefresh(options: {
   const active = new Map<string, {field: string; version: number}>();
   const refreshingFields = reactive(new Set<string>());
   const lastValues = new Map<string, string>();
+  /** Scopes with a fill in flight, and whether each was asked for again since. */
+  const fills = new Map<string, boolean>();
 
   onBeforeUnmount(() => {
     timers.forEach(clearTimeout);
     // Abandons any refresh still in flight, so its answer isn't applied.
     versions.clear();
+    fills.clear();
   });
 
   /** Schedules a refresh of `scope` for an edit to the control at `fieldPath`. */
@@ -57,8 +60,12 @@ export function useUiRefresh(options: {
     );
   }
 
-  async function request(scope: string[], fieldPath: string[]): Promise<void> {
-    if (options.disabled()) return;
+  /** Resolves with whether the server's answer was applied. */
+  async function request(
+    scope: string[],
+    fieldPath: string[]
+  ): Promise<boolean> {
+    if (options.disabled()) return false;
 
     const snapshot = options.snapshot(scope);
 
@@ -78,7 +85,7 @@ export function useUiRefresh(options: {
         versions.set(key, inFlight.version);
       }
 
-      return;
+      return false;
     }
 
     lastValues.set(key, serialized);
@@ -99,6 +106,8 @@ export function useUiRefresh(options: {
 
       if (version === versions.get(key)) {
         options.apply(refreshed, scope);
+
+        return true;
       }
     } catch {
       lastValues.delete(key);
@@ -109,11 +118,15 @@ export function useUiRefresh(options: {
         refreshingFields.delete(field);
       }
     }
+
+    return false;
   }
 
   /**
    * Asks for `scope` straight away, even when its values haven't changed
-   * since it was last rendered, such as for a nested UI the client lacks.
+   * since it was last rendered, such as when it has nested UIs the client
+   * lacks. Asked for again while that's in flight, it asks once more if the
+   * answer is never applied, such as one a save superseded.
    */
   function fill(scope: string[]): void {
     if (options.disabled() || !options.refresh()) {
@@ -122,14 +135,23 @@ export function useUiRefresh(options: {
 
     const key = JSON.stringify(scope);
 
-    if (active.has(key)) {
+    if (fills.has(key)) {
+      fills.set(key, true);
+
       return;
     }
 
+    fills.set(key, false);
     lastValues.delete(key);
-    versions.set(key, (versions.get(key) ?? 0) + 1);
     clearTimeout(timers.get(key));
-    void request(scope, scope);
+    void request(scope, scope).then((applied) => {
+      const again = fills.get(key);
+      fills.delete(key);
+
+      if (!applied && again) {
+        fill(scope);
+      }
+    });
   }
 
   /** Records the values `scope` was last rendered with. */
@@ -148,6 +170,7 @@ export function useUiRefresh(options: {
     active.clear();
     refreshingFields.clear();
     lastValues.clear();
+    fills.clear();
   }
 
   return {

@@ -51,6 +51,7 @@ import {
   reusedScopes,
   sharePayload,
   UI_REUSE_HEADER,
+  withReusedUis,
 } from '@/modules/ui/renderer/uiTree';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
@@ -459,6 +460,22 @@ export function useElementEditor({
     values,
   } = useInertiaUiRenderer(form, uiPayload);
 
+  /**
+   * The field layout as the renderer shows it. The renderer's own refreshes
+   * replace nested UIs without `uiPayload` seeing them, so placeholders are
+   * filled from this, and it decides whether a request can ask for them.
+   */
+  function shownUi(): UiPayload | null {
+    return renderer.value?.payload?.() ?? uiPayload.value;
+  }
+
+  /** `ui`, with the placeholders a server sent filled in from the nested UIs shown. */
+  function withShownUis(ui: UiPayload): UiPayload {
+    const shown = shownUi();
+
+    return shown ? withReusedUis(shown, ui) : ui;
+  }
+
   const {
     advanceBaseline: advanceSidebarBaseline,
     errorPath: sidebarErrorPath,
@@ -524,7 +541,7 @@ export function useElementEditor({
     isProvisional: props.isProvisionalDraft,
     enabled: () =>
       props.canAutosave && !props.readOnly && !releaseDraftLocked.value,
-    reuseUi: () => canReuseUis(uiPayload.value),
+    reuseUi: () => canReuseUis(shownUi()),
     transform: (data) =>
       requestValues(
         preparingOwnerGroups.size
@@ -650,7 +667,7 @@ export function useElementEditor({
       // the ones the page loaded with — otherwise a value edited back to what
       // it was on load would look unchanged, and never be saved.
       if (form) {
-        savedUi.value = form;
+        savedUi.value = withShownUis(form);
         // The nested UIs the save left as placeholders keep their baselines.
         // The payload's values for them can be unsaved ones a refresh rendered.
         rebase(form.values, reusedScopes(form.nodes));
@@ -858,8 +875,7 @@ export function useElementEditor({
         headers: {
           'X-Craft-Ui-Root-Scope': JSON.stringify(rootScope),
           'X-Craft-Ui-Scope': JSON.stringify(scope),
-          ...(reuseUis &&
-            canReuseUis(uiPayload.value) && {[UI_REUSE_HEADER]: '1'}),
+          ...(reuseUis && canReuseUis(shownUi()) && {[UI_REUSE_HEADER]: '1'}),
         },
       }
     );
@@ -887,7 +903,7 @@ export function useElementEditor({
       !form.processing
     ) {
       applyingSavedPayload = true;
-      savedUi.value = response.ui;
+      savedUi.value = withShownUis(response.ui);
       await nextTick();
       applyingSavedPayload = false;
     }

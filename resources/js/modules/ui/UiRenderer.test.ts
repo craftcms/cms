@@ -1056,7 +1056,7 @@ describe('UiRenderer', () => {
     }
   );
 
-  it('asks for the reused nested UIs it doesn’t show as the new payload does', async () => {
+  it('asks for the whole UI when a new payload reuses nested UIs it shows another way', async () => {
     const readOnly = (payload: UiPayload): UiPayload => {
       visitControls(payload.nodes, (control) =>
         Object.assign(control, {mode: 'readOnly'})
@@ -1064,14 +1064,9 @@ describe('UiRenderer', () => {
 
       return payload;
     };
-    const refresh = vi.fn(async (_values: UiValues, scope?: string[]) => {
-      const full = readOnly(nestedBlocksPayload({a: 'A', b: 'B'}));
-      const ui = full.nodes[0]!.control!.uis!.find(
-        (ui) => JSON.stringify(ui.scope) === JSON.stringify(scope)
-      )!;
-
-      return {...full, scope: ui.scope, refreshable: true, nodes: ui.nodes};
-    });
+    const refresh = vi.fn(async (_values: UiValues, _scope?: string[]) =>
+      readOnly(nestedBlocksPayload({a: 'A', b: 'B'}))
+    );
     app.unmount();
     await mount(nestedBlocksPayload({a: 'A', b: 'B'}), {refresh});
 
@@ -1085,21 +1080,14 @@ describe('UiRenderer', () => {
       );
     await vi.waitFor(() => expect(heading('b')?.readOnly).toBe(true));
 
-    expect(refresh.mock.calls.map(([, scope]) => scope?.at(-1))).toEqual([
-      'a',
-      'b',
-    ]);
+    expect(refresh.mock.calls.map(([, scope]) => scope)).toEqual([[]]);
     expect(heading('a')?.readOnly).toBe(true);
   });
 
-  it('asks for the reused nested UIs it mounts with', async () => {
-    const full = nestedBlocksPayload({a: 'A'});
-    const refresh = vi.fn(async (_values: UiValues, scope?: string[]) => ({
-      ...full,
-      scope: scope!,
-      refreshable: true,
-      nodes: full.nodes[0]!.control!.uis![0]!.nodes,
-    }));
+  it('asks for the whole UI when it mounts with reused nested UIs', async () => {
+    const refresh = vi.fn(async (_values: UiValues, _scope?: string[]) =>
+      nestedBlocksPayload({a: 'A'})
+    );
     const onMutation = vi.fn();
     app.unmount();
     await mount(nestedBlocksPayload({a: 'A'}, ['a']), {refresh, onMutation});

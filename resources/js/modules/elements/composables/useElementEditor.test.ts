@@ -31,6 +31,8 @@ import {
   nestedBlockHeading,
   nestedBlocksPayload,
 } from '@/modules/ui/nested-blocks.test-support';
+import {reusedScopes} from '@/modules/ui/renderer/uiTree';
+import {visitControls} from '@/modules/ui/runtime';
 import type {UiPayload} from '@/modules/ui/types';
 import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
@@ -1791,6 +1793,7 @@ describe('useElementEditor', () => {
     expect(postSpy.mock.calls[3]?.[1]?.fields).toBeUndefined();
     expect(postSpy.mock.calls[3]?.[2]?.headers?.['X-Craft-Ui-Reuse']).toBe('1');
     expect([heading('a').value, heading('b').value]).toEqual(['A', 'B4']);
+    expect(reusedScopes(editor.uiPayload.value!.nodes)).toEqual([]);
 
     // A nested element saved from its own editor can change a block's cards
     // without changing its values.
@@ -1872,6 +1875,119 @@ describe('useElementEditor', () => {
     expect(
       Object.keys(postSpy.mock.lastCall?.[1]?.fields?.blocks?.entries ?? {})
     ).toEqual(['a']);
+  });
+
+  it('keeps a block as its own refresh last rendered it when an autosave leaves it out', async () => {
+    const heading = (uid: string) => nestedBlockHeading(container!, uid)!;
+    const label = () =>
+      heading('a').closest('craft-field')?.querySelector('[slot="label"]')
+        ?.textContent;
+    const type = async (uid: string, value: string) => {
+      await vi.waitFor(() => expect(heading(uid)).not.toBeNull());
+      heading(uid).value = value;
+      heading(uid).dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      editor.autosave.cancel();
+    };
+    // Block a's heading is labeled after its value, and re-renders its block
+    // as soon as it changes.
+    const layout = (
+      headings: Record<string, string>,
+      reused: string[] = []
+    ) => {
+      const ui = {...nestedBlocksPayload(headings, reused), refreshable: true};
+      const a = ui.nodes[0]!.control!.uis![0]!;
+
+      if (!a.reused) {
+        const field = a.nodes[0]!;
+        field.props.label = `Heading ${headings.a}`;
+        field.control!.props.inputType = 'search';
+        Object.assign(field.control!, {reactive: true});
+      }
+
+      return ui;
+    };
+    const blockA = (headings: Record<string, string>) => {
+      const ui = layout(headings);
+      const a = ui.nodes[0]!.control!.uis![0]!;
+
+      return {...ui, scope: a.scope, nodes: a.nodes};
+    };
+    const {editor} = mount(
+      payload({canAutosave: true, draftId: 7, ui: layout({a: 'A', b: 'B'})})
+    );
+
+    postSpy.mockResolvedValueOnce({data: {ui: blockA({a: 'A2', b: 'B'})}});
+    await type('a', 'A2');
+    await vi.waitFor(() => expect(label()).toBe('Heading A2'));
+
+    // A refresh of the whole layout renders the unsaved heading as well.
+    postSpy.mockResolvedValueOnce({data: {ui: layout({a: 'A2', b: 'B'})}});
+    await editor.refreshLayout({});
+
+    postSpy.mockResolvedValueOnce({data: {ui: blockA({a: 'A', b: 'B'})}});
+    await type('a', 'A');
+    await vi.waitFor(() => expect(label()).toBe('Heading A'));
+
+    await type('b', 'B2');
+    postSpy.mockResolvedValueOnce({
+      data: {draftId: 7, ui: layout({a: 'A', b: 'B2'}, ['a'])},
+    });
+    await editor.autosave.save();
+    await nextTick();
+
+    expect(label()).toBe('Heading A');
+  });
+
+  it('fetches the nested UIs a save reuses again while they were being fetched', async () => {
+    const heading = (uid: string) => nestedBlockHeading(container!, uid);
+    // The field as it is once it has become read-only.
+    const readOnly = (reused: string[] = []) => {
+      const ui = {
+        ...nestedBlocksPayload({a: 'A', b: 'B2'}, reused),
+        refreshable: true,
+      };
+      visitControls(ui.nodes, (control) =>
+        Object.assign(control, {mode: 'readOnly'})
+      );
+
+      return ui;
+    };
+    const {editor} = mount(
+      payload({
+        canAutosave: true,
+        draftId: 7,
+        ui: {...nestedBlocksPayload({a: 'A', b: 'B'}), refreshable: true},
+      })
+    );
+    await vi.waitFor(() => expect(heading('b')).not.toBeNull());
+
+    const save = deferred<{data: object}>();
+    postSpy.mockImplementationOnce(() => save.promise);
+    heading('b')!.value = 'B2';
+    heading('b')!.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+    const saving = editor.autosave.save();
+
+    // A refresh answers first. The blocks it reuses are shown as editable, so
+    // the renderer asks for them, and the save answers before the server does.
+    const fetching = deferred<{data: object}>();
+    postSpy
+      .mockResolvedValueOnce({data: {ui: readOnly(['a', 'b'])}})
+      .mockImplementation(() => fetching.promise);
+    await editor.refreshLayout({}).catch(() => {});
+    save.resolve({data: {draftId: 7, ui: readOnly(['a', 'b'])}});
+    await saving;
+    postSpy.mockResolvedValue({data: {ui: readOnly()}});
+    fetching.resolve({data: {ui: readOnly()}});
+
+    // A read-only input has no name to find it by.
+    const input = (uid: string) =>
+      container!.querySelector<HTMLInputElement>(
+        `#ui-fields-blocks-entries-${uid}-fields-heading input`
+      );
+    await vi.waitFor(() => expect(input('a')?.readOnly).toBe(true));
+    expect(input('b')?.readOnly).toBe(true);
   });
 
   it('drops the autosaved screen once a visit brings a newer payload', async () => {

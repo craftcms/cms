@@ -6,6 +6,8 @@ import {pathsMatch, visitControls} from './runtime';
 import {cloneRaw} from './renderer/uiTree';
 
 export interface UiRendererInstance {
+  /** The payload as the form shows it, with its own refreshes applied. */
+  payload?(): UiPayload;
   advanceBaseline(): void;
   rebase?(values: UiPayload['values'], kept?: string[][]): void;
   setSubmitting?(submitting: boolean): void;

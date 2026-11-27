@@ -98,7 +98,6 @@ export function shareEqual<T extends UiValue>(
  * values whenever a new payload arrives, even when only the values changed.
  * Gives back `previous` when nothing differs, so a host recomputing its
  * payload from the same source doesn't hand its renderer a new one.
- * {@link withReusedUis} first fills in the placeholders the server sent.
  */
 export function sharePayload<T extends UiPayload | null | undefined>(
   previous: UiPayload | null | undefined,
@@ -113,7 +112,7 @@ export function sharePayload<T extends UiPayload | null | undefined>(
   }
 
   // SAFETY: UI payloads are JSON, so each of their parts is a UiValue.
-  const raw = withReusedUis(previous, toRaw(next)) as unknown as UiValues;
+  const raw = toRaw(next) as unknown as UiValues;
   const prev = toRaw(previous) as unknown as UiValues;
 
   const shared = Object.fromEntries(
@@ -134,8 +133,8 @@ export function sharePayload<T extends UiPayload | null | undefined>(
 
 /**
  * The request header asking the server for placeholders in place of the
- * nested UIs the request didn't change. Send it only when the host fills the
- * response in from a payload that {@link canReuseUis} accepts.
+ * nested UIs the request didn't change. Send it only when the renderer the
+ * response goes to shows a payload that {@link canReuseUis} accepts.
  */
 export const UI_REUSE_HEADER = 'X-Craft-Ui-Reuse';
 
@@ -154,14 +153,17 @@ export function canReuseUis(payload: UiPayload | null | undefined): boolean {
 
 /**
  * `next`, with each `reused` placeholder replaced by the nested UI at the same
- * scope in `previous`, the payload the client shows, and that UI's values
+ * scope in `previous`, the payload the renderer shows, and that UI's values
  * copied over. A server sends placeholders only to a client that asks for
  * them, so it builds and sends only the nested UIs a request changed.
  *
+ * Fill from what the renderer shows, not from the last payload a server sent.
+ * The renderer's own refreshes replace nested UIs without the host seeing them.
+ *
  * A placeholder stays when `previous` doesn't show a UI at its scope, such as
  * for a field a condition has just revealed, or shows it in another mode,
- * such as for a field that has just become read-only. The renderer asks for
- * the UIs at the scopes {@link reusedScopes} lists.
+ * such as for a field that has just become read-only. The renderer then asks
+ * for the whole UI again, without placeholders.
  */
 export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
   let values = next.values;
@@ -352,7 +354,6 @@ export function withNestedUi(
 
   nested.nodes = refreshed.nodes;
   nested.refreshable = refreshed.refreshable;
-  delete nested.reused;
 
   return {
     ...updated,

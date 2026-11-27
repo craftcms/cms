@@ -227,9 +227,9 @@
       getValue: (path) => cloneRaw(valueAt(currentValues(), [...path])),
     };
     unregisterUiValueSource = registerUiValueSource(uiValueSource);
-    // A host can hand over placeholders it couldn't fill, such as while it
-    // was detached.
-    reusedScopes(payload.value.nodes).forEach(refresher.fill);
+    // A host can hand over placeholders nothing could fill, such as ones it
+    // received while it was detached.
+    fillReused();
   });
   onBeforeUnmount(() => {
     unregisterValueSource?.();
@@ -304,6 +304,7 @@
     // Fills in placeholders before anything reads the payload, so adopting it
     // keeps the values the server left out with them.
     const refreshed = withReusedUis(payload.value, received);
+    const unfilled = reusedScopes(payload.value.nodes);
 
     if (!pathsMatch(refreshed.scope, scope)) {
       throw new Error(
@@ -320,12 +321,10 @@
     const filled = filledTabs(payload.value.nodes, refreshed.nodes);
     valueState.adoptDeferred(filled, refreshed.values);
     // A placeholder's values are what the server holds, like a deferred tab's.
-    if (
-      reusedScopes(payload.value.nodes).some((reused) =>
-        pathsMatch(reused, scope)
-      )
-    ) {
-      valueState.adoptBaseline(scope, refreshed.values);
+    for (const reused of unfilled) {
+      if (isWithin(reused, scope)) {
+        valueState.adoptBaseline(reused, refreshed.values);
+      }
     }
     valueState.adopt(refreshed);
 
@@ -355,10 +354,21 @@
     emit('update:payload', payload.value);
     emitMutation();
     resetObservedValues(payload.value.nodes);
-    reusedScopes(payload.value.nodes).forEach(refresher.fill);
+    fillReused();
 
     if (restoreFocus) {
       nextTick(restoreFocus);
+    }
+  }
+
+  /**
+   * Asks for the whole UI again when it has placeholders this form couldn't
+   * fill. The host sends that request without asking for placeholders, as the
+   * payload it's for doesn't pass `canReuseUis()`.
+   */
+  function fillReused(): void {
+    if (reusedScopes(payload.value.nodes).length) {
+      refresher.fill(payload.value.scope);
     }
   }
 
@@ -631,6 +641,8 @@
   }
 
   defineExpose({
+    /** The payload as the form shows it, with its own refreshes applied. */
+    payload: () => payload.value,
     advanceBaseline,
     rebase,
     setSubmitting,
