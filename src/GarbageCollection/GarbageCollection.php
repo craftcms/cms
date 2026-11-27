@@ -6,6 +6,7 @@ namespace CraftCms\Cms\GarbageCollection;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Console\SchedulerHeartbeat;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -40,7 +41,6 @@ use CraftCms\Cms\GarbageCollection\Actions\RemoveEmptyTempFolders;
 use CraftCms\Cms\GarbageCollection\Actions\RemoveExpiredUploads;
 use CraftCms\Cms\GarbageCollection\Jobs\RunGarbageCollection;
 use CraftCms\Cms\Queue\Models\JobProgress;
-use CraftCms\Cms\Support\Facades\SchedulerHeartbeat;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
@@ -163,7 +163,7 @@ class GarbageCollection
 
     public function queue(): void
     {
-        if (! $this->shouldRun() || SchedulerHeartbeat::isRunning()) {
+        if (! $this->shouldRun() || app(SchedulerHeartbeat::class)->isRunning()) {
             return;
         }
 
