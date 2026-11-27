@@ -22,11 +22,16 @@
 - Soft-deleting elements no longer asks for a second confirmation after the deletion blockers modal. ([#21104](https://github.com/craftcms/cms/pull/21104), [#21141](https://github.com/craftcms/cms/pull/21141))
 - `{% expires %}` and Craft’s no-cache headers no longer send the legacy `Expires` and `Pragma` headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - `csrfInput()` no longer sets no-cache headers itself. Responses containing the CSRF token get them instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
+- Blade templates for sections and Settings → Routes can now be Livewire single-file components, and Livewire class components can now be element routes.
+- Added the `livewire()` Twig function.
 - Added the `element_sources_get` and `element_sources_save` MCP tools, for reading and saving element index sidebars. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - Added the `condition_schema` MCP tool, which lists the rules a condition accepts for custom sources, field layout visibility, and relation field selection. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - The `configuration_*` MCP tools now reject condition rules that Craft would drop, and accept field layouts in the shape `configuration_get` returns them. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - Added the `output` argument to the `@formatDateTime` GraphQL directive. It can be set to `date` or `time` to output only the date or time, using the locale’s date or time format for `short`, `medium`, `long`, and `full`. ([#21084](https://github.com/craftcms/cms/pull/21084))
 - Added the `assertCpMessage()`, `assertNoCpMessages()`, and `cpMessages()` `Illuminate\Testing\TestResponse` macros, for testing the control panel messages a response delivers. ([#21161](https://github.com/craftcms/cms/pull/21161))
+- Added the `CraftCms\Cms\Livewire` namespace.
+- Added `CraftCms\Cms\Http\PreviewRequestPreparer::preparePreviewElement()`.
+- Added `CraftCms\Cms\View\TemplateManager::isRenderingPageRootTemplate()`.
 - Added `CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters`. ([#21170](https://github.com/craftcms/cms/pull/21170))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\Events\LazySessionSaved`. ([#20953](https://github.com/craftcms/cms/pull/20953))

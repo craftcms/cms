@@ -5,6 +5,7 @@ providers:
   - Laravel\Ai\AiServiceProvider
   - CraftCms\Aliases\AliasesServiceProvider
   - CraftCms\DependencyAwareCache\CacheServiceProvider
+  - Livewire\LivewireServiceProvider
   - CraftCms\Cms\Providers\CraftServiceProvider
   - Laravel\Wayfinder\WayfinderServiceProvider
   - Laravel\Octane\OctaneServiceProvider

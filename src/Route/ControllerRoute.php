@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Livewire\LivewireComponents;
 use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Contracts\ControllerDispatcher;
 use Illuminate\Routing\Router;
 use InvalidArgumentException;
+use Livewire\Component;
 use ReflectionMethod;
 use ReflectionParameter;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,6 +54,14 @@ class ControllerRoute
         };
 
         MatchedElement::set($element, $this);
+
+        if (class_exists(Component::class) && $controller instanceof Component) {
+            return app(LivewireComponents::class)->mountPage($controller::class, [
+                'element' => $element,
+                ...($element::refHandle() ? [$element::refHandle() => $element] : []),
+                ...$this->params,
+            ]);
+        }
 
         $parameters = method_exists($controller, $method)
             ? new ReflectionMethod($controller, $method)->getParameters()

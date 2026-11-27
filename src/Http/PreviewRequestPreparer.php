@@ -37,10 +37,17 @@ readonly class PreviewRequestPreparer
             default => null,
         };
 
-        if (! $element) {
-            return;
+        if ($element) {
+            $this->preparePreviewElement($element);
         }
+    }
 
+    /**
+     * Marks an element as previewed and makes it the placeholder for its canonical element,
+     * so the page and anything that relates to it show the previewed version.
+     */
+    public function preparePreviewElement(ElementInterface $element): void
+    {
         if (! $element->lft && $element->getIsDerivative()) {
             $canonical = $element->getCanonical(true);
             $element->structureId = $canonical->structureId;

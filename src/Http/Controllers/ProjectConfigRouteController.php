@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use CraftCms\Cms\Livewire\LivewireComponents;
 use CraftCms\Cms\Route\ProjectConfigRoutes;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
+use Livewire\Livewire;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -27,6 +30,12 @@ readonly class ProjectConfigRouteController
     {
         [, $template] = $this->projectConfigRoutes->match($request, $this->sites->getCurrentSite()->uid) ?? abort(404);
 
-        return response()->view($template, $request->route()->parameters());
+        $parameters = $request->route()->parameters();
+
+        if (class_exists(Livewire::class) && $name = app(LivewireComponents::class)->nameForTemplate(View::getFinder()->find($template))) {
+            return app(LivewireComponents::class)->mountPage($name, $parameters);
+        }
+
+        return response()->view($template, $parameters);
     }
 }

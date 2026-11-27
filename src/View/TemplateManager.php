@@ -43,6 +43,12 @@ class TemplateManager extends Manager
 
     private bool $isRenderingPageTemplate = false;
 
+    /** How many file, string, or object templates are being rendered, nested ones included. */
+    private int $templateDepth = 0;
+
+    /** The {@see $templateDepth} the page template itself renders at, while one is rendering. */
+    private ?int $pageTemplateDepth = null;
+
     /** How many string or object templates are being rendered, nested ones included. */
     private int $stringTemplateDepth = 0;
 
@@ -124,6 +130,14 @@ class TemplateManager extends Manager
     }
 
     /**
+     * Whether the template being rendered is the page template itself, rather than one it includes.
+     */
+    public function isRenderingPageRootTemplate(): bool
+    {
+        return $this->pageTemplateDepth !== null && $this->pageTemplateDepth === $this->templateDepth;
+    }
+
+    /**
      * Whether a string or object template is being rendered — including any
      * template it includes.
      *
@@ -185,6 +199,8 @@ class TemplateManager extends Manager
         $templateMode = $event->templateMode;
         $isRenderingPageTemplate = $this->isRenderingPageTemplate;
         $this->isRenderingPageTemplate = true;
+        $pageTemplateDepth = $this->pageTemplateDepth;
+        $this->pageTemplateDepth = $this->templateDepth + 1;
         $rendererName = $this->normalizeRendererName($renderer) ?? $this->getDefaultDriver();
 
         try {
@@ -211,6 +227,7 @@ class TemplateManager extends Manager
             });
         } finally {
             $this->isRenderingPageTemplate = $isRenderingPageTemplate;
+            $this->pageTemplateDepth = $pageTemplateDepth;
         }
 
         event($event = new PageTemplateRendered(
@@ -431,11 +448,13 @@ class TemplateManager extends Manager
     {
         $previousTemplate = $this->renderingTemplate;
         $this->renderingTemplate = $template;
+        $this->templateDepth++;
 
         try {
             return TemplateMode::with($templateMode, $render);
         } finally {
             $this->renderingTemplate = $previousTemplate;
+            $this->templateDepth--;
         }
     }
 
