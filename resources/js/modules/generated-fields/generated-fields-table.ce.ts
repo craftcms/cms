@@ -22,12 +22,18 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
     // SAFETY: PHP serializes a resolved UI payload into this attribute.
     const payload = JSON.parse(this.dataset.payload!) as UiPayload;
     this.#path = payload.nodes[0]!.control!.path;
-    this.#mount = mountUiHost(this, cpComponentRegistry, () =>
-      h(UiRenderer, {
-        ref: this.#renderer,
-        payload,
-        onChange: () => this.#changed(),
-      })
+    // Scoped by the table's own id, which is unique to its designer, so two
+    // designers on one page, such as in stacked slideouts, don't share ids.
+    this.#mount = mountUiHost(
+      this,
+      cpComponentRegistry,
+      () =>
+        h(UiRenderer, {
+          ref: this.#renderer,
+          payload,
+          onChange: () => this.#changed(),
+        }),
+      this.id
     );
     this.ready = this.#mount.ready.then(() => {
       this.#labels = this.#fieldLabels();
