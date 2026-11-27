@@ -210,7 +210,7 @@ it('eases its size to new content, but takes a resize at once', async () => {
     defineComponent({
       setup: () => () =>
         h(Modal, {isActive: true, label: 'Trace', resizable: true}, () =>
-          h('div', {style: {height: tall.value ? '400px' : '100px'}}, 'Body')
+          h('div', {style: {minHeight: tall.value ? '400px' : '100px'}}, 'Body')
         ),
     })
   );
@@ -243,6 +243,7 @@ it('eases its size to new content, but takes a resize at once', async () => {
     const animation = box.getAnimations()[0]!;
     const from = (animation.effect as KeyframeEffect).getKeyframes()[0]!;
     expect(from.height).toBe(`${before}px`);
+    expect(box.offsetWidth - box.clientWidth).toBe(0);
     await animation.finished;
     expect(box.offsetHeight).toBe(before + 300);
   }
@@ -310,4 +311,39 @@ it('opens at the size another modal with its storage key was resized to', async 
   expect(box().offsetWidth).toBe(width - 16);
   expect(box().offsetHeight).toBe(height + 16);
   localStorage.clear();
+});
+
+it('shows a scrollbar only when its content overflows', async () => {
+  const tall = ref(false);
+  const host = document.createElement('div');
+  document.body.append(host);
+  const app = createApp(
+    defineComponent({
+      setup: () => () =>
+        h(Modal, {isActive: true, label: 'Trace', maxHeight: '200px'}, () =>
+          h('div', {style: {minHeight: tall.value ? '400px' : '100px'}}, 'Body')
+        ),
+    })
+  );
+  app.mount(host);
+  teardown = () => app.unmount();
+
+  await expect
+    .element(page.getByRole('dialog', {name: 'Trace', exact: true}))
+    .toBeVisible();
+  const box = document.querySelector<HTMLElement>('.cp-modal > .content')!;
+  const probe = document.createElement('div');
+  probe.style.cssText = 'overflow: scroll; inline-size: 100px';
+  document.body.append(probe);
+  const scrollbar = probe.offsetWidth - probe.clientWidth;
+  probe.remove();
+  expect(scrollbar).toBeGreaterThan(0);
+
+  expect(box.offsetWidth - box.clientWidth).toBe(0);
+
+  tall.value = true;
+  await vi.waitFor(() => {
+    expect(box.scrollHeight).toBeGreaterThan(box.clientHeight);
+    expect(box.offsetWidth - box.clientWidth).toBe(scrollbar);
+  });
 });

@@ -102,13 +102,24 @@ function withInertia<T extends {state?: object}>(
   inertia: CraftTableInertiaOptions
 ): T {
   const only = [inertia.dataProp ?? 'data', 'pagination', 'sort'];
-  const visit = (query: RequestPayload) =>
+  const visit = (query: RequestPayload, onUnapplied?: () => void) => {
+    let applied = false;
+
     router.visit(inertia.url, {
       data: query,
       only,
       preserveScroll: true,
       preserveState: true,
+      onSuccess: () => {
+        applied = true;
+      },
+      onFinish: () => {
+        if (!applied) {
+          onUnapplied?.();
+        }
+      },
     });
+  };
 
   const config: PropertyDescriptorMap = {};
   const state: PropertyDescriptorMap = Object.getOwnPropertyDescriptors(
@@ -117,16 +128,27 @@ function withInertia<T extends {state?: object}>(
 
   if (inertia.pagination) {
     const pagination = inertia.pagination;
+    const showConfirmed = (): void => {
+      paginationState.value = {
+        pageIndex: pagination().current_page - 1,
+        pageSize: pagination().per_page,
+      };
+    };
+    let latestVisit = 0;
     const {paginationState, onPaginationChange} = useServerPagination({
       initialState: pagination(),
-      onChange: ({query}) => visit(query),
+      onChange: ({query}) => {
+        const visitId = ++latestVisit;
+        // A cancelled or failed load leaves the rows as they were, so the
+        // controls go back to showing them.
+        visit(query, () => {
+          if (visitId === latestVisit) {
+            showConfirmed();
+          }
+        });
+      },
     });
-    watch(pagination, (next) => {
-      paginationState.value = {
-        pageIndex: next.current_page - 1,
-        pageSize: next.per_page,
-      };
-    });
+    watch(pagination, showConfirmed);
 
     state.pagination = {get: () => paginationState.value, enumerable: true};
     config.manualPagination = {value: true, enumerable: true};
