@@ -93,6 +93,7 @@
     "laravel/pint": "^1.22",
     "laravel/socialite": "^5.23",
     "league/flysystem-aws-s3-v3": "^3.35",
+    "livewire/livewire": "^4.0",
     "orchestra/testbench": "^11.0",
     "pestphp/pest": "^5.0",
     "pestphp/pest-plugin-agent": "^5.0",
@@ -123,7 +124,8 @@
     "ext-imagick": "Adds support for more image processing formats and options.",
     "intervention/image-driver-vips": "Adds support for image processing with libvips (requires ext-ffi and libvips).",
     "ext-iconv": "Adds support for more character encodings than PHP\u2019s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
-    "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`."
+    "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`.",
+    "livewire/livewire": "Adds support for Livewire components as site templates and element routes."
   },
   "autoload": {
     "psr-4": {

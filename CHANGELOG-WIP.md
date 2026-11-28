@@ -240,6 +240,8 @@
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Improved Twig attribute access on Eloquent models to resolve missing and null attributes, casts, accessors, and relations through Eloquent property access, while preserving explicit method calls. ([#20165](https://github.com/craftcms/cms/pull/20165))
+- Blade templates for sections and routes can be Livewire single-file components, and Livewire class components can be element routes. ([#21189](https://github.com/craftcms/cms/pull/21189))
+- Added the `livewire()` Twig function. ([#21189](https://github.com/craftcms/cms/pull/21189))
 - Added the `fonts()` Twig function, which outputs the preload tags and `@font-face` styles for fonts bundled by Vite, like Blade’s `@fonts` directive. ([#20666](https://github.com/craftcms/cms/issues/20666), [#20667](https://github.com/craftcms/cms/pull/20667))
 - Added the `craftCommand()` Twig function for control panel templates, which returns a Craft console command as it should be run for the current environment, such as `ddev artisan craft:update:info`. ([#20492](https://github.com/craftcms/cms/pull/20492), [#20677](https://github.com/craftcms/cms/pull/20677))
 - Elements no longer include custom field values when iterated over. ([#19004](https://github.com/craftcms/cms/issues/19004))

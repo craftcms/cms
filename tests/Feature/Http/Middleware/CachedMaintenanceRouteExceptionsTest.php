@@ -29,7 +29,8 @@ it('restores maintenance exceptions without enumerating routes and preserves hos
     $this->restoreCachedMaintenanceRouteExceptions();
 
     expect($paths)->not->toBeEmpty()
-        ->and($middleware->getExcludedPaths())->toBe(['host-health', ...$paths]);
+        ->and($middleware->getExcludedPaths()[0])->toBe('host-health')
+        ->and($middleware->getExcludedPaths())->toEqualCanonicalizing(['host-health', ...$paths]);
 });
 
 it('rebuilds maintenance exception paths when a trigger changes', function (string $setting, string $suffix) {
@@ -49,7 +50,7 @@ it('rebuilds maintenance exception paths when a trigger changes', function (stri
     PreventRequestsDuringMaintenance::flushState();
     $this->restoreCachedMaintenanceRouteExceptions();
 
-    expect($middleware->getExcludedPaths())->toBe($paths);
+    expect($middleware->getExcludedPaths())->toEqualCanonicalizing($paths);
 })->with([
     'control panel trigger' => ['cpTrigger', 'settings/general'],
     'action trigger' => ['actionTrigger', 'users/login'],

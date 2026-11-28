@@ -4,14 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Blade;
 
+use CraftCms\Cms\Livewire\LivewireComponents;
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\View\Contracts\TemplateRendererInterface;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Factory;
 use Illuminate\View\View;
 use Illuminate\View\ViewName;
+use Livewire\Livewire;
 
 /**
+ * Renders Blade templates.
+ *
+ * When Livewire is installed, site templates written as Livewire single-file components are mounted
+ * instead. A component that is the page template, such as a section’s entry template, is mounted as a
+ * full-page component in its layout. One included from another template is mounted on its own.
+ *
  * @since 6.0.0
  */
 class BladeRenderer implements TemplateRendererInterface
@@ -32,6 +41,16 @@ class BladeRenderer implements TemplateRendererInterface
     ): string {
         if ($resolvedTemplate === null) {
             return view($template, $variables)->render();
+        }
+
+        if (($templateMode ?? TemplateMode::get()) === TemplateMode::Site && class_exists(Livewire::class) && app()->bound('livewire')) {
+            $components = app(LivewireComponents::class);
+
+            if ($name = $components->nameForTemplate($resolvedTemplate)) {
+                return Template::isRenderingPageRootTemplate()
+                    ? $components->renderPageTemplate($name, $variables)
+                    : $components->mount($name, $variables);
+            }
         }
 
         $view = new View(

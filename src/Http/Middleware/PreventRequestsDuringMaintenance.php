@@ -76,6 +76,17 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
     }
 
     /**
+     * Applies Laravel’s maintenance check to a request, as for routes outside the `craft` group, even when its
+     * route allows maintenance.
+     *
+     * @param  Request  $request
+     */
+    public function preventRequest($request, Closure $next): mixed
+    {
+        return parent::handle($request, $next);
+    }
+
+    /**
      * Returns whether a request to a Craft route can go through while the system is offline.
      */
     public function allowsAccess(Request $request): bool
@@ -97,6 +108,22 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
                 $metadata => true,
             ]);
         });
+    }
+
+    /**
+     * Lets an already registered route outside the `craft` group stay reachable during maintenance, like routes
+     * registered with `Route::allowDuringMaintenance()`.
+     */
+    public static function allowRouteDuringMaintenance(Route $route): void
+    {
+        $route->metadata([self::ALLOW_DURING_MAINTENANCE_METADATA => true]);
+
+        $path = self::exceptionPath($route->uri());
+
+        if (! in_array($path, self::$routeExceptions, true)) {
+            self::$routeExceptions[] = $path;
+            self::except($path);
+        }
     }
 
     /**

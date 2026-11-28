@@ -1,0 +1,1 @@
+plain:{{ $entry->title }}
