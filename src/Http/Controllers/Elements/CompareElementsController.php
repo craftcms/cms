@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -14,7 +17,9 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\NestedUiPayload;
@@ -136,11 +141,56 @@ readonly class CompareElementsController
                 // The heading's chips, as the deletion blocker modal shows them: A's only for two elements.
                 'elementChip' => $chip($canonicals['to']),
                 'fromElementChip' => $pair ? $chip($canonicals['from']) : null,
+                'images' => $this->images($from, $to),
                 // The same comparison the other way around.
                 'reverseUrl' => $state['from'] !== $state['to']
                     ? $this->compareUrl(['from' => $state['to'], 'to' => $state['from']], ['from' => $hasEdits['to'], 'to' => $hasEdits['from']], $returnUrl)
                     : null,
             ]);
+    }
+
+    /**
+     * The two images and their file’s details, for comparing them as images, when both sides are image assets.
+     *
+     * @return array{from: array<string, mixed>, to: array<string, mixed>, details: list<array{key: string, label: string}>}|null
+     */
+    private function images(ElementInterface $from, ElementInterface $to): ?array
+    {
+        $isImage = fn (ElementInterface $element): bool => $element instanceof Asset && $element->kind === FileKind::Image->value;
+
+        if (! $isImage($from) || ! $isImage($to)) {
+            return null;
+        }
+
+        /** @var Asset $from */
+        /** @var Asset $to */
+        $image = fn (Asset $asset, string $key): array => [
+            'key' => $key,
+            'title' => $asset->getUiLabel(),
+            'src' => app(Assets::class)->getThumbUrl($asset, 1280, 1280, false, ImageTransformMode::Fit),
+            'details' => [
+                'filename' => $asset->getFilename(),
+                'dimensions' => $asset->getWidth() && $asset->getHeight() ? "{$asset->getWidth()} × {$asset->getHeight()}" : null,
+                'size' => $asset->getFormattedSize(1),
+                'type' => strtoupper($asset->getExtension()),
+                'location' => implode(' / ', [
+                    t($asset->getVolume()->name, category: 'site'),
+                    ...Arr::whereNotEmpty(explode('/', (string) $asset->folderPath)),
+                ]),
+            ],
+        ];
+
+        return [
+            'from' => $image($from, 'from'),
+            'to' => $image($to, 'to'),
+            'details' => [
+                ['key' => 'filename', 'label' => t('Filename')],
+                ['key' => 'dimensions', 'label' => t('Dimensions')],
+                ['key' => 'size', 'label' => t('File size')],
+                ['key' => 'type', 'label' => t('File type')],
+                ['key' => 'location', 'label' => t('Location')],
+            ],
+        ];
     }
 
     /**

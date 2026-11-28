@@ -1,0 +1,34 @@
+/* Shared by comparisons of two things side by side, such as the Compare
+   screen's rows and an image comparison's details. */
+:root {
+  --cp-compare-hairline: light-dark(
+    color-mix(in srgb, black 18%, transparent),
+    color-mix(in srgb, white 22%, transparent)
+  );
+}
+
+/* A row whose two sides differ, filled across both of them. Set
+   `--compare-surface` to the fill behind it, when it isn't the page's. */
+.cp-compare-changed {
+  --compare-row-background: light-dark(
+    color-mix(
+      in oklab,
+      var(--c-color-violet-fill-quiet) 40%,
+      var(--compare-surface, var(--c-surface-default))
+    ),
+    color-mix(
+      in oklab,
+      var(--c-color-violet-fill-quiet) 30%,
+      var(--compare-surface, var(--c-surface-default))
+    )
+  );
+
+  background-color: var(--compare-row-background);
+}
+
+@media (forced-colors: active) {
+  .cp-compare-changed:not(tr),
+  tr.cp-compare-changed > :first-child {
+    border-inline-start: 4px solid Highlight;
+  }
+}

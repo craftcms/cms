@@ -280,7 +280,7 @@ it('marks a field a condition shows on the page changed when it differs from the
         ->assertPresent('main[id]')
         ->assertMissing('role=group[name=/compared with/i] >> role=textbox[name=/^Venue/]')
         ->append('role=group[name=/compared with/i] >> role=textbox[name=/^Title/] >> visible=true', ' Tour')
-        ->assertVisible('.compare__row--changed >> role=group[name=/compared with/i] >> role=textbox[name=/^Venue/]');
+        ->assertVisible('.cp-compare-changed >> role=group[name=/compared with/i] >> role=textbox[name=/^Venue/]');
 
     assertNoJavaScriptErrors($page);
 });

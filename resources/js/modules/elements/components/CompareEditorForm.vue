@@ -52,6 +52,8 @@
     editor: ElementEditPayload & {saveParams: UiValues};
     /** Whether each field changed, by layout UID. */
     changed: Record<string, boolean | null>;
+    /** The badge on a changed field's label. */
+    changedBadge: string;
     /** Where each field renders, by layout UID. */
     fieldOutlets: UiFieldOutlets;
     /** The element containing the fields, which answers their requests for the editor. */
@@ -150,7 +152,7 @@
           statusLabel: null,
           // The screen marks changes itself, so not with the editor's indicator too.
           showStatus: false,
-          labelBadge: props.changed[uid] ? t('Changed') : null,
+          labelBadge: props.changed[uid] ? props.changedBadge : null,
         },
       });
     };

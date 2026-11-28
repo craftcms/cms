@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -35,6 +36,7 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -682,6 +684,41 @@ function comparedAsset(): Asset
 
 }
 
+it('compares two image assets as images, with their files’ details, but not other files', function () {
+    // The images have no files to make thumbnails from.
+    Event::listen(fn (ThumbUrlResolving $event) => $event->url = "/thumbs/{$event->asset->filename}");
+    config()->set('filesystems.disks.compare-test', ['driver' => 'local', 'root' => storage_path('framework/testing/compare')]);
+    $volume = Volume::factory()->create(['disk' => 'compare-test']);
+    $folderId = VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id;
+    $image = fn (string $filename, int $width, int $height, int $size) => AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folderId,
+        'filename' => $filename,
+        'kind' => 'image',
+        'width' => $width,
+        'height' => $height,
+        'size' => $size,
+    ]);
+    $a = $image('harbor.jpg', 960, 640, 74_000);
+    $b = $image('harbor-hero.png', 880, 587, 76_800);
+    $text = comparedAsset();
+
+    get(route('craft.cp.elements.compare-elements', ['fromId' => $a->id, 'toId' => $b->id]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('images.details', fn (Collection $details) => $details->pluck('key')->all() === ['filename', 'dimensions', 'size', 'type', 'location'])
+            ->where('images.from.details.filename', 'harbor.jpg')
+            ->where('images.from.details.dimensions', '960 × 640')
+            ->where('images.from.details.type', 'JPG')
+            ->where('images.to.details.dimensions', '880 × 587')
+            ->where('images.to.details.type', 'PNG')
+            ->where('images.to.src', '/thumbs/harbor-hero.png'));
+
+    get(route('craft.cp.elements.compare-elements', ['fromId' => $a->id, 'toId' => $text->id]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('images', null));
+});
+
 it('links an asset’s other sites to a comparison from its edit screen', function () {
     $asset = comparedAsset();
 
@@ -841,6 +878,8 @@ it('compares two separate entries, each by its own versions', function () {
             $props = $page->toArray()['props'];
 
             expect(changedFields($page, 'to'))->toMatchArray(['Summary' => true, 'Tagline' => false])
+                ->and(collect(paneFields($page, 'to'))->pluck('props.labelBadge', 'props.label')->filter()->all())
+                ->toBe(['Summary' => 'Different'])
                 ->and(compareMenuLink($props['to']['versionMenu'], 'Extended run')['href'])
                 ->toContain("/compare/$a->id/$b->id?draftId=$draft->draftId")
                 ->and(collect($props['from']['versionMenu'])->flatMap(fn (array $group) => $group['items'])->pluck('label')->all())

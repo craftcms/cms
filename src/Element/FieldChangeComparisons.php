@@ -221,6 +221,8 @@ readonly class FieldChangeComparisons
         $rows = [];
         $paneNodes = ['from' => [], 'to' => []];
         $badged = $this->badgedSides($from, $to);
+        // Two separate elements differ, rather than one having changed the other.
+        $badge = $from->getCanonicalId() !== $to->getCanonicalId() ? t('Different') : t('Changed');
 
         foreach ($pairs as [$layoutElement, $fromNode, $toNode]) {
             $changed = $this->changed($layoutElement, $fromPayload, $fromNode, $from, $toPayload, $toNode, $to);
@@ -231,11 +233,11 @@ readonly class FieldChangeComparisons
             );
 
             if ($fromNode) {
-                $paneNodes['from'][] = $this->paneNode($fromNode, $badged['from'] && $changed === true);
+                $paneNodes['from'][] = $this->paneNode($fromNode, $badged['from'] && $changed === true ? $badge : null);
             }
 
             if ($toNode) {
-                $paneNodes['to'][] = $this->paneNode($toNode, $badged['to'] && $changed === true);
+                $paneNodes['to'][] = $this->paneNode($toNode, $badged['to'] && $changed === true ? $badge : null);
             }
         }
 
@@ -357,10 +359,10 @@ readonly class FieldChangeComparisons
 
     /**
      * Returns a field’s node as one side of the Compare screen shows it: full width, so it can line up with the other
-     * side’s, without the version’s own status, badged when it’s the newer version’s and changed, and with nothing to
-     * act on.
+     * side’s, without the version’s own status, with the given badge when it’s the newer version’s and changed, and
+     * with nothing to act on.
      */
-    private function paneNode(NodePayload $node, bool $badged): NodePayload
+    private function paneNode(NodePayload $node, ?string $badge): NodePayload
     {
         $node = $this->previews->withoutActionMenus($node);
 
@@ -372,7 +374,7 @@ readonly class FieldChangeComparisons
                 'width' => null,
                 'status' => null,
                 'statusLabel' => null,
-                'labelBadge' => $badged ? t('Changed') : null,
+                'labelBadge' => $badge,
             ],
             uid: $node->uid,
             control: $node->control,
