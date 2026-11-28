@@ -191,7 +191,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed an error that occurred when loading entry type settings, if an Assets field limited to images was a card attribute. ([#21198](https://github.com/craftcms/cms/issues/21198), [#21202](https://github.com/craftcms/cms/pull/21202))
 - Fixed a bug where modals showed an empty scrollbar track with classic scrollbars. ([#21196](https://github.com/craftcms/cms/issues/21196), [#21201](https://github.com/craftcms/cms/pull/21201))
 - Fixed a bug where choosing a new page size on element indexes could switch back to the previous one. ([#21183](https://github.com/craftcms/cms/issues/21183), [#21193](https://github.com/craftcms/cms/pull/21193))
-- Fixed a bug where retrying an upload after its file couldn’t be fully read could save a truncated asset. ([#21206](https://github.com/craftcms/cms/issues/21206))
+- Fixed a bug where retrying an upload after its file couldn’t be fully read could save a truncated asset. ([#21206](https://github.com/craftcms/cms/issues/21206), [#21207](https://github.com/craftcms/cms/pull/21207))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
