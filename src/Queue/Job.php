@@ -34,7 +34,7 @@ abstract class Job implements DescribableJob, ShouldQueue
 
     public function __construct()
     {
-        $this->queue = Cms::config()->queueName;
+        $this->queue = Cms::config()->queue->name;
     }
 
     public function getDescription(): string

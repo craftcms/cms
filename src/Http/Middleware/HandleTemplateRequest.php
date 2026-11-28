@@ -86,12 +86,12 @@ readonly class HandleTemplateRequest
 
     private function isPublicTemplatePath(Request $request, string $path): bool
     {
-        // If privateTemplateTrigger is set to an empty value, disable all public template routing
-        if ($request->isSiteRequest() && ! Cms::config()->privateTemplateTrigger) {
+        // If `templates.privateTrigger` is set to an empty value, disable all public template routing
+        if ($request->isSiteRequest() && ! Cms::config()->templates->privateTrigger) {
             return false;
         }
 
-        if (str_starts_with($path, Cms::config()->privateTemplateTrigger)) {
+        if (str_starts_with($path, Cms::config()->templates->privateTrigger)) {
             return false;
         }
 

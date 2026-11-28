@@ -41,8 +41,8 @@ test('control panel actions remain accessible during maintenance mode', function
     actingAs(UserModel::factory()
         ->withPermissions(['accessCp', 'accessCpWhenSystemIsOff'])
         ->createElement(['admin' => false]));
-    $cpTrigger = Cms::config()->cpTrigger;
-    $actionTrigger = Cms::config()->actionTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
+    $actionTrigger = Cms::config()->routing->actionTrigger;
 
     postJson("/{$cpTrigger}/{$actionTrigger}/app/api-headers")
         ->assertOk();
@@ -111,7 +111,7 @@ test('public-only actions are blocked during maintenance mode', function () {
 
 test('route exceptions do not expose non-Craft routes using another method', function () {
     auth()->logout();
-    Route::get(Cms::config()->actionTrigger.'/users/login', fn () => 'host route');
+    Route::get(Cms::config()->routing->actionTrigger.'/users/login', fn () => 'host route');
 
     get(action_url('users/login'))
         ->assertServiceUnavailable();
@@ -122,7 +122,7 @@ test('valid site tokens do not bypass maintenance mode on plain Laravel routes',
     Route::middleware('web')->get('maintenance-mode-token-test', fn () => 'ok');
 
     get('/maintenance-mode-token-test?'.http_build_query([
-        Cms::config()->siteToken => Crypt::encrypt((string) Sites::getPrimarySite()->id),
+        Cms::config()->routing->siteToken => Crypt::encrypt((string) Sites::getPrimarySite()->id),
     ]))
         ->assertServiceUnavailable();
 });
@@ -133,7 +133,7 @@ test('valid but unvalidated site tokens do not bypass maintenance mode on Craft 
         ->get('maintenance-mode-unvalidated-site-token-test', fn () => 'ok');
 
     get('/maintenance-mode-unvalidated-site-token-test?'.http_build_query([
-        Cms::config()->siteToken => Crypt::encrypt((string) Sites::getPrimarySite()->id),
+        Cms::config()->routing->siteToken => Crypt::encrypt((string) Sites::getPrimarySite()->id),
     ]))
         ->assertServiceUnavailable();
 });
@@ -179,8 +179,8 @@ test('General Settings remains restricted to administrators during maintenance m
 
 test('annotated routes are registered as maintenance exceptions', function () {
     $routes = app(CraftRoutes::class);
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
-    $actionTrigger = trim(Cms::config()->actionTrigger, '/');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
+    $actionTrigger = trim(Cms::config()->routing->actionTrigger, '/');
     $exceptions = app(PreventRequestsDuringMaintenance::class)->getExcludedPaths();
 
     expect($exceptions)

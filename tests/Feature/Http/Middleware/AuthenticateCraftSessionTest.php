@@ -18,7 +18,7 @@ use function CraftCms\Cms\cp_url;
  */
 function signedInSession(User $user): array
 {
-    $guard = Cms::config()->getAuthGuard();
+    $guard = Cms::config()->security->getAuthGuard();
 
     return [
         Auth::guard($guard)->getName() => $user->id,
@@ -40,7 +40,7 @@ it('signs out users whose account stopped being active', function (Closure $chan
         AuthenticateSession::redirectUsing(fn () => route('login'));
     }
 
-    expect(Auth::guard(Cms::config()->getAuthGuard())->guest())->toBeTrue();
+    expect(Auth::guard(Cms::config()->security->getAuthGuard())->guest())->toBeTrue();
 })->with([
     'deactivated' => [fn (User $user) => Users::deactivateUser($user)],
     'suspended' => [fn (User $user) => Users::suspendUser($user)],
@@ -49,7 +49,7 @@ it('signs out users whose account stopped being active', function (Closure $chan
 
 it('lets users who stopped being active keep browsing the site as a guest', function (): void {
     Route::get('_test/craft-session-status', fn () => new JsonResponse([
-        'userId' => Auth::guard(Cms::config()->getAuthGuard())->id(),
+        'userId' => Auth::guard(Cms::config()->security->getAuthGuard())->id(),
     ]))->middleware(['craft', 'craft.web']);
     $user = UserModel::factory()->createElement(['admin' => true]);
     $session = signedInSession($user);

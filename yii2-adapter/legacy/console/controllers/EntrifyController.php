@@ -847,7 +847,7 @@ class EntrifyController extends Controller
                 if (!$this->interactive) {
                     throw new InvalidConfigException('The --author option is required when this command is run non-interactively.');
                 }
-                $what = Cms::config()->useEmailAsUsername ? 'email' : 'username or email';
+                $what = Cms::config()->users->useEmailAsUsername ? 'email' : 'username or email';
                 $usernameOrEmail = $this->prompt("Enter the $what of the author that the entries should have:", [
                     'required' => true,
                     'validator' => fn(string $value) => Users::getUserByUsernameOrEmail($value) !== null,

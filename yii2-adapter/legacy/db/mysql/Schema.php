@@ -215,7 +215,7 @@ class Schema extends \yii\db\mysql\Schema
         $serverVersion = normalizeVersion(Craft::$app->getDb()->getServerVersion());
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
-        $commandFromConfig = Cms::config()->backupCommand;
+        $commandFromConfig = Cms::config()->backups->command;
 
         // https://bugs.mysql.com/bug.php?id=109685
         $useSingleTransaction = $isMySQL8 && version_compare($serverVersion, '8.0.32', '<');
@@ -264,7 +264,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        $commandFromConfig = Cms::config()->restoreCommand;
+        $commandFromConfig = Cms::config()->backups->restoreCommand;
         $command = (new ShellCommand('mysql'))
             ->addArg('--defaults-file=', $this->_createDumpConfigFile('mysql'))
             ->addArg('{database}');

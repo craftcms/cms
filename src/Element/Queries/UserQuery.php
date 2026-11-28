@@ -178,7 +178,7 @@ class UserQuery extends ElementQuery
                 $query->whereBool('users.locked', true);
 
                 // Users whose cooldown has ended aren't locked anymore
-                if ($cooldownDuration = Cms::config()->cooldownDuration) {
+                if ($cooldownDuration = Cms::config()->security->cooldownDuration) {
                     $query->where('users.lockoutDate', '>', now()->subSeconds($cooldownDuration));
                 }
             },

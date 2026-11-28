@@ -212,7 +212,7 @@ test('extraAppLocales are included in app locale IDs', function () {
 });
 
 test('defaultCpLanguage is included in app locale IDs', function () {
-    Cms::config()->defaultCpLanguage('pt-BR');
+    Cms::config()->cp->defaultLanguage('pt-BR');
 
     app()->forgetInstance(I18NService::class);
 

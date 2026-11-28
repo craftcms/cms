@@ -86,7 +86,7 @@ class AssetsHelperTest extends TestCase
      */
     public function testPrepareAssetNameAsciiRemove(): void
     {
-        Cms::config()->convertFilenamesToAscii = true;
+        Cms::config()->assets->convertFilenamesToAscii = true;
         self::assertSame('tesSSt.text', Assets::prepareAssetName('tes§t.text'));
     }
 
@@ -95,10 +95,10 @@ class AssetsHelperTest extends TestCase
      */
     public function testConfigSeparator(): void
     {
-        Cms::config()->filenameWordSeparator = '||';
+        Cms::config()->assets->filenameWordSeparator = '||';
         self::assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
-        Cms::config()->filenameWordSeparator = false;
+        Cms::config()->assets->filenameWordSeparator = false;
         self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 
@@ -164,7 +164,7 @@ class AssetsHelperTest extends TestCase
      */
     public function testMaxUploadSize(): void
     {
-        Cms::config()->maxUploadFileSize = 1;
+        Cms::config()->assets->maxUploadFileSize = 1;
         self::assertSame(1, Assets::getMaxUploadSize());
     }
 

@@ -59,7 +59,7 @@ class QueueComponent extends Queue
     public function run(bool $repeat = false, int $timeout = 0): ?int
     {
         Artisan::call('queue:work', Arr::whereNotNull([
-            '--queue' => implode(',', array_unique([Cms::config()->queueName, Cms::config()->lowPriorityQueueName])),
+            '--queue' => implode(',', array_unique([Cms::config()->queue->name, Cms::config()->queue->lowPriorityName])),
             '--stop-when-empty' => !$repeat,
             '--rest' => $timeout,
         ]));

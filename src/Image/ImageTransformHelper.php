@@ -388,7 +388,7 @@ class ImageTransformHelper
         }
 
         if ($image instanceof Raster) {
-            $image->setQuality($transform->quality ?: Cms::config()->defaultImageQuality);
+            $image->setQuality($transform->quality ?: Cms::config()->images->defaultQuality);
             $image->setHeartbeatCallback($heartbeat);
         }
 

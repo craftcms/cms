@@ -30,7 +30,7 @@ it('throws for CP requests when the schema version is incompatible', function ()
     $this->updates->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(false);
 
     app(CheckForUpdates::class)->handle(
-        Request::create('/'.Cms::config()->cpTrigger.'/dashboard'),
+        Request::create('/'.Cms::config()->routing->cpTrigger.'/dashboard'),
         fn () => 'passed',
     );
 })->throws(RuntimeException::class);
@@ -102,7 +102,7 @@ it('renders db update page for cp request when craft update pending', function (
     File::put($staleView, '<?php echo $headHtml->toHtml(); ?>');
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create(Cms::config()->cpTrigger);
+    $request = Request::create(Cms::config()->routing->cpTrigger);
 
     $response = $middleware->handle($request, fn () => 'passed');
 
@@ -122,7 +122,7 @@ it('renders db update page for cp request when plugin update pending', function 
     $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create(Cms::config()->cpTrigger);
+    $request = Request::create(Cms::config()->routing->cpTrigger);
 
     $response = $middleware->handle($request, fn () => 'passed');
 
@@ -153,7 +153,7 @@ it('allows updater CP routes when update pending', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/'.Cms::config()->cpTrigger.'/updates/migrate');
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger.'/updates/migrate');
     $request->setRouteResolver(fn () => Route::getRoutes()->getByName('craft.cp.updates.migrate'));
 
     $result = $middleware->handle($request, fn () => 'passed');
@@ -176,7 +176,7 @@ it('allows migrate action when update pending', function () {
     $this->updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create('/'.Cms::config()->actionTrigger.'/migrate');
+    $request = Request::create('/'.Cms::config()->routing->actionTrigger.'/migrate');
 
     $result = $middleware->handle($request, fn () => 'passed');
 
@@ -201,7 +201,7 @@ it('allows users login action when update pending', function () {
     $this->updates->shouldReceive('areMigrationsPending')->andReturn(false);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create(Cms::config()->cpTrigger.'/actions/users/login');
+    $request = Request::create(Cms::config()->routing->cpTrigger.'/actions/users/login');
 
     $response = $middleware->handle($request, fn () => 'passed');
 
@@ -222,7 +222,7 @@ it('throws exception when craft breakpoint was skipped', function () {
     $this->updates->shouldReceive('wasCraftBreakpointSkipped')->andReturn(true);
 
     $middleware = app(CheckForUpdates::class);
-    $request = Request::create(Cms::config()->cpTrigger);
+    $request = Request::create(Cms::config()->routing->cpTrigger);
     $request->attributes->set('isCpRequest', true);
 
     $middleware->handle($request, fn () => 'passed');

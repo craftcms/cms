@@ -117,7 +117,7 @@ it('only offers utility tools to users who can use those utilities', function ()
 });
 
 it('refuses utilities that are disabled', function (): void {
-    Cms::config()->disabledUtilities(['clear-caches']);
+    Cms::config()->cp->disabledUtilities(['clear-caches']);
 
     ($this->call)('caches_clear')
         ->assertJsonPath('result.isError', true)

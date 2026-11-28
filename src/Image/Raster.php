@@ -63,7 +63,7 @@ class Raster extends Image
     {
         $generalConfig = Cms::config();
 
-        $this->_quality = $generalConfig->defaultImageQuality;
+        $this->_quality = $generalConfig->images->defaultQuality;
 
         parent::__construct($config);
     }
@@ -123,7 +123,7 @@ class Raster extends Image
 
         // Convert CMYK images to RGB.
         if (
-            ! Cms::config()->preserveCmykColorspace
+            ! Cms::config()->images->preserveCmykColorspace
             && $this->_image->colorspace() instanceof CmykColorspace
         ) {
             $native = $this->_image->core()->native();
@@ -161,7 +161,7 @@ class Raster extends Image
         $width = $this->getWidth();
         $height = $this->getHeight();
 
-        $scaleIfSmaller ??= Cms::config()->upscaleImages;
+        $scaleIfSmaller ??= Cms::config()->images->upscale;
 
         if ($scaleIfSmaller || $width > $targetWidth || $height > $targetHeight) {
             // go with the provided target dimensions if they both check out
@@ -183,7 +183,7 @@ class Raster extends Image
     /** @param array{x:numeric,y:numeric}|string $position */
     public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, ?string $fill = null, string|array $position = 'center-center', ?bool $upscale = null): static
     {
-        $upscale ??= Cms::config()->upscaleImages;
+        $upscale ??= Cms::config()->images->upscale;
 
         $this->normalizeDimensions($targetWidth, $targetHeight);
         $this->scaleToFit($targetWidth, $targetHeight, $upscale);
@@ -633,14 +633,14 @@ class Raster extends Image
 
     private function encoder(string $extension, int $quality): EncoderInterface
     {
-        $strip = ! Cms::config()->preserveExifData;
+        $strip = ! Cms::config()->images->preserveExifData;
         $interlaced = $this->_interlace !== 'none' && ! app(Images::class)->getIsImagick();
 
         return match ($extension) {
             'jpg', 'jpeg', 'pjpg', 'pjpeg' => new JpegEncoder($quality, $interlaced, $strip),
             'gif' => new GifEncoder($interlaced),
             'png' => new PngEncoder($interlaced),
-            'webp' => new WebpEncoder(Cms::config()->optimizeImageFilesize ? $quality : 100, $strip),
+            'webp' => new WebpEncoder(Cms::config()->images->optimizeFilesize ? $quality : 100, $strip),
             'avif' => new AvifEncoder($quality, $strip),
             'bmp' => new BmpEncoder,
             'heic', 'heif' => new HeicEncoder($quality, $strip),
@@ -746,7 +746,7 @@ class Raster extends Image
     {
         $native = $this->_image->core()->native();
         if ($native instanceof VipsImage) {
-            if (! Cms::config()->preserveExifData) {
+            if (! Cms::config()->images->preserveExifData) {
                 foreach (['exif-data', 'xmp-data', 'iptc-data', 'orientation'] as $field) {
                     if ($native->getType($field) !== 0) {
                         $native->remove($field);
@@ -754,7 +754,7 @@ class Raster extends Image
                 }
             }
 
-            if (! Cms::config()->preserveImageColorProfiles && $native->getType('icc-profile-data') !== 0) {
+            if (! Cms::config()->images->preserveColorProfiles && $native->getType('icc-profile-data') !== 0) {
                 $native->remove('icc-profile-data');
             }
 
@@ -762,7 +762,7 @@ class Raster extends Image
         }
 
         if (! $native instanceof Imagick) {
-            if (! Cms::config()->preserveImageColorProfiles) {
+            if (! Cms::config()->images->preserveColorProfiles) {
                 try {
                     $this->_image->removeProfile();
                 } catch (InterventionImageException) {
@@ -772,8 +772,8 @@ class Raster extends Image
             return;
         }
 
-        if (Cms::config()->preserveExifData) {
-            if (! Cms::config()->preserveImageColorProfiles) {
+        if (Cms::config()->images->preserveExifData) {
+            if (! Cms::config()->images->preserveColorProfiles) {
                 try {
                     $native->removeImageProfile('icc');
                 } catch (ImagickException) {
@@ -784,7 +784,7 @@ class Raster extends Image
         }
 
         try {
-            $profile = Cms::config()->preserveImageColorProfiles
+            $profile = Cms::config()->images->preserveColorProfiles
                 ? $native->getImageProfile('icc')
                 : '';
         } catch (ImagickException) {

@@ -22,8 +22,8 @@ afterEach(function () {
 it('registers web, cp, and action routes from plugin route files', function () {
     /** @var GeneralConfig $config */
     $config = app(GeneralConfig::class);
-    $config->cpTrigger = 'admin';
-    $config->actionTrigger = 'actions';
+    $config->routing->cpTrigger = 'admin';
+    $config->routing->actionTrigger = 'actions';
 
     $plugin = TestPlugin::create([
         'handle' => 'test-plugin',
@@ -87,8 +87,8 @@ it('does not register plugin routes when routes are cached', function () {
 it('registers root control panel routes when the cp trigger is null', function () {
     /** @var GeneralConfig $config */
     $config = app(GeneralConfig::class);
-    $config->cpTrigger = null;
-    $config->actionTrigger = 'actions';
+    $config->routing->cpTrigger = null;
+    $config->routing->actionTrigger = 'actions';
 
     $plugin = TestPlugin::create([
         'handle' => 'test-plugin',

@@ -35,8 +35,8 @@ it('does not contain the asset indexes utility when there are no volumes', funct
 it('filters unavailable registered utilities', function () {
     app(UtilityTypes::class)->register(DummyUtility::class, UnselectableUtility::class);
 
-    Cms::config()->backupCommand = false;
-    Cms::config()->disabledUtilities[] = DummyUtility::id();
+    Cms::config()->backups->command = false;
+    Cms::config()->cp->disabledUtilities[] = DummyUtility::id();
 
     expect($this->utilities->getAllUtilityTypes())
         ->not()->toContain(DbBackup::class)

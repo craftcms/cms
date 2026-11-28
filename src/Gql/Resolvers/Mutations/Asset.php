@@ -187,7 +187,7 @@ class Asset extends ElementMutationResolver
         $tempPath = null;
         $filename = null;
 
-        $allowedExtensions = Cms::config()->allowedFileExtensions;
+        $allowedExtensions = Cms::config()->assets->allowedFileExtensions;
 
         if (! empty($fileInformation['fileData'])) {
             $dataString = $fileInformation['fileData'];

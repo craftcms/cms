@@ -53,7 +53,7 @@ class ElementRevisionsController
             abort(400, 'Element doesn\'t have revisions');
         }
 
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
         $paginator = $element::find()
             ->revisionOf($element)
             ->site('*')

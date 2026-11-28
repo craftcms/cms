@@ -48,7 +48,7 @@ class McpServiceProvider extends ServiceProvider
 
         $this->app->scoped(Settings::class, function (): Settings {
             $projectConfig = $this->app->make(ProjectConfig::class);
-            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+            $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
             // Without public registration, the authenticated server defaults to the control panel, so the public
             // server can have `/mcp`.
             $defaults = $cpTrigger !== '' && ! $projectConfig->get('users.allowPublicRegistration')

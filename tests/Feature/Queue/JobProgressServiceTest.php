@@ -211,8 +211,8 @@ it('can clear all job progress entries', function () {
 });
 
 it('clears the Laravel queue when clearing all job progress', function () {
-    Cms::config()->queueName = 'test-queue';
-    Cms::config()->lowPriorityQueueName = 'test-low-prio-queue';
+    Cms::config()->queue->name = 'test-queue';
+    Cms::config()->queue->lowPriorityName = 'test-low-prio-queue';
 
     // Create a mock queue connection that implements ClearableQueue
     $queueConnection = Mockery::mock(QueueContract::class, ClearableQueue::class);

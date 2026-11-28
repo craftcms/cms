@@ -396,7 +396,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             $this->email = Str::idnToUtf8Email($this->email);
         }
 
-        if (empty($this->username) && Cms::config()->useEmailAsUsername) {
+        if (empty($this->username) && Cms::config()->users->useEmailAsUsername) {
             $this->username = $this->email;
         }
 
@@ -681,7 +681,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     protected static function defineSortOptions(): array
     {
-        if (Cms::config()->useEmailAsUsername) {
+        if (Cms::config()->users->useEmailAsUsername) {
             return [
                 'email' => t('Email'),
                 'fullName' => t('Full Name'),
@@ -1431,7 +1431,7 @@ XML;
      */
     public function isLocked(): bool
     {
-        return $this->locked && (! Cms::config()->cooldownDuration || $this->getRemainingCooldownTime() !== null);
+        return $this->locked && (! Cms::config()->security->cooldownDuration || $this->getRemainingCooldownTime() !== null);
     }
 
     /**
@@ -1444,7 +1444,7 @@ XML;
         // If that's the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
             $generalConfig = Cms::config();
-            $cooldownDuration = (int) $generalConfig->cooldownDuration;
+            $cooldownDuration = (int) $generalConfig->security->cooldownDuration;
             $cooldownEnd = Date::instance($this->lockoutDate);
 
             if ($cooldownDuration !== 0) {
@@ -2195,7 +2195,7 @@ XML;
             t('Cooldown Time Remaining') => function () use ($formatter) {
                 if (
                     ! $this->locked ||
-                    ! Cms::config()->cooldownDuration ||
+                    ! Cms::config()->security->cooldownDuration ||
                     ($duration = $this->getRemainingCooldownTime()) === null
                 ) {
                     return false;
@@ -2263,7 +2263,7 @@ XML;
             return false;
         }
 
-        if (Cms::config()->useEmailAsUsername) {
+        if (Cms::config()->users->useEmailAsUsername) {
             $this->username = $this->email;
         }
 

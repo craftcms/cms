@@ -29,7 +29,7 @@ it('renders the homepage template through the frontend fallback route', function
 });
 
 it('does not render CP views through the frontend fallback route', function () {
-    $this->get('/'.Cms::config()->cpTrigger.'/mail/system-message-text?textBody=<script>alert(1)</script>')
+    $this->get('/'.Cms::config()->routing->cpTrigger.'/mail/system-message-text?textBody=<script>alert(1)</script>')
         ->assertNotFound()
         ->assertDontSee('<script>alert(1)</script>', false);
 });

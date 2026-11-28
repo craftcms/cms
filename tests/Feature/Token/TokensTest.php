@@ -38,7 +38,7 @@ it('can create a preview token', function () {
 });
 
 it('creates tokens with config defaults', function () {
-    Cms::config()->defaultTokenDuration = 10000;
+    Cms::config()->security->defaultTokenDuration = 10000;
 
     $this->freezeSecond();
 

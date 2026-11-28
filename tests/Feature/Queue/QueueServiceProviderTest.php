@@ -62,7 +62,7 @@ it('tracks failed jobs with error message', function () {
 
         public function getQueue(): string
         {
-            return Cms::config()->queueName;
+            return Cms::config()->queue->name;
         }
     };
 
@@ -94,7 +94,7 @@ it('handles jobs without uuid method gracefully', function () {
     {
         public function getQueue(): string
         {
-            return Cms::config()->queueName;
+            return Cms::config()->queue->name;
         }
 
         public function payload(): array
@@ -123,7 +123,7 @@ it('handles jobs with null uuid gracefully', function () {
 
         public function getQueue(): string
         {
-            return Cms::config()->queueName;
+            return Cms::config()->queue->name;
         }
     };
 
@@ -189,15 +189,15 @@ class SyncProgressJob extends Job
 
 it('does not run cancelled jobs when the worker reserves them', function () {
     $queue = app(QueueManager::class)->connection('database');
-    $queue->push(new SyncProgressJob, queue: Cms::config()->queueName);
+    $queue->push(new SyncProgressJob, queue: Cms::config()->queue->name);
     $uid = app(JobProgress::class)->getAll()->sole()->uid;
     app(JobProgress::class)->cancel($uid);
     SyncProgressJob::$handled = false;
 
-    Artisan::call('queue:work', ['connection' => 'database', '--queue' => Cms::config()->queueName, '--once' => true]);
+    Artisan::call('queue:work', ['connection' => 'database', '--queue' => Cms::config()->queue->name, '--once' => true]);
 
     expect(SyncProgressJob::$handled)->toBeFalse()
-        ->and($queue->size(Cms::config()->queueName))->toBe(0)
+        ->and($queue->size(Cms::config()->queue->name))->toBe(0)
         ->and(app(JobProgress::class)->exists($uid))->toBeFalse()
         ->and(app(JobProgress::class)->getByStatus(JobStatus::Cancelled))->toHaveCount(1);
 });

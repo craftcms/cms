@@ -64,14 +64,14 @@ it('allows users with CP access and the route permission', function (string $met
 })->with('plugin cp endpoints');
 
 it('keeps site actions public and honors their route permissions', function () {
-    $prefix = '/'.trim(Cms::config()->actionTrigger, '/').'/test-plugin';
+    $prefix = '/'.trim(Cms::config()->routing->actionTrigger, '/').'/test-plugin';
 
     $this->post("$prefix/plugin-action")->assertOk()->assertContent('action');
     $this->post("$prefix/plugin-action-restricted")->assertForbidden();
 });
 
 it('protects plugin CP routes when the CP trigger is null', function () {
-    Cms::config()->cpTrigger = null;
+    Cms::config()->routing->cpTrigger = null;
     app(TestPlugin::class)->bootHasRoutes();
     $loginUrl = cp_url('login');
 

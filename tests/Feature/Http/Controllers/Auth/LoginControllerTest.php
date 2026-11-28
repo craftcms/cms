@@ -60,7 +60,7 @@ test('showLogin shows the CP login form for guests with site Inertia middleware'
 test('showLogin includes configured OAuth buttons', function () {
     Edition::set(Edition::Pro);
 
-    app(GeneralConfig::class)->oauthProviders([
+    app(GeneralConfig::class)->users->oauthProviders([
         'test' => [
             'driver' => FakeOAuthProvider::class,
             'clientId' => 'client-id',
@@ -96,7 +96,7 @@ test('attemptLogin validates required fields', function () {
 });
 
 test('attemptLogin counts a wrong password once', function () {
-    Cms::config()->maxInvalidLogins = 10;
+    Cms::config()->security->maxInvalidLogins = 10;
 
     $user = User::findOne();
 
@@ -155,7 +155,7 @@ test('attemptLogin limits each IP address across accounts to the default rate li
 });
 
 test('attemptLogin only limits attempts per account when defaultRateLimit is disabled', function () {
-    Cms::config()->defaultRateLimit = false;
+    Cms::config()->security->defaultRateLimit = false;
 
     foreach (range(1, 11) as $attempt) {
         postJson(action([LoginController::class, 'attemptLogin']), [
@@ -219,7 +219,7 @@ test('control panel logins post to the control panel and redirect to the post-CP
     // A front-end login path is another route to the same action, so URLs generated from the action could point there.
     Route::post('logmein', [LoginController::class, 'attemptLogin']);
     Route::getRoutes()->refreshActionLookups();
-    Cms::config()->postCpLoginRedirect = 'entries';
+    Cms::config()->routing->postCpLoginRedirect = 'entries';
 
     get(cp_url(CpAuthPath::Login->value))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('action', cp_url(CpAuthPath::Login->value)));
@@ -232,7 +232,7 @@ test('control panel logins post to the control panel and redirect to the post-CP
 
 test('front-end logins posted from a subpath site redirect within that site', function (string $url, array $params, string $redirect, string $expected) {
     // A configured post-login redirect must not override an explicitly posted redirect.
-    Cms::config()->postLoginRedirect = 'welcome';
+    Cms::config()->routing->postLoginRedirect = 'welcome';
     Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
     Sites::refreshSites();
 
@@ -313,24 +313,24 @@ test('logout logs the user out and redirects', function (string $method) {
 })->with(['get', 'post']);
 
 test('logout redirects to the post-logout redirect, not back to the previous page', function () {
-    Cms::config()->postLogoutRedirect = '';
+    Cms::config()->routing->postLogoutRedirect = '';
 
     actingAs(User::findOne());
 
     // Even when arriving from a page, logout must not fall through to back().
     $response = $this->from('https://localhost/members/dashboard')
-        ->post('/'.Cms::config()->getLogoutPath())
+        ->post('/'.Cms::config()->routing->getLogoutPath())
         ->assertRedirect();
 
     expect($response->headers->get('Location'))->toBe('https://localhost');
 });
 
 test('logout honors a configured post-logout redirect', function () {
-    Cms::config()->postLogoutRedirect = 'goodbye';
+    Cms::config()->routing->postLogoutRedirect = 'goodbye';
 
     actingAs(User::findOne());
 
-    $this->post('/'.Cms::config()->getLogoutPath())
+    $this->post('/'.Cms::config()->routing->getLogoutPath())
         ->assertRedirect('https://localhost/goodbye');
 });
 
@@ -343,7 +343,7 @@ test('logout clears itself as the post-login return URL', function (Closure $url
     expect(session('url.intended'))->toBeNull();
 })->with([
     'control panel' => fn (): string => cp_url(CpAuthPath::Logout->value),
-    'site' => fn (): string => '/'.Cms::config()->getLogoutPath(),
+    'site' => fn (): string => '/'.Cms::config()->routing->getLogoutPath(),
 ]);
 
 test('attemptLogin sets the remember cookie only when rememberMe is requested', function (bool $remember) {
@@ -389,7 +389,7 @@ test('attemptLogin dispatches Failed event on wrong credentials', function () {
 });
 
 test('attemptLogin validates loginName as email when useEmailAsUsername is true', function () {
-    Cms::config()->useEmailAsUsername = true;
+    Cms::config()->users->useEmailAsUsername = true;
 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => 'not-an-email',
@@ -398,7 +398,7 @@ test('attemptLogin validates loginName as email when useEmailAsUsername is true'
 });
 
 test('attemptLogin accepts username when useEmailAsUsername is false', function () {
-    Cms::config()->useEmailAsUsername = false;
+    Cms::config()->users->useEmailAsUsername = false;
 
     $user = User::findOne();
 
@@ -411,7 +411,7 @@ test('attemptLogin accepts username when useEmailAsUsername is false', function 
 });
 
 test('login routes are registered for localized loginPath values', function () {
-    Cms::config()->loginPath = ['siteWithCustomPath' => 'aanmelden'];
+    Cms::config()->routing->loginPath = ['siteWithCustomPath' => 'aanmelden'];
 
     Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
 
@@ -429,8 +429,8 @@ test('login routes are registered for localized loginPath values', function () {
 });
 
 test('login and logout routes are registered under site base paths', function () {
-    Cms::config()->loginPath = 'member/login';
-    Cms::config()->logoutPath = 'member/logout';
+    Cms::config()->routing->loginPath = 'member/login';
+    Cms::config()->routing->logoutPath = 'member/logout';
     Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
     Sites::refreshSites();
 
@@ -451,7 +451,7 @@ test('login and logout routes are registered under site base paths', function ()
 });
 
 test('auth middleware redirects guests to the current site’s login path', function () {
-    Cms::config()->loginPath = ['defaultSite' => 'login', 'fr' => 'connexion'];
+    Cms::config()->routing->loginPath = ['defaultSite' => 'login', 'fr' => 'connexion'];
     Site::factory()->create(['handle' => 'fr', 'baseUrl' => 'https://localhost/fr']);
     Sites::refreshSites();
 

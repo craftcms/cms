@@ -1663,7 +1663,7 @@ class Fields
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
         $query = $this->_createFieldQuery()
             ->where('context', 'global')
             ->reorder();

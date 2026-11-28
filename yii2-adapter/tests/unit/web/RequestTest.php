@@ -100,7 +100,7 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $generalConfig = clone Cms::config();
-        $generalConfig->cpTrigger = 'foo';
+        $generalConfig->routing->cpTrigger = 'foo';
         app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
@@ -117,7 +117,7 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $generalConfig = clone Cms::config();
-        $generalConfig->cpTrigger = 'foo';
+        $generalConfig->routing->cpTrigger = 'foo';
         app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
@@ -135,7 +135,7 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $generalConfig = clone Cms::config();
-        $generalConfig->cpTrigger = null;
+        $generalConfig->routing->cpTrigger = null;
         app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
@@ -191,7 +191,7 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $generalConfig = clone Cms::config();
-        $generalConfig->cpTrigger = 'bar';
+        $generalConfig->routing->cpTrigger = 'bar';
         app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
@@ -208,7 +208,7 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $generalConfig = clone Cms::config();
-        $generalConfig->cpTrigger = 'bar';
+        $generalConfig->routing->cpTrigger = 'bar';
         app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
@@ -226,7 +226,7 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $generalConfig = clone Cms::config();
-        $generalConfig->cpTrigger = null;
+        $generalConfig->routing->cpTrigger = null;
         app()->bind('request', fn() => new LaravelRequest(
             server: $_SERVER,
         ));
@@ -364,7 +364,7 @@ class RequestTest extends TestCase
      */
     public function testCheckRequestTypeWithTokenParam(): void
     {
-        $this->request->setBodyParams([Cms::config()->tokenParam => 'something']);
+        $this->request->setBodyParams([Cms::config()->routing->tokenParam => 'something']);
         $this->request->checkIfActionRequest(true);
 
         self::assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
@@ -429,7 +429,7 @@ class RequestTest extends TestCase
 
     public function testGetPageNumUsesLegacyPageTriggerQueryParam(): void
     {
-        Cms::config()->pageTrigger('p');
+        Cms::config()->routing->pageTrigger('p');
 
         app()->bind('request', fn() => new LaravelRequest(
             query: ['p' => 4],

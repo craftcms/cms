@@ -61,7 +61,7 @@ function createInfoRow(string $uid = 'system-uid'): void
 }
 
 it('uses the logged-in CP user timezone preference first', function () {
-    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->routing->cpTrigger = 'admin';
     app()->instance('request', Request::create('/admin'));
 
     $this->authGuard->shouldReceive('hasUser')->andReturnTrue()
@@ -72,7 +72,7 @@ it('uses the logged-in CP user timezone preference first', function () {
 });
 
 it('resolves the system timezone without CP user preferences', function () {
-    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->routing->cpTrigger = 'admin';
     Cms::config()->timezone = null;
     Config::set('app.timezone', 'UTC');
     app()->instance('request', Request::create('/admin'));
@@ -84,7 +84,7 @@ it('resolves the system timezone without CP user preferences', function () {
 });
 
 it('falls back through configured timezone sources', function (?string $configTimezone, ?string $projectConfigTimezone, string $appTimezone, string $expected) {
-    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->routing->cpTrigger = 'admin';
     Cms::config()->timezone = $configTimezone;
     Config::set('app.timezone', $appTimezone);
     app()->instance('request', Request::create('/site'));
@@ -150,7 +150,7 @@ it('resolves timezone changes after successful ICU validation', function () {
 });
 
 it('resolves CP timezone preferences after switching users and request context', function () {
-    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->routing->cpTrigger = 'admin';
     Cms::config()->timezone = 'Europe/Paris';
     app()->instance('request', Request::create('/admin'));
 
@@ -203,7 +203,7 @@ it('uses the current site language for site requests', function () {
 
 it('uses a valid CP user language preference', function () {
     Cms::setIsInstalled();
-    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->routing->cpTrigger = 'admin';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);
@@ -216,8 +216,8 @@ it('uses a valid CP user language preference', function () {
 
 it('falls back to the configured default CP language', function () {
     Cms::setIsInstalled();
-    Cms::config()->cpTrigger = 'admin';
-    Cms::config()->defaultCpLanguage = 'es';
+    Cms::config()->routing->cpTrigger = 'admin';
+    Cms::config()->cp->defaultLanguage = 'es';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $this->authGuard->shouldReceive('user')->once()->andReturnNull();
 
@@ -226,8 +226,8 @@ it('falls back to the configured default CP language', function () {
 
 it('falls back to the accepted language when the CP user preference is invalid and no default is configured', function () {
     Cms::setIsInstalled();
-    Cms::config()->cpTrigger = 'admin';
-    Cms::config()->defaultCpLanguage = null;
+    Cms::config()->routing->cpTrigger = 'admin';
+    Cms::config()->cp->defaultLanguage = null;
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);

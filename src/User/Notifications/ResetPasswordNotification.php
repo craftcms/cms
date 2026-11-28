@@ -40,7 +40,7 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
         public string $token,
         CraftUser $user,
     ) {
-        $this->queue = Cms::config()->queueName;
+        $this->queue = Cms::config()->queue->name;
 
         // The message is sent from a queue worker, which has no request or current site of its own
         $user = $user->asElement();

@@ -31,7 +31,7 @@ it('hard deletes entry types soft deleted longer ago than the soft delete durati
         'handle' => 'test',
         'dateCreated' => now(),
         'dateUpdated' => now(),
-        'dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1),
+        'dateDeleted' => now()->subSeconds(Cms::config()->garbageCollection->softDeleteDuration + 1),
     ]);
 
     expect(DB::table(Table::ENTRYTYPES)->count())->toBe(3);

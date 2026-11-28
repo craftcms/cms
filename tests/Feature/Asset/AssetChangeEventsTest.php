@@ -98,14 +98,14 @@ it('reports the URL each file was served from, as well as its disk URL', functio
     $base = 'https://cdn.example.test/media%20files/My%20Photos/a%20b.jpg';
     $asset = ($this->image)();
     $oldTimestamp = $asset->dateModified->getTimestamp();
-    Cms::config()->revAssetUrls = true;
+    Cms::config()->assets->revUrls = true;
 
     try {
         $temp = AssetsHelper::tempFilePath('jpg');
         copy(dirname(__DIR__, 2).'/_data/assets/files/background.jpg', $temp);
         app(Assets::class)->replaceAssetFile($asset, $temp, 'a b.jpg');
     } finally {
-        Cms::config()->revAssetUrls = false;
+        Cms::config()->assets->revUrls = false;
     }
 
     // A plugin serves assets from its own URLs
@@ -168,7 +168,7 @@ it('reports a file restored from the trash at the URL it was deleted from', func
         'driver' => 'local',
         'root' => storage_path('framework/testing/asset-change-events-trash'),
     ]);
-    Cms::config()->trashedAssetDisk('change-events-trash');
+    Cms::config()->assets->trashDisk('change-events-trash');
 
     try {
         $asset = ($this->image)();
@@ -184,7 +184,7 @@ it('reports a file restored from the trash at the URL it was deleted from', func
             ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media%20files/My%20Photos/a%20b.jpg'])
             ->and($this->disk->exists('My Photos/a b.jpg'))->toBeTrue();
     } finally {
-        Cms::config()->trashedAssetDisk(null);
+        Cms::config()->assets->trashDisk(null);
         Storage::disk('change-events-trash')->deleteDirectory('');
     }
 });

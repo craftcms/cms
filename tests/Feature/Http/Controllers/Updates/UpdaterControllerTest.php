@@ -167,7 +167,7 @@ test('aborting after a failed backup turns maintenance mode off', function () {
 
 test('finish returns a control panel return URL', function (?string $returnUrl, string $expected) {
     $returnUrl = $returnUrl === '{cpTrigger}/login'
-        ? sprintf('%s/login', Cms::config()->cpTrigger)
+        ? sprintf('%s/login', Cms::config()->routing->cpTrigger)
         : $returnUrl;
 
     $data = [];

@@ -114,7 +114,7 @@ it('serializes the disk reference and URL capability in project config', functio
 });
 
 it('uses a dedicated Laravel disk for temporary assets', function () {
-    Cms::config()->tempAssetUploadDisk = 'volume-test';
+    Cms::config()->assets->tempUploadDisk = 'volume-test';
 
     expect(app(Assets::class)->getTempAssetUploadDisk())
         ->toBe(Storage::disk('volume-test'));

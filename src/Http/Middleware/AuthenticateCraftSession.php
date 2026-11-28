@@ -53,11 +53,11 @@ class AuthenticateCraftSession extends AuthenticateSession
     /** @param Request $request */
     protected function logout(mixed $request): never
     {
-        if (Cms::config()->authGuard === null) {
+        if (Cms::config()->security->authGuard === null) {
             parent::logout($request);
         }
 
-        $guard = Cms::config()->getAuthGuard();
+        $guard = Cms::config()->security->getAuthGuard();
         $this->signOut($request);
 
         throw new AuthenticationException(
@@ -75,8 +75,8 @@ class AuthenticateCraftSession extends AuthenticateSession
         $this->guard()->logoutCurrentDevice();
 
         $sessionKeys = [
-            'password_hash_'.Cms::config()->getAuthGuard(),
-            Cms::config()->getPasswordConfirmationKey(),
+            'password_hash_'.Cms::config()->security->getAuthGuard(),
+            Cms::config()->security->getPasswordConfirmationKey(),
         ];
 
         if (SessionAuth::$authAccessParam !== null) {

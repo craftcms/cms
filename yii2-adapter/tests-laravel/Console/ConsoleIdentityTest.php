@@ -13,7 +13,7 @@ use function CraftCms\Cms\craftAuth;
 uses(DatabaseTestCase::class);
 
 it('acts as a user model set on the Craft guard without logging them in', function() {
-    Cms::config()->authGuard = 'craft';
+    Cms::config()->security->authGuard = 'craft';
     $user = User::factory()->create();
     $logins = 0;
     Event::listen(Login::class, function() use (&$logins) {

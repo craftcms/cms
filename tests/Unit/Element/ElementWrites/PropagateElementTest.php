@@ -295,7 +295,7 @@ it('adds a plain validation error when a propagated save fails', function () {
 });
 
 it('adds a linked validation error when the current user can fix the propagated site', function () {
-    Cms::config()
+    Cms::config()->routing
         ->cpTrigger('admin')
         ->baseCpUrl('https://example.test/admin');
 

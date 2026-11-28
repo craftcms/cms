@@ -94,8 +94,8 @@ it('lets action requests through, so the licensing screen’s own requests work'
     $mockLicense->shouldReceive('issues')->andReturn([['Issue 1', 'Description 1', ['type' => 'cms-edition', 'edition' => 'pro', 'licenseId' => 1]]]);
     app()->instance(License::class, $mockLicense);
     actingAs(User::findOne());
-    $cpTrigger = Cms::config()->cpTrigger;
-    $actionTrigger = Cms::config()->actionTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
+    $actionTrigger = Cms::config()->routing->actionTrigger;
 
     get("/{$cpTrigger}/dashboard")->assertPaymentRequired();
     get("/{$cpTrigger}/{$actionTrigger}/app/api-headers")->assertOk();

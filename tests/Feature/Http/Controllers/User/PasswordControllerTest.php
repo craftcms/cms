@@ -36,7 +36,7 @@ beforeEach(function () {
 it('requires login', function () {
     auth()->logout();
 
-    get(action([PasswordController::class, 'index']))->assertRedirect(Cms::config()->cpTrigger.'/login');
+    get(action([PasswordController::class, 'index']))->assertRedirect(Cms::config()->routing->cpTrigger.'/login');
 });
 
 test('index', function () {
@@ -215,7 +215,7 @@ it('requires loginName when not providing userId for sendPasswordResetEmail', fu
 });
 
 it('returns error for invalid loginName on sendPasswordResetEmail', function () {
-    Cms::config()->preventUserEnumeration = false;
+    Cms::config()->security->preventUserEnumeration = false;
 
     $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'loginName' => 'nonexistent@example.com',
@@ -225,7 +225,7 @@ it('returns error for invalid loginName on sendPasswordResetEmail', function () 
 });
 
 it('validates loginName as email when useEmailAsUsername is true for sendPasswordResetEmail', function () {
-    Cms::config()->useEmailAsUsername = true;
+    Cms::config()->users->useEmailAsUsername = true;
 
     postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'loginName' => 'not-an-email',
@@ -233,8 +233,8 @@ it('validates loginName as email when useEmailAsUsername is true for sendPasswor
 });
 
 it('accepts username when useEmailAsUsername is false for sendPasswordResetEmail', function () {
-    Cms::config()->useEmailAsUsername = false;
-    Cms::config()->preventUserEnumeration = false;
+    Cms::config()->users->useEmailAsUsername = false;
+    Cms::config()->security->preventUserEnumeration = false;
 
     // Should pass validation but fail because user doesn't exist
     $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
@@ -264,7 +264,7 @@ it('requires login for store', function () {
 
     post(action([PasswordController::class, 'store']), [
         'newPassword' => 'validPassword123!',
-    ])->assertRedirect(Cms::config()->cpTrigger.'/'.CpAuthPath::Login->value);
+    ])->assertRedirect(Cms::config()->routing->cpTrigger.'/'.CpAuthPath::Login->value);
 });
 
 it('requires password confirmation for store', function () {

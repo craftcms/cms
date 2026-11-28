@@ -35,7 +35,7 @@ readonly class HandleTokenRequest
 
     public function handle(Request $request, Closure $next): mixed
     {
-        $token = $request->input($this->generalConfig->tokenParam, $request->header(self::TOKEN_HEADER));
+        $token = $request->input($this->generalConfig->routing->tokenParam, $request->header(self::TOKEN_HEADER));
 
         if (! $token) {
             return $next($request);
@@ -55,7 +55,7 @@ readonly class HandleTokenRequest
         // The preview params stay: they're how the rest of the request knows
         // it's a preview (`Request::isPreview()`).
         $originalUri = $request->uri()->withoutQuery([
-            $this->generalConfig->tokenParam,
+            $this->generalConfig->routing->tokenParam,
         ]);
 
         if ($this->isPreviewRoute((string) $tokenRoute[0])) {

@@ -25,7 +25,7 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     Edition::set(Edition::Pro);
     FakeOAuthProvider::reset();
-    app(GeneralConfig::class)->oauthProviders([]);
+    app(GeneralConfig::class)->users->oauthProviders([]);
 
     actingAs(UserModel::first());
     Session::passwordConfirmed();
@@ -33,7 +33,7 @@ beforeEach(function () {
 
 function configureSignInProvider(array $config = []): void
 {
-    app(GeneralConfig::class)->oauthProviders([
+    app(GeneralConfig::class)->users->oauthProviders([
         'test' => array_merge([
             'driver' => FakeOAuthProvider::class,
             'clientId' => 'client-id',
@@ -144,7 +144,7 @@ it('shows configured providers', function () {
 });
 
 it('shows brand icons for common socialite providers', function () {
-    app(GeneralConfig::class)->oauthProviders([
+    app(GeneralConfig::class)->users->oauthProviders([
         'company-github' => [
             'driver' => 'github',
             'clientId' => 'client-id',

@@ -64,7 +64,7 @@ it('restores Craft exception tracking so cached paths do not bypass host route m
     PreventRequestsDuringMaintenance::flushState();
     $this->restoreCachedMaintenanceRouteExceptions();
 
-    $path = Cms::config()->actionTrigger.'/users/login';
+    $path = Cms::config()->routing->actionTrigger.'/users/login';
     Route::get($path, fn () => 'host route');
     auth()->logout();
     app()->maintenanceMode()->activate([]);

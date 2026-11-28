@@ -47,7 +47,7 @@ class UserPopulator implements PopulatesOAuthUser
         string $identity,
         User $user,
     ): string {
-        if ($this->generalConfig->useEmailAsUsername && $user->email) {
+        if ($this->generalConfig->users->useEmailAsUsername && $user->email) {
             return $user->email;
         }
 

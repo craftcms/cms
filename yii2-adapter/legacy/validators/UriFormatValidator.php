@@ -59,12 +59,12 @@ class UriFormatValidator extends Validator
             $generalConfig = Cms::config();
             $firstSeg = explode('/', $value, 2)[0];
 
-            if ($firstSeg === $generalConfig->actionTrigger) {
+            if ($firstSeg === $generalConfig->routing->actionTrigger) {
                 return [
                     t('{attribute} cannot start with the {setting} config setting.'), [
                     'setting' => 'actionTrigger',
                 ], ];
-            } elseif ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
+            } elseif ($generalConfig->routing->cpTrigger && $firstSeg === $generalConfig->routing->cpTrigger) {
                 return [
                     t('{attribute} cannot start with the {setting} config setting.'), [
                     'setting' => 'cpTrigger',

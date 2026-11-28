@@ -38,7 +38,7 @@ class GqlEntityRegistry
 
         $rootTypes = ['Query', 'Mutation', 'Subscription'];
 
-        if (Cms::config()->prefixGqlRootTypes || ! in_array($typeName, $rootTypes)) {
+        if (Cms::config()->gql->prefixRootTypes || ! in_array($typeName, $rootTypes)) {
             return $prefix.$typeName;
         }
 
@@ -48,7 +48,7 @@ class GqlEntityRegistry
     public static function getPrefix(): ?string
     {
         if (! isset(self::$_prefix)) {
-            self::$_prefix = Cms::config()->gqlTypePrefix;
+            self::$_prefix = Cms::config()->gql->typePrefix;
         }
 
         return self::$_prefix;

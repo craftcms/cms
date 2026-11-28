@@ -167,7 +167,7 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
                     ->control(Lightswitch::make('allowCustomAlpha')->value($this->allowCustomAlpha)),
             ])->dependsOn('settings.allowCustomColors'),
         ))->when(
-            Cms::config()->enableGql,
+            Cms::config()->gql->enabled,
             fn (Ui $ui): Ui => $ui->add(
                 UiField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([

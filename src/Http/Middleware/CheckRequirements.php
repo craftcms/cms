@@ -25,7 +25,7 @@ readonly class CheckRequirements
     public function handle(Request $request, Closure $next): mixed
     {
         /** Don't verify requirements for action update requests. */
-        if (str_contains($request->path(), $this->generalConfig->actionTrigger.'/updater')) {
+        if (str_contains($request->path(), $this->generalConfig->routing->actionTrigger.'/updater')) {
             return $next($request);
         }
 

@@ -54,7 +54,7 @@ class FieldLayoutServiceProvider extends ServiceProvider
                     $fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    if (! Cms::config()->useEmailAsUsername) {
+                    if (! Cms::config()->users->useEmailAsUsername) {
                         $fields[] = UsernameField::class;
                     }
                     array_push($fields, UserFullNameField::class, PhotoField::class, EmailField::class);

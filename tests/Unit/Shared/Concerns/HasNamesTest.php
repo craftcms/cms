@@ -22,7 +22,7 @@ test('names', function (array $config, array $expected, array $suffixes = [], ar
         $this->class->$attr = $val;
     }
 
-    Cms::config()
+    Cms::config()->users
         ->extraNameSuffixes($suffixes)
         ->extraNameSalutations($salutations)
         ->extraLastNamePrefixes($lastNamePrefixes);

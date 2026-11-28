@@ -59,7 +59,7 @@ readonly class LoginController extends AuthenticationController
         return $this->renderViewWithFallback(
             inertiaComponent: 'auth/Login',
             inertiaProps: [
-                'username' => $generalConfig->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
+                'username' => $generalConfig->security->rememberUsernameDuration ? $authMethods->getRememberedUsername() : '',
                 'oauthLoginButtons' => $oauthLoginButtons,
                 'action' => $request->isCpRequest() ? route('craft.cp.login.attempt') : action_url('users/login'),
             ],
@@ -84,7 +84,7 @@ readonly class LoginController extends AuthenticationController
             'loginName' => [
                 'required',
                 'string',
-                Rule::when($this->generalConfig->useEmailAsUsername, 'email'),
+                Rule::when($this->generalConfig->users->useEmailAsUsername, 'email'),
             ],
             'password' => Password::required(),
             'rememberMe' => ['nullable'],
@@ -163,6 +163,6 @@ readonly class LoginController extends AuthenticationController
             return redirect(cp_url(CpAuthPath::Login->value));
         }
 
-        return redirect(site_url($this->generalConfig->getPostLogoutRedirect()));
+        return redirect(site_url($this->generalConfig->routing->getPostLogoutRedirect()));
     }
 }

@@ -440,7 +440,7 @@ class AuthMethods
             case User::STATUS_ACTIVE:
                 if ($user->isLocked()) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if ($this->generalConfig->cooldownDuration) {
+                    if ($this->generalConfig->security->cooldownDuration) {
                         return AuthError::AccountCooldown;
                     }
 
@@ -496,7 +496,7 @@ class AuthMethods
             $authError === AuthError::InvalidCredentials || ! $authError ||
             // if preventUserEnumeration is true and the account is locked, still show the same message
             (
-                Cms::config()->preventUserEnumeration &&
+                Cms::config()->security->preventUserEnumeration &&
                 in_array($authError, [AuthError::AccountLocked, AuthError::AccountCooldown])
             )
         ) {
@@ -515,7 +515,7 @@ class AuthMethods
     {
         $user = $user?->asElement();
 
-        if ($this->generalConfig->preventUserEnumeration && in_array($authError, [AuthError::AccountLocked, AuthError::AccountCooldown])) {
+        if ($this->generalConfig->security->preventUserEnumeration && in_array($authError, [AuthError::AccountLocked, AuthError::AccountCooldown])) {
             $authError = AuthError::InvalidCredentials;
         }
 
@@ -532,7 +532,7 @@ class AuthMethods
             AuthError::NoCpAccess => t('You cannot access the control panel with that account.'),
             AuthError::NoCpOfflineAccess => t('You cannot access the control panel while maintenance mode is enabled with that account.'),
             AuthError::NoSiteOfflineAccess => t('You cannot access the site while maintenance mode is enabled with that account.'),
-            default => $this->generalConfig->useEmailAsUsername
+            default => $this->generalConfig->users->useEmailAsUsername
                 ? t('Invalid email or password.')
                 : t('Invalid username or password.'),
         };
@@ -547,7 +547,7 @@ class AuthMethods
         $this->users->handleInvalidLogin($user);
 
         // Was that one bad password/2fa code/passkey too many?
-        if ($user->isLocked() && ! $this->generalConfig->preventUserEnumeration) {
+        if ($user->isLocked() && ! $this->generalConfig->security->preventUserEnumeration) {
             // Will set the authError to either AccountCooldown or AccountLocked
             $this->authError = $this->getAuthError($user);
         } else {
@@ -570,7 +570,7 @@ class AuthMethods
     {
         $user = $user->asElement();
 
-        if ($this->generalConfig->rememberUsernameDuration === 0) {
+        if ($this->generalConfig->security->rememberUsernameDuration === 0) {
             Cookie::unqueue($this->rememberedUsernameCookie());
             Cookie::forget($this->rememberedUsernameCookie());
 
@@ -580,7 +580,7 @@ class AuthMethods
         Cookie::queue(
             name: $this->rememberedUsernameCookie(),
             value: $user->username,
-            minutes: floor($this->generalConfig->rememberUsernameDuration / 60),
+            minutes: floor($this->generalConfig->security->rememberUsernameDuration / 60),
         );
     }
 }

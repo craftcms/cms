@@ -64,7 +64,7 @@ readonly class Utilities
         }
 
         // Make sure the utility isn't disabled
-        if (in_array($utilityId, $this->generalConfig->disabledUtilities)) {
+        if (in_array($utilityId, $this->generalConfig->cp->disabledUtilities)) {
             return false;
         }
 

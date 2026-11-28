@@ -13,7 +13,7 @@ function resetGraphqlCommandState(): void
 {
     app(Gql::class)->flushCaches();
     app(Gql::class)->setActiveSchema(new GqlSchema);
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
 }
 
 function saveGraphqlCommandSchema(array $attributes = []): GqlSchema

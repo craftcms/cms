@@ -28,7 +28,7 @@ beforeEach(function() {
     config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
     Storage::fake('upload-parts');
     Storage::fake('upload-destination');
-    Cms::config()->uploadSessionDisk = 'upload-parts';
+    Cms::config()->assets->uploadSessionDisk = 'upload-parts';
 
     $this->volume = Volume::factory()->create(['disk' => 'upload-destination']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'path' => '']);

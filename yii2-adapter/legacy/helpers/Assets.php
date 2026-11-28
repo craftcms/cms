@@ -59,7 +59,7 @@ class Assets extends AssetsHelper
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
-        if (!Cms::config()->revAssetUrls) {
+        if (!Cms::config()->assets->revUrls) {
             return '';
         }
 

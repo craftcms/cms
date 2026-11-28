@@ -320,7 +320,7 @@ class ClearCaches extends Utility
             'template' => t('Template caches'),
         ];
 
-        if (Cms::config()->enableGql) {
+        if (Cms::config()->gql->enabled) {
             $options['graphql'] = t('GraphQL queries');
         }
 

@@ -26,7 +26,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 
 beforeEach(function () {
     app(Gql::class)->flushCaches();
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
     Edition::set(Edition::Pro);
 });
 

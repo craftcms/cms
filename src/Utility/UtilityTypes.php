@@ -73,11 +73,11 @@ class UtilityTypes extends TypeRegistry
             ->reject(fn (string $class) => match ($class) {
                 SystemMessages::class => ! Edition::isAtLeast(Edition::Pro),
                 AssetIndexes::class => Volumes::getAllVolumes()->isEmpty(),
-                DbBackup::class => $this->generalConfig->backupCommand === false,
+                DbBackup::class => $this->generalConfig->backups->command === false,
                 default => false,
             });
 
-        $disabledUtilities = array_flip($this->generalConfig->disabledUtilities);
+        $disabledUtilities = array_flip($this->generalConfig->cp->disabledUtilities);
 
         return $types
             /** @var class-string<Utility> $class */

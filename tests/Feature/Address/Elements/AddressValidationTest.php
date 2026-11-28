@@ -191,7 +191,7 @@ describe('Country-specific required fields (SCENARIO_LIVE)', function () {
 
 describe('Safe attribute validation', function () {
     test('firstName is a safe attribute when config enabled', function () {
-        Cms::config()->showFirstAndLastNameFields = true;
+        Cms::config()->users->showFirstAndLastNameFields = true;
 
         $address = AddressModel::factory()->createElement();
         $address->firstName = 'John';
@@ -202,7 +202,7 @@ describe('Safe attribute validation', function () {
     });
 
     test('lastName is a safe attribute when config enabled', function () {
-        Cms::config()->showFirstAndLastNameFields = true;
+        Cms::config()->users->showFirstAndLastNameFields = true;
 
         $address = AddressModel::factory()->createElement();
         $address->lastName = 'Doe';

@@ -24,7 +24,7 @@ readonly class Enforce2fa
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if ($this->generalConfig->disable2fa) {
+        if ($this->generalConfig->security->disable2fa) {
             return $next($request);
         }
 

@@ -20,7 +20,7 @@ beforeEach(function () {
 });
 
 it('purges pending users with expired activation tokens', function () {
-    Cms::config()->purgePendingUsersDuration = CarbonInterval::day()->totalSeconds;
+    Cms::config()->garbageCollection->purgePendingUsersDuration = CarbonInterval::day()->totalSeconds;
 
     app(PurgePendingUsers::class)();
 
@@ -28,7 +28,7 @@ it('purges pending users with expired activation tokens', function () {
 });
 
 it('does not purge pending users when the purge duration is zero', function () {
-    Cms::config()->purgePendingUsersDuration = 0;
+    Cms::config()->garbageCollection->purgePendingUsersDuration = 0;
 
     app(PurgePendingUsers::class)();
 

@@ -84,7 +84,7 @@ it('leaves requests outside the site base path alone', function () {
         'url' => 'https://localhost/probe',
     ]);
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     $this->get("https://localhost/fr/$cpTrigger")->assertNotFound();
     $this->get("https://localhost/fr/$cpTrigger/nope")->assertNotFound();

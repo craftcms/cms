@@ -27,7 +27,7 @@ class UriFormatRule implements ValidationRule, ValidatorAwareRule
         public bool $requireSlug = false,
 
         /**
-         * @var bool Whether to ensure that the URI format doesn’t begin with the actionTrigger or cpTrigger.
+         * @var bool Whether to ensure that the URI format doesn’t begin with the `routing.actionTrigger` or `routing.cpTrigger` config setting.
          */
         public bool $disallowTriggers = true,
     ) {}
@@ -55,19 +55,19 @@ class UriFormatRule implements ValidationRule, ValidatorAwareRule
         $generalConfig = Cms::config();
         $firstSeg = explode('/', (string) $value, 2)[0];
 
-        if ($firstSeg === $generalConfig->actionTrigger) {
+        if ($firstSeg === $generalConfig->routing->actionTrigger) {
             $fail(t('{attribute} cannot start with the {setting} config setting.', [
                 'attribute' => $label,
-                'setting' => 'actionTrigger',
+                'setting' => 'routing.actionTrigger',
             ]));
 
             return;
         }
 
-        if ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
+        if ($generalConfig->routing->cpTrigger && $firstSeg === $generalConfig->routing->cpTrigger) {
             $fail(t('{attribute} cannot start with the {setting} config setting.', [
                 'attribute' => $label,
-                'setting' => 'cpTrigger',
+                'setting' => 'routing.cpTrigger',
             ]));
         }
     }

@@ -10,7 +10,7 @@ use Illuminate\Pagination\Paginator;
 
 beforeEach(function () {
     $this->manager = app(TemplateManager::class);
-    Cms::config()->pageTrigger = 'p';
+    Cms::config()->routing->pageTrigger = 'p';
 });
 
 afterEach(function () {
@@ -102,7 +102,7 @@ it('uses query-string pagination urls', function () {
 
 it('uses the configured pageTrigger query param in twig pagination', function () {
     User::factory()->count(9)->create();
-    Cms::config()->pageTrigger = '?page=';
+    Cms::config()->routing->pageTrigger = '?page=';
     swapUrlRequest('/users?page=2');
 
     $result = $this->manager->renderString(

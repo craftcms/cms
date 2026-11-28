@@ -19,12 +19,12 @@ class RebrandCompatibility
 
         $generalConfig = Cms::config();
 
-        if (!$generalConfig->cpIconPath && !$generalConfig->cpIconUrl && $rebrand->isIconUploaded()) {
-            $generalConfig->cpIconPath = $rebrand->getIcon()->getPath();
+        if (!$generalConfig->cp->iconPath && !$generalConfig->cpIconUrl && $rebrand->isIconUploaded()) {
+            $generalConfig->cp->iconPath = $rebrand->getIcon()->getPath();
         }
 
-        if (!$generalConfig->cpLogoPath && !$generalConfig->cpLogoUrl && $rebrand->isLogoUploaded()) {
-            $generalConfig->cpLogoPath = $rebrand->getLogo()->getPath();
+        if (!$generalConfig->cp->logoPath && !$generalConfig->cpLogoUrl && $rebrand->isLogoUploaded()) {
+            $generalConfig->cp->logoPath = $rebrand->getLogo()->getPath();
         }
     }
 }

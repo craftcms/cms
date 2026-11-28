@@ -64,7 +64,7 @@ describe('with the workbench content', function () {
  * and the uncaught exception page is the framework's debug page in tests, so neither is checked.
  */
 it('renders pages that draw their own document', function (string $path) {
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
 
     assertNoAccessibilityIssues(
         assertNoJavaScriptErrors(visit("/$cpTrigger/workbench/$path")->assertPresent('css=main')),

@@ -27,7 +27,7 @@ function addressOwnedBy(User $owner): Address
 }
 
 beforeEach(function () {
-    app(GeneralConfig::class)->showFirstAndLastNameFields = false;
+    app(GeneralConfig::class)->users->showFirstAndLastNameFields = false;
     $this->admin = User::findOne();
     actingAs($this->admin);
 });
@@ -58,7 +58,7 @@ it('keeps the current user’s autocomplete tokens when the address fields are r
 ]);
 
 it('gives the current user’s own address its country, name, and organization tokens, and turns them off on another user’s', function (bool $splitName, BaseField $field, bool $own, array $expected) {
-    app(GeneralConfig::class)->showFirstAndLastNameFields = $splitName;
+    app(GeneralConfig::class)->users->showFirstAndLastNameFields = $splitName;
     $owner = $own ? $this->admin : UserModel::factory()->createElement();
 
     expect(renderedAutocompletes($field, addressOwnedBy($owner)))->toBe($expected);

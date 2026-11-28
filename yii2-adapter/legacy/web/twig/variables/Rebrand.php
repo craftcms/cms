@@ -18,7 +18,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Config\GeneralConfig::$cpIconPath} and {@see \CraftCms\Cms\Config\GeneralConfig::$cpLogoPath} instead.
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Config\CpConfig::$iconPath} and {@see \CraftCms\Cms\Config\CpConfig::$logoPath} instead.
  */
 class Rebrand
 {

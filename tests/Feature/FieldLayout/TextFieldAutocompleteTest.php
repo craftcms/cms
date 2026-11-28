@@ -26,8 +26,8 @@ function renderedAutocomplete(BaseField $field, ?ElementInterface $element): ?st
 }
 
 beforeEach(function () {
-    app(GeneralConfig::class)->useEmailAsUsername = false;
-    app(GeneralConfig::class)->showFirstAndLastNameFields = false;
+    app(GeneralConfig::class)->users->useEmailAsUsername = false;
+    app(GeneralConfig::class)->users->showFirstAndLastNameFields = false;
     $this->admin = User::findOne();
     actingAs($this->admin);
 });
@@ -67,14 +67,14 @@ it('turns autocomplete off on account fields rendered without a user', function 
 ]);
 
 it('gives the current user’s own first and last name fields their autocomplete tokens', function () {
-    app(GeneralConfig::class)->showFirstAndLastNameFields = true;
+    app(GeneralConfig::class)->users->showFirstAndLastNameFields = true;
 
     expect(renderedAutocompletes(new FullNameField(['uid' => 'full-name']), $this->admin))
         ->toBe(['firstName' => 'given-name', 'lastName' => 'family-name']);
 });
 
 it('turns autocomplete off on another user’s first and last name fields', function () {
-    app(GeneralConfig::class)->showFirstAndLastNameFields = true;
+    app(GeneralConfig::class)->users->showFirstAndLastNameFields = true;
     $other = UserModel::factory()->createElement();
 
     expect(renderedAutocompletes(new FullNameField(['uid' => 'full-name']), $other))

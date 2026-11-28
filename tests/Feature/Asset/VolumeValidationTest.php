@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Symfony\Component\DomCrawler\Crawler;
 
 beforeEach(function () {
-    Cms::config()->tempAssetUploadDisk = null;
+    Cms::config()->assets->tempUploadDisk = null;
     putenv('CRAFT_TEST_VOLUME_SUBPATH');
 });
 
@@ -157,7 +157,7 @@ it('rejects the temp upload filesystem target for the disk', function () {
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-validation/temp-reserved'),
     ]);
-    Cms::config()->tempAssetUploadDisk = 'temp-reserved';
+    Cms::config()->assets->tempUploadDisk = 'temp-reserved';
 
     $volumeFs = new Volume([
         'disk' => 'temp-reserved',

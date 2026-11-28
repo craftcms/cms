@@ -114,7 +114,7 @@ test('queued activation and email verification emails keep the front-end site of
     app()->setLocale(Sites::getPrimarySite()->getLanguage());
     $mailable = unserialize(serialize(Notification::sent($user, $notification)->sole()))->toMail($user);
 
-    expect((string) $mailable->variables['link'])->toStartWith('https://example.test/b/'.Cms::config()->getVerifyEmailPath().'?code=')
+    expect((string) $mailable->variables['link'])->toStartWith('https://example.test/b/'.Cms::config()->routing->getVerifyEmailPath().'?code=')
         ->and($mailable->siteId)->toBe($siteB->id)
         ->and($mailable->renderedMessage()->language)->toBe('nl');
 })->with([
@@ -135,7 +135,7 @@ test('purgeExpiredPendingUsers deletes users with expired tokens', function () {
         ->where('email', $user->email)
         ->update(['created_at' => now()->subDays(10)]);
 
-    Cms::config()->purgePendingUsersDuration = CarbonInterval::day()->totalSeconds;
+    Cms::config()->garbageCollection->purgePendingUsersDuration = CarbonInterval::day()->totalSeconds;
 
     Users::purgeExpiredPendingUsers();
 
@@ -153,7 +153,7 @@ test('purgeExpiredPendingUsers does not delete users with an active token', func
         'created_at' => now(),
     ]);
 
-    Cms::config()->purgePendingUsersDuration = CarbonInterval::day()->totalSeconds;
+    Cms::config()->garbageCollection->purgePendingUsersDuration = CarbonInterval::day()->totalSeconds;
 
     Users::purgeExpiredPendingUsers();
 

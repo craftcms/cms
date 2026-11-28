@@ -69,7 +69,7 @@ it('supports batch execution', function () {
 });
 
 it('enforces the graphql batch size limit', function () {
-    app(GeneralConfig::class)->maxGraphqlBatchSize = 1;
+    app(GeneralConfig::class)->gql->maxBatchSize = 1;
 
     $this->call('POST', action_url('graphql/api'), [], [], [], [
         'CONTENT_TYPE' => 'application/json',

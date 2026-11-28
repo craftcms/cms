@@ -109,7 +109,7 @@ readonly class DashboardController
 
     public function redirect(): RedirectResponse
     {
-        if ($path = Cms::config()->getPostCpLoginRedirect()) {
+        if ($path = Cms::config()->routing->getPostCpLoginRedirect()) {
             return redirect(cp_url($path));
         }
 

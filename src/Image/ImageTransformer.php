@@ -70,11 +70,11 @@ class ImageTransformer
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
-        if ($mimeType === 'image/gif' && ! $generalConfig->transformGifs) {
+        if ($mimeType === 'image/gif' && ! $generalConfig->images->transformGifs) {
             throw new NotSupportedException('GIF files shouldn’t be transformed.');
         }
 
-        if ($mimeType === 'image/svg+xml' && ! $generalConfig->transformSvgs) {
+        if ($mimeType === 'image/svg+xml' && ! $generalConfig->images->transformSvgs) {
             throw new NotSupportedException('SVG files shouldn’t be transformed.');
         }
 
@@ -122,7 +122,7 @@ class ImageTransformer
                     description: I18N::prep('Generating image transform for {file}', [
                         'file' => $asset->getFilename(),
                     ]),
-                ))->onQueue(Cms::config()->lowPriorityQueueName);
+                ))->onQueue(Cms::config()->queue->lowPriorityName);
 
                 // Prevent the page from being cached
                 if (! app()->runningInConsole()) {

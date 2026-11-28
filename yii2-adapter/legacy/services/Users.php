@@ -277,12 +277,12 @@ class Users extends Component
      * @param string $code The verification code to check for.
      *
      * @return bool Whether the code is still valid.
-     * @deprecated 6.0.0. Use `Password::broker(Cms::config()->getAuthPasswordBroker())->tokenExists($user, $code)`
+     * @deprecated 6.0.0. Use `Password::broker(Cms::config()->security->getAuthPasswordBroker())->tokenExists($user, $code)`
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
     {
         /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
-        $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
+        $broker = Password::broker(Cms::config()->security->getAuthPasswordBroker());
 
         if ($broker->tokenExists($user, $code)) {
             return true;

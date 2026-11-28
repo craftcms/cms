@@ -186,7 +186,7 @@ expect()->extend('toContainTag', function (string $tag, array $attributes = []) 
  */
 function visitCp(string $path = ''): AwaitableWebpage
 {
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
 
     return visit('/'.ltrim("$cpTrigger/".ltrim($path, '/'), '/'))->assertPresent('main[id]');
 }
@@ -280,7 +280,7 @@ function seedWorkbenchContent(): void
  */
 function cpEditPath(ElementInterface $element): string
 {
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
 
     return ltrim(str_replace("/$cpTrigger/", '/', (string) parse_url((string) $element->getCpEditUrl(), PHP_URL_PATH)), '/');
 }
@@ -338,7 +338,7 @@ function renderedAutocompletes(BaseField $field, ?ElementInterface $element): ar
 function buildExpectedUrl(string $url, string $scheme): string
 {
     $siteUrl = "$scheme://localhost/";
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
     $cpUrl = $cpTrigger === '' ? rtrim($siteUrl, '/') : rtrim($siteUrl, '/')."/$cpTrigger";
 
     return str_replace(['{siteUrl}', '{cpUrl}'], [$siteUrl, $cpUrl], $url);

@@ -10,20 +10,20 @@ use Illuminate\Http\Request;
 
 /**
  * The per-IP limit for actions that are rate-limited by default, set by the
- * `defaultRateLimit` and `defaultRateLimitDuration` config settings.
+ * `security.defaultRateLimit` and `security.defaultRateLimitDuration` config settings.
  *
  * @since 6.0.0
  */
 final class DefaultRateLimit
 {
     /**
-     * The limit for a request, or `null` if `defaultRateLimit` is disabled.
+     * The limit for a request, or `null` if `security.defaultRateLimit` is disabled.
      *
      * Each rate limiter tracks its own requests, so a limiter's other limits key by something other than the IP alone.
      */
     public static function for(Request $request): ?Limit
     {
-        $config = Cms::config();
+        $config = Cms::config()->security;
 
         if ($config->defaultRateLimit === false) {
             return null;

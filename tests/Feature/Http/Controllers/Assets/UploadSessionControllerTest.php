@@ -45,9 +45,9 @@ beforeEach(function () {
     Storage::fake('upload-parts');
     Storage::fake('temp-assets');
     Storage::fake('upload-destination');
-    Cms::config()->tempAssetUploadDisk = 'temp-assets';
-    Cms::config()->uploadSessionDisk = 'upload-parts';
-    Cms::config()->uploadChunkSize = 3;
+    Cms::config()->assets->tempUploadDisk = 'temp-assets';
+    Cms::config()->assets->uploadSessionDisk = 'upload-parts';
+    Cms::config()->assets->uploadChunkSize = 3;
 
     $this->volume = Volume::factory()->create(['disk' => 'upload-destination']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'path' => '']);
@@ -78,7 +78,7 @@ it('authorizes the destination before accepting bytes', function () {
 
 it('allows per-upload storage and uploader selection without changing config', function (?string $uploader) {
     app(Uploaders::class)->extend('custom', fn () => app(TusUploader::class));
-    Cms::config()->uploader = $uploader === null ? null : 'invalid-configured-uploader';
+    Cms::config()->assets->uploader = $uploader === null ? null : 'invalid-configured-uploader';
     $calls = 0;
 
     Event::listen(UploadSessionStarting::class, function (UploadSessionStarting $event) use ($uploader, &$calls) {
@@ -100,8 +100,8 @@ it('allows per-upload storage and uploader selection without changing config', f
     $stored = UploadSession::findOrFail($session['id']);
     expect($stored->disk)->toBe('upload-destination')
         ->and($stored->uploader)->toBe($uploader ?? 'tus')
-        ->and(Cms::config()->uploadSessionDisk)->toBe('upload-parts')
-        ->and(Cms::config()->tempAssetUploadDisk)->toBe('temp-assets');
+        ->and(Cms::config()->assets->uploadSessionDisk)->toBe('upload-parts')
+        ->and(Cms::config()->assets->tempUploadDisk)->toBe('temp-assets');
 
     $this->call('PATCH', $session['transport']['options']['url'], server: [
         'CONTENT_TYPE' => 'application/offset+octet-stream',
@@ -116,7 +116,7 @@ it('allows per-upload storage and uploader selection without changing config', f
 it('preserves configured upload defaults when the event does not override them', function () {
     Event::fake([UploadSessionStarting::class]);
     app(Uploaders::class)->extend('custom', fn () => app(TusUploader::class));
-    Cms::config()->uploader = 'custom';
+    Cms::config()->assets->uploader = 'custom';
 
     $session = postJson(action([UploadSessionController::class, 'store']), [
         'filename' => 'example.txt', 'size' => 6, 'folderId' => $this->folder->id,
@@ -211,8 +211,8 @@ it('rechecks permissions before resuming an upload', function () {
 });
 
 it('allows a five gib asset when configured regardless of PHP request limits', function () {
-    Cms::config()->maxUploadFileSize = 5368709120;
-    Cms::config()->uploadChunkSize = 2097152;
+    Cms::config()->assets->maxUploadFileSize = 5368709120;
+    Cms::config()->assets->uploadChunkSize = 2097152;
 
     postJson(action([UploadSessionController::class, 'store']), [
         'filename' => 'archive.zip', 'size' => 5368709120, 'folderId' => $this->folder->id,
@@ -286,7 +286,7 @@ it('binds guest uploads to application-defined destinations and limits', functio
 it('preserves image dimensions through chunk assembly and asset processing', function () {
     $image = UploadedFile::fake()->image('photo.png', 13, 17);
     $bytes = file_get_contents($image->getRealPath());
-    Cms::config()->uploadChunkSize = 1048576;
+    Cms::config()->assets->uploadChunkSize = 1048576;
     $session = postJson(action([UploadSessionController::class, 'store']), [
         'filename' => 'photo.png', 'size' => strlen($bytes), 'folderId' => $this->folder->id,
     ])->assertCreated()->json();
@@ -300,7 +300,7 @@ it('preserves image dimensions through chunk assembly and asset processing', fun
 
 describe('what the uploader read from the file', function () {
     beforeEach(function () {
-        Cms::config()->uploadChunkSize = 1048576;
+        Cms::config()->assets->uploadChunkSize = 1048576;
 
         $this->uploadImage = function (array $parameters, array $completion = []): array {
             $image = UploadedFile::fake()->image('photo.png', 13, 17);
@@ -616,7 +616,7 @@ it('binds custom S3 signatures to the authorized sessions key and multipart id',
     $uploader->shouldReceive('sign')->once()->withArgs(fn (UploadSession $session, string $method, ?int $part) => $method === 'PUT' && $part === 1)
         ->andReturn(['url' => 'https://storage.example/signed']);
     app(Uploaders::class)->extend('s3-test', fn () => $uploader);
-    Cms::config()->uploader = 's3-test';
+    Cms::config()->assets->uploader = 's3-test';
     $session = postJson(action([UploadSessionController::class, 'store']), [
         'filename' => 'example.txt', 'size' => 3, 'folderId' => $this->folder->id,
     ])->assertCreated()->assertJsonPath('transport.type', 's3')->json();
@@ -654,7 +654,7 @@ it('delegates custom protocol requests to the uploader and persists its state', 
         return new JsonResponse(['received' => $session->state['received']]);
     });
     app(Uploaders::class)->extend('custom', fn () => $uploader);
-    Cms::config()->uploader = 'custom';
+    Cms::config()->assets->uploader = 'custom';
     $session = postJson(action([UploadSessionController::class, 'store']), [
         'filename' => 'example.txt', 'size' => 6, 'folderId' => $this->folder->id,
     ])->assertCreated()->assertJsonPath('transport.type', 'custom')->json();

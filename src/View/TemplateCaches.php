@@ -221,7 +221,7 @@ class TemplateCaches
     private function isTemplateCachingEnabled(bool $global): bool
     {
         if ($this->enabled === null || $this->enabledGlobally === null) {
-            if (! Cms::config()->enableTemplateCaching) {
+            if (! Cms::config()->templates->enableCaching) {
                 $this->enabled = false;
                 $this->enabledGlobally = false;
             } elseif (request()->isPreview() || request()->getHadToken()) {
@@ -269,7 +269,7 @@ class TemplateCaches
         $isCpRequest = request()->isCpRequest();
         $path = request()->craftPath();
 
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
         $pageNum = AbstractPaginator::resolveCurrentPage($pageParam);
 
         $this->path = ($isCpRequest ? 'cp:' : 'site:').$path;

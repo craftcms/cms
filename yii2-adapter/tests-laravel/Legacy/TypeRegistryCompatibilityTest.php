@@ -126,11 +126,11 @@ it('applies legacy utility listeners to the currently available types', function
     });
 
     $config = Cms::config();
-    $disabledUtilities = $config->disabledUtilities;
+    $disabledUtilities = $config->cp->disabledUtilities;
 
     try {
         $first = app(UtilityTypes::class)->types();
-        $config->disabledUtilities = [PhpInfo::id(), AdapterDisabledUtility::id()];
+        $config->cp->disabledUtilities = [PhpInfo::id(), AdapterDisabledUtility::id()];
         $second = app(UtilityTypes::class)->types();
 
         expect($first)->toContain(PhpInfo::class, AdapterDisabledUtility::class)
@@ -139,7 +139,7 @@ it('applies legacy utility listeners to the currently available types', function
             ->and($seenTypes[0])->toContain(PhpInfo::class, SystemReport::class)
             ->and($seenTypes[1])->not()->toContain(PhpInfo::class);
     } finally {
-        $config->disabledUtilities = $disabledUtilities;
+        $config->cp->disabledUtilities = $disabledUtilities;
     }
 });
 

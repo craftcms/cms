@@ -47,7 +47,7 @@ class PostgresBackupCommand extends BackupCommand
             $parts[] = '--exclude-table-data='.escapeshellarg("{$config['schema']}.$table");
         }
 
-        $format = $this->backupFormat ?? Cms::config()->backupCommandFormat;
+        $format = $this->backupFormat ?? Cms::config()->backups->commandFormat;
 
         if ($format) {
             $parts[] = '--format='.escapeshellarg($format);

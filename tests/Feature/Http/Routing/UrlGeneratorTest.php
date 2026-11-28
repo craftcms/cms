@@ -22,7 +22,7 @@ beforeEach(function () {
         Route::get('target', fn () => 'target:'.Sites::getCurrentSite()->handle)->name('test.target');
         Route::get('sites/{site}', fn (string $site) => $site)->name('test.site-param');
         Route::domain('localhost')->get('domain-target', fn () => 'domain-target:'.Sites::getCurrentSite()->handle)->name('test.domain');
-        Route::get(Cms::config()->cpTrigger.'/cp-path', fn () => 'cp-path')->name('test.cp-path');
+        Route::get(Cms::config()->routing->cpTrigger.'/cp-path', fn () => 'cp-path')->name('test.cp-path');
         Route::rootOnly()->get('root-only', fn () => 'root-only')->name('test.root-only');
         Route::get('signed', fn (Request $request) => $request->hasValidSignature() ? 'valid' : 'invalid')->name('test.signed');
         Route::get('links', fn () => [
@@ -54,7 +54,7 @@ beforeEach(function () {
 });
 
 it('generates site route URLs under the current site’s base URL', function () {
-    $cp = 'https://localhost/'.Cms::config()->cpTrigger.'/dashboard';
+    $cp = 'https://localhost/'.Cms::config()->routing->cpTrigger.'/dashboard';
 
     expect($this->get('https://localhost/fr/links')->json())->toMatchArray([
         'route' => 'https://localhost/fr/target?page=2',
@@ -64,7 +64,7 @@ it('generates site route URLs under the current site’s base URL', function () 
         'cp' => $cp,
         'app' => 'https://localhost/app-target',
         'rootOnly' => 'https://localhost/root-only',
-        'cpPath' => 'https://localhost/'.Cms::config()->cpTrigger.'/cp-path',
+        'cpPath' => 'https://localhost/'.Cms::config()->routing->cpTrigger.'/cp-path',
         'primary' => 'https://localhost/target',
         'other' => 'https://other.test/de/target',
         'otherById' => 'https://other.test/de/target',

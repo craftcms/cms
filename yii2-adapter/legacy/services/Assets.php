@@ -259,7 +259,7 @@ class Assets extends Component
     public function getTempAssetUploadFs(): FsInterface
     {
         return new DiskFs([
-            'disk' => Cms::config()->getTempAssetUploadDisk(),
+            'disk' => Cms::config()->assets->getTempUploadDisk(),
         ]);
     }
 

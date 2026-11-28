@@ -126,7 +126,7 @@ abstract class BenchCase
         $this->actingAs($app, $user);
 
         $kernel = $app->make(Kernel::class);
-        $request = Request::create('/'.Cms::config()->cpTrigger.'/'.ltrim($path, '/'));
+        $request = Request::create('/'.Cms::config()->routing->cpTrigger.'/'.ltrim($path, '/'));
         $response = $kernel->handle($request);
 
         if ($response->getStatusCode() !== 200) {
@@ -141,7 +141,7 @@ abstract class BenchCase
      */
     protected function actingAs(Application $app, User $user): void
     {
-        $guard = Cms::config()->getAuthGuard();
+        $guard = Cms::config()->security->getAuthGuard();
         $auth = $app->make(AuthFactory::class);
         $auth->guard($guard)->setUser($user);
         $auth->shouldUse($guard);
