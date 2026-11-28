@@ -162,8 +162,6 @@ export class AssetUploadQueue extends UploadQueue<
         {
           duplicates,
           navigate: (url) => router.visit(url),
-          // With several, Replace is only offered in the comparison, for the one shown
-          multiple: duplicates.length > 1,
           onCompare: () => {
             void this.compare(job);
           },

@@ -149,49 +149,58 @@ export function uploadDuplicatesMessage(
       });
 }
 
-/** A filename conflict's message and choices, for a transfer notification's details. */
+/**
+ * A held upload's message and choices, for a transfer notification's details.
+ * With `onCompare`, for an upload that looks like a copy of other images, the
+ * choices are just keeping it and comparing: discarding and replacing are
+ * left to the comparison, where the images can be seen.
+ */
 export function createUploadConflictDetails(
   message: string,
   onChoice: (choice: ConflictResolution) => void,
   {
     duplicates,
     navigate,
-    multiple = false,
     onCompare,
   }: {
     /** Images the upload looks like a copy of, listed under the message. */
     duplicates?: UploadDuplicate[];
     navigate?: (url: string) => void;
-    /** Whether it conflicts with more than one file, leaving no one file to replace. */
-    multiple?: boolean;
     /** Opens a comparison of the upload with `duplicates`, from a Compare button among the choices. */
     onCompare?: () => void;
   } = {}
 ): HTMLElement {
   const details = document.createElement('div');
   details.className = 'flex flex-col items-start gap-2';
-  const choices = new AssetConflictResolutionElement();
-  choices.className = 'flex flex-wrap gap-2';
-  choices.multiple = multiple;
-  choices.hideReplace = multiple;
-  choices.discards = true;
-  choices.addEventListener('craft-conflict-resolve', (event) =>
-    onChoice((event as CustomEvent<ConflictResolution>).detail)
-  );
   render(html`<span class="wrap-anywhere">${message}</span>`, details);
   if (duplicates?.length) {
     details.append(createDuplicateList(duplicates, navigate));
   }
   if (onCompare) {
-    choices.extraButtons = html`<craft-button @click=${onCompare}
-      ><craft-icon
-        slot="prefix"
-        name="code-compare"
-        class="text-(--c-field-modified-indicator)"
-      ></craft-icon
-      >${t('Compare')}</craft-button
-    >`;
+    const choices = document.createElement('div');
+    choices.className = 'flex flex-wrap gap-2';
+    render(
+      html`<craft-button @click=${() => onChoice('keepBoth')}
+          >${t('Keep it')}</craft-button
+        ><craft-button @click=${onCompare}
+          ><craft-icon
+            slot="prefix"
+            name="code-compare"
+            class="text-(--c-field-modified-indicator)"
+          ></craft-icon
+          >${t('Compare')}</craft-button
+        >`,
+      choices
+    );
+    details.append(choices);
+    return details;
   }
+  const choices = new AssetConflictResolutionElement();
+  choices.className = 'flex flex-wrap gap-2';
+  choices.discards = true;
+  choices.addEventListener('craft-conflict-resolve', (event) =>
+    onChoice((event as CustomEvent<ConflictResolution>).detail)
+  );
   details.append(choices);
   return details;
 }

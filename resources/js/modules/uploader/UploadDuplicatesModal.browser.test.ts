@@ -110,6 +110,13 @@ it('shows the upload beside the image it looks like, marking the rows that diffe
   await expect
     .element(page.getByRole('columnheader', {name: 'Existing image'}))
     .toBeVisible();
+  expect(
+    [
+      ...document.querySelectorAll<HTMLElement>(
+        'craft-pane craft-asset-conflict-resolution craft-button'
+      ),
+    ].map((button) => button.textContent!.trim())
+  ).toEqual(['Keep it', 'Discard upload', 'Replace']);
 
   const panel = shownPanel();
   await expect
@@ -181,7 +188,7 @@ it('switches between several matches, and replaces the one shown', async () => {
         'craft-pane craft-asset-conflict-resolution craft-button'
       ),
     ].map((button) => button.textContent!.trim())
-  ).toEqual(['Keep all', 'Discard upload', 'Replace']);
+  ).toEqual(['Keep it', 'Discard upload', 'Replace']);
   await expect.poll(status).toBe('None of these details differ.');
   expect(
     page.getByRole('columnheader', {name: 'Existing image'}).query()

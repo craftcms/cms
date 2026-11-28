@@ -177,7 +177,7 @@
       <craft-asset-conflict-resolution
         slot="actions"
         class="upload-duplicates__choices"
-        :multiple="duplicates.length > 1"
+        duplicate
         discards
         @craft-conflict-resolve="choose"
       ></craft-asset-conflict-resolution>
