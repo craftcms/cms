@@ -12,9 +12,11 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\ElementLifecycleDeleting;
 use CraftCms\Cms\Element\Events\ElementLifecycleSaving;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Email;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
@@ -322,6 +324,32 @@ describe('store', function () {
             ->and($updatedDraft->slug)->toBe('updated-draft-title')
             ->and($updatedDraft->draftName)->toBe('Renamed Draft')
             ->and($updatedDraft->draftNotes)->toBe('Updated draft notes');
+    });
+
+    it('saves field values that aren’t valid yet, and checks them once the draft is applied', function () {
+        $field = Field::factory()->create(['handle' => 'contactEmail', 'type' => Email::class]);
+        $entry = EntryModel::factory()
+            ->withFieldLayout(FieldLayout::factory()->forField($field))
+            ->createElement(['title' => 'Canonical Title']);
+
+        $response = postJson(action([ElementDraftsController::class, 'store']), [
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+            'provisional' => true,
+            'title' => 'Typed Title',
+            'fields' => ['contactEmail' => 'someone at'],
+        ])->assertOk();
+
+        /** @var Entry $draft */
+        $draft = Entry::find()->draftId($response->json('draftId'))->provisionalDrafts()->status(null)->one();
+
+        expect($draft->title)->toBe('Typed Title')
+            ->and($draft->getFieldValue('contactEmail'))->toBe('someone at');
+
+        $draft->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+
+        expect($draft->validate())->toBeFalse()
+            ->and($draft->errors()->has('contactEmail'))->toBeTrue();
     });
 
     it('overwrites an existing provisional draft for the same element and user', function () {

@@ -11,6 +11,7 @@
 - Improved the performance of searching and filtering element indexes. ([#21170](https://github.com/craftcms/cms/pull/21170))
 - Improved the performance of entry indexes and of element indexes with thumbnails. ([#21181](https://github.com/craftcms/cms/issues/21181), [#21188](https://github.com/craftcms/cms/pull/21188), [#21190](https://github.com/craftcms/cms/pull/21190), [#21191](https://github.com/craftcms/cms/pull/21191))
 - Improved the performance of edit pages with many fields or nested entries. ([#21077](https://github.com/craftcms/cms/pull/21077))
+- Improved the performance of autosaving entries with many nested entries. ([#21199](https://github.com/craftcms/cms/pull/21199))
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - Improved the responsiveness of large control panel pages, which no longer restyle every element whenever content is added or a class or inline style changes. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21150](https://github.com/craftcms/cms/issues/21150), [#21125](https://github.com/craftcms/cms/pull/21125))
 - Improved the performance of autosaving and saving entries on MySQL. ([#21180](https://github.com/craftcms/cms/issues/21180), [#21187](https://github.com/craftcms/cms/pull/21187))
@@ -78,6 +79,8 @@
 - Added `CraftCms\Cms\Cp\Alerts::areCached()`. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Control panel alerts can now have `title`, `actions`, and `refreshable` keys, which are shown in the alert’s heading and buttons. Plugins can pass them from `CpAlertsResolving` to show their links as buttons. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - `CraftCms\Cms\License\License::issues()` can now return a fourth item per issue, with link buttons for its alert. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- Fixed a bug where drafts couldn’t be saved while a field had a value that wasn’t valid yet, such as an incomplete email address. ([#21199](https://github.com/craftcms/cms/pull/21199))
+- Fixed an error that occurred when saving an incomplete email address. ([#21199](https://github.com/craftcms/cms/pull/21199))
 - Fixed a bug where `{% cache %}` tags and cached GraphQL results built with element queries’ `exists()`, `ids()`, `pluck()`, or aggregate methods weren’t refreshed when elements were saved.
 - Fixed a bug where control panel alerts weren’t shown on Inertia pages. ([#21083](https://github.com/craftcms/cms/issues/21083), [#21108](https://github.com/craftcms/cms/pull/21108))
 - Fixed a bug where licensing and critical update alerts could be missing from the control panel once the cached update info expired. ([#21108](https://github.com/craftcms/cms/pull/21108))

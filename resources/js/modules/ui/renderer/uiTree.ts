@@ -1,11 +1,12 @@
 import {toRaw} from 'vue';
-import {isRecord, pathsMatch, visitControls} from '../runtime';
+import {isRecord, pathsMatch, valueAt, visitControls} from '../runtime';
 import type {
   NestedUiPayload,
   UiControlPayload,
   UiNodePayload,
   UiPayload,
   UiValue,
+  UiValues,
 } from '../types';
 
 /**
@@ -34,6 +35,246 @@ function unwrap(value: UiValue): UiValue {
   }
 
   return raw;
+}
+
+/**
+ * `next`, with each part that's deeply equal to the same part of `previous`
+ * taken from `previous` instead. A server sends the whole tree again even
+ * when little of it changed, and the parts that didn't keep their identity
+ * this way, so Vue skips re-rendering them. The result is always raw, so a
+ * part shared from a reactive payload has the same identity as one shared from
+ * a plain one.
+ */
+export function shareEqual<T extends UiValue>(
+  previous: UiValue | undefined,
+  next: T
+): T {
+  // Walks the raw values, so a computed calling this doesn't track every node
+  // it reads.
+  const prev = toRaw(previous);
+  const raw = toRaw(next);
+
+  if (Object.is(prev, raw)) {
+    return raw;
+  }
+
+  if (Array.isArray(prev) && Array.isArray(raw)) {
+    let same = prev.length === raw.length;
+    const shared = raw.map((item, index) => {
+      const result = shareEqual(prev[index], item);
+      same &&= result === prev[index];
+
+      return result;
+    });
+
+    // SAFETY: each item is `next`'s own item or one deeply equal to it.
+    return (same ? prev : shared) as T;
+  }
+
+  if (isRecord(prev) && isRecord(raw)) {
+    const keys = Object.keys(raw);
+    const prevKeys = Object.keys(prev);
+    // Key order counts: controls such as tables render a record in order.
+    let same =
+      keys.length === prevKeys.length &&
+      keys.every((key, index) => key === prevKeys[index]);
+    const shared: UiValues = {};
+
+    for (const key of keys) {
+      shared[key] = shareEqual(prev[key], raw[key]!);
+      same &&= shared[key] === prev[key];
+    }
+
+    // SAFETY: each entry is `next`'s own entry or one deeply equal to it.
+    return (same ? prev : shared) as T;
+  }
+
+  return raw;
+}
+
+/**
+ * `next`, with everything but its values shared with `previous` by
+ * {@link shareEqual}. Its values stay its own, because hosts take a payload's
+ * values whenever a new payload arrives, even when only the values changed.
+ * Gives back `previous` when nothing differs, so a host recomputing its
+ * payload from the same source doesn't hand its renderer a new one.
+ */
+export function sharePayload<T extends UiPayload | null | undefined>(
+  previous: UiPayload | null | undefined,
+  next: T
+): T {
+  if (!next) {
+    return next;
+  }
+
+  if (!previous) {
+    return toRaw(next);
+  }
+
+  // SAFETY: UI payloads are JSON, so each of their parts is a UiValue.
+  const raw = toRaw(next) as unknown as UiValues;
+  const prev = toRaw(previous) as unknown as UiValues;
+
+  const shared = Object.fromEntries(
+    Object.entries(raw).map(([key, value]) => [
+      key,
+      key === 'values' ? value : shareEqual(prev[key], value),
+    ])
+  );
+  const keys = Object.keys(shared);
+  const unchanged =
+    keys.length === Object.keys(prev).length &&
+    keys.every((key) => shared[key] === prev[key]);
+
+  // SAFETY: `shared` has `next`'s keys, each holding `next`'s own value or one
+  // deeply equal to it.
+  return (unchanged ? previous : shared) as T;
+}
+
+/**
+ * The request header asking the server for placeholders in place of the
+ * nested UIs the request didn't change. Send it only when the renderer the
+ * response goes to shows a payload that {@link canReuseUis} accepts.
+ */
+export const UI_REUSE_HEADER = 'X-Craft-Ui-Reuse';
+
+/**
+ * Whether `payload` shows every nested UI a placeholder could stand in for.
+ * A tab that's still deferred shows none of its own, and neither does a
+ * placeholder that hasn't been filled yet.
+ */
+export function canReuseUis(payload: UiPayload | null | undefined): boolean {
+  return (
+    !!payload &&
+    !payload.nodes.some((node) => node.props.deferred) &&
+    reusedScopes(payload.nodes).length === 0
+  );
+}
+
+/**
+ * `next`, with each `reused` placeholder replaced by the nested UI at the same
+ * scope in `previous`, the payload the renderer shows, and that UI's values
+ * copied over. A server sends placeholders only to a client that asks for
+ * them, so it builds and sends only the nested UIs a request changed.
+ *
+ * Fill from what the renderer shows, not from the last payload a server sent.
+ * The renderer's own refreshes replace nested UIs without the host seeing them.
+ *
+ * A placeholder stays when `previous` doesn't show a UI at its scope, such as
+ * for a field a condition has just revealed, or shows it in another mode,
+ * such as for a field that has just become read-only. The renderer then asks
+ * for the whole UI again, without placeholders.
+ */
+export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
+  let values = next.values;
+  // Indexed once, on the first placeholder, rather than searched for each.
+  let shownUis: Map<string, NestedUiPayload> | undefined;
+  let shownModes: Map<string, UiControlPayload['mode']> | undefined;
+  const index = () => {
+    shownUis = new Map();
+    shownModes = new Map();
+    visitControls(toRaw(previous).nodes, (control) => {
+      shownModes!.set(JSON.stringify(control.path), control.mode);
+      control.uis?.forEach((ui) => shownUis!.set(JSON.stringify(ui.scope), ui));
+    });
+  };
+
+  const fillUis = (
+    owner: UiControlPayload,
+    uis: NestedUiPayload[]
+  ): NestedUiPayload[] => {
+    const filled = uis.map((ui) => {
+      if (!ui.reused) {
+        const nodes = fillNodes(ui.nodes);
+
+        return nodes === ui.nodes ? ui : {...ui, nodes};
+      }
+
+      if (!shownUis) {
+        index();
+      }
+
+      const shown = shownUis!.get(JSON.stringify(ui.scope));
+
+      if (
+        !shown ||
+        shown.reused ||
+        shownModes!.get(JSON.stringify(owner.path)) !== owner.mode
+      ) {
+        return ui;
+      }
+
+      values = withMissingValues(
+        values,
+        ui.scope,
+        valueAt(toRaw(previous).values, ui.scope)
+      );
+
+      return shown;
+    });
+
+    return filled.every((ui, index) => ui === uis[index]) ? uis : filled;
+  };
+
+  const fillNodes = (nodes: UiNodePayload[]): UiNodePayload[] => {
+    const filled = nodes.map((node) => {
+      const uis = node.control?.uis && fillUis(node.control, node.control.uis);
+      const children = node.children && fillNodes(node.children);
+
+      if (uis === node.control?.uis && children === node.children) {
+        return node;
+      }
+
+      return {
+        ...node,
+        ...(node.control && {control: {...node.control, uis}}),
+        ...(children && {children}),
+      };
+    });
+
+    return filled.every((node, index) => node === nodes[index])
+      ? nodes
+      : filled;
+  };
+
+  const nodes = fillNodes(next.nodes);
+
+  return nodes === next.nodes ? next : {...next, nodes, values};
+}
+
+/** The scopes of the placeholders {@link withReusedUis} couldn't fill. */
+export function reusedScopes(nodes: UiNodePayload[]): string[][] {
+  const scopes: string[][] = [];
+  visitControls(nodes, (control) =>
+    control.uis?.forEach((ui) => ui.reused && scopes.push(ui.scope))
+  );
+
+  return scopes;
+}
+
+/**
+ * `values`, with the keys `source` has at `path` and `values` lacks there
+ * added. Copies only the records along `path`.
+ */
+export function withMissingValues(
+  values: UiValues,
+  path: string[],
+  source: UiValue
+): UiValues {
+  if (!isRecord(source)) {
+    return values;
+  }
+
+  const [segment, ...rest] = path;
+  const current = values[segment!];
+  const target = isRecord(current) ? current : {};
+
+  return {
+    ...values,
+    [segment!]: rest.length
+      ? withMissingValues(target, rest, source)
+      : {...source, ...target},
+  };
 }
 
 export function isWithin(path: string[], scope: string[]): boolean {

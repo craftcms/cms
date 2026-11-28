@@ -832,6 +832,11 @@ it.each([false, true])(
       'X-Craft-Ui-Root-Scope': JSON.stringify(scope),
       'X-Craft-Ui-Scope': JSON.stringify(scope),
     });
+    // The server builds the whole field, so it can't be asked for placeholders
+    // in place of the block this refresh is for.
+    expect(request.mock.calls[0]![2]?.headers).not.toHaveProperty(
+      'X-Craft-Ui-Reuse'
+    );
     expect(
       form.querySelector('input[name="editor[fields][body]"]')
     ).not.toBeNull();

@@ -153,6 +153,8 @@ test('idnToUtf8Email', function (string $expected, string $string) {
 })->with([
     ['userName', 'userName'],
     ['aaa@äö.ee', 'aaa@xn--4ca0b.ee'],
+    ['aaa@', 'aaa@'],
+    ['@äö.ee', '@xn--4ca0b.ee'],
 ]);
 
 test('insert', function (string $expected, string $string, string $substring, int $index) {

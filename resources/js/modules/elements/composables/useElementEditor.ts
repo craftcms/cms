@@ -45,6 +45,14 @@ import {useElementActivity} from '@/modules/elements/composables/useElementActiv
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
+import {createUiRefreshOrder} from '@/modules/ui/renderer/uiRefreshOrder';
+import {
+  canReuseUis,
+  reusedScopes,
+  sharePayload,
+  UI_REUSE_HEADER,
+  withReusedUis,
+} from '@/modules/ui/renderer/uiTree';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
 import {showError, showNotice, showSuccess} from '@/modules/messages/messages';
@@ -415,17 +423,18 @@ export function useElementEditor({
   // address) receives its own UI payload. Until it does, the block has
   // nothing to render but a spinner.
   const savedUi = shallowRef<UiPayload | null>(null);
-  const uiPayload = computed(
-    () => savedUi.value ?? withDeferredTabs(props.ui, props.deferredTabs)
+  const uiPayload = computed<UiPayload | null>((previous) =>
+    sharePayload(
+      previous,
+      savedUi.value ?? withDeferredTabs(props.ui, props.deferredTabs)
+    )
   );
-  const sidebarPayload = computed(() => props.sidebarUi);
+  const sidebarPayload = computed<UiPayload | null>((previous) =>
+    sharePayload(previous, props.sidebarUi)
+  );
   const form = useForm<ElementEditFormData>({});
-  let refreshGeneration = 0;
+  const uiRefreshes = createUiRefreshOrder();
   let nestedElementsReloadPending = false;
-
-  function invalidateUiRefreshes(): void {
-    refreshGeneration++;
-  }
 
   provideUiValueGroup();
 
@@ -442,6 +451,22 @@ export function useElementEditor({
     resetValues,
     values,
   } = useInertiaUiRenderer(form, uiPayload);
+
+  /**
+   * The field layout as the renderer shows it. The renderer's own refreshes
+   * replace nested UIs without `uiPayload` seeing them, so placeholders are
+   * filled from this, and it decides whether a request can ask for them.
+   */
+  function shownUi(): UiPayload | null {
+    return renderer.value?.payload?.() ?? uiPayload.value;
+  }
+
+  /** `ui`, with the placeholders a server sent filled in from the nested UIs shown. */
+  function withShownUis(ui: UiPayload): UiPayload {
+    const shown = shownUi();
+
+    return shown ? withReusedUis(shown, ui) : ui;
+  }
 
   const {
     advanceBaseline: advanceSidebarBaseline,
@@ -508,6 +533,7 @@ export function useElementEditor({
     isProvisional: props.isProvisionalDraft,
     enabled: () =>
       props.canAutosave && !props.readOnly && !releaseDraftLocked.value,
+    reuseUi: () => canReuseUis(shownUi()),
     transform: (data) =>
       requestValues(
         preparingOwnerGroups.size
@@ -626,15 +652,19 @@ export function useElementEditor({
         return;
       }
 
-      invalidateUiRefreshes();
+      // A refresh of a nested UI the save left as a placeholder still stands,
+      // as the save's answer doesn't show that UI any newer.
+      uiRefreshes.invalidate(form ? reusedScopes(form.nodes) : []);
       applyingSavedPayload = true;
 
       // The renderers measure the form against the values the save wrote, not
       // the ones the page loaded with — otherwise a value edited back to what
       // it was on load would look unchanged, and never be saved.
       if (form) {
-        savedUi.value = form;
-        rebase(form.values);
+        savedUi.value = withShownUis(form);
+        // The nested UIs the save left as placeholders keep their baselines.
+        // The payload's values for them can be unsaved ones a refresh rendered.
+        rebase(form.values, reusedScopes(form.nodes));
       }
 
       if (screen) {
@@ -673,7 +703,7 @@ export function useElementEditor({
         return;
       }
 
-      invalidateUiRefreshes();
+      uiRefreshes.invalidate();
       draftElementIds.clear();
       savedUi.value = null;
       savedScreen.value = null;
@@ -797,19 +827,25 @@ export function useElementEditor({
    * Re-renders the field layout from the server, keeping unsaved values.
    *
    * Resolves with the server's response once it's been applied, or nothing
-   * when a newer refresh superseded it.
+   * when a newer refresh superseded it. Pass `reuseUis: false` when nested UIs
+   * may have changed without their values changing, such as the cards of a
+   * nested element saved from its own editor.
    */
   async function refreshUi(
-    scope: string[] = uiPayload.value?.scope ?? []
+    scope: string[] = uiPayload.value?.scope ?? [],
+    {reuseUis = true}: {reuseUis?: boolean} = {}
   ): Promise<UiValues | undefined> {
-    const generation = ++refreshGeneration;
+    const superseded = uiRefreshes.start(scope);
     const rootScope = uiPayload.value?.scope ?? [];
-    const currentValues = renderer.value?.currentValues() ?? values.value;
+    // Posts only what differs from what the server holds, as autosave does, so
+    // the server can send placeholders for the nested UIs the refresh doesn't
+    // change.
+    const changedValues = renderer.value?.mutation() ?? values.value;
     const {data: response} = await actionClient.post(
       UpdateFieldLayoutController.url(),
       {
         ...saveData?.(),
-        ...currentValues,
+        ...changedValues,
         ...contextParams(),
         elementType: props.elementType,
         elementId: props.elementId,
@@ -821,11 +857,12 @@ export function useElementEditor({
         headers: {
           'X-Craft-Ui-Root-Scope': JSON.stringify(rootScope),
           'X-Craft-Ui-Scope': JSON.stringify(scope),
+          ...(reuseUis && canReuseUis(shownUi()) && {[UI_REUSE_HEADER]: '1'}),
         },
       }
     );
 
-    if (generation !== refreshGeneration) {
+    if (superseded()) {
       return;
     }
 
@@ -835,7 +872,7 @@ export function useElementEditor({
 
     await appendHeadHtml(response.headHtml);
 
-    if (generation !== refreshGeneration) {
+    if (superseded()) {
       return;
     }
 
@@ -848,12 +885,12 @@ export function useElementEditor({
       !form.processing
     ) {
       applyingSavedPayload = true;
-      savedUi.value = response.ui;
+      savedUi.value = withShownUis(response.ui);
       await nextTick();
       applyingSavedPayload = false;
     }
 
-    if (generation !== refreshGeneration) {
+    if (superseded()) {
       return;
     }
 
@@ -1029,7 +1066,7 @@ export function useElementEditor({
       // A submission supersedes any in-flight draft write, and what the last
       // one reported.
       onBeforeSave: () => {
-        invalidateUiRefreshes();
+        uiRefreshes.invalidate();
         autosave.cancel();
         autosave.resetStatus();
       },
@@ -1384,7 +1421,7 @@ export function useElementEditor({
       return refreshForChangesElsewhere();
     }
 
-    const response = await refreshUi();
+    const response = await refreshUi(undefined, {reuseUis: false});
 
     if (!changedElsewhere && response && 'updatedTimestamp' in response) {
       activity.rebase({
@@ -1406,7 +1443,7 @@ export function useElementEditor({
     refreshForElsewhere ??= new Promise((resolve) => setTimeout(resolve))
       .then(() => {
         refreshForElsewhere = null;
-        return refreshUi();
+        return refreshUi(undefined, {reuseUis: false});
       })
       .then(() => undefined);
 
@@ -1433,7 +1470,7 @@ export function useElementEditor({
       return;
     }
 
-    invalidateUiRefreshes();
+    uiRefreshes.invalidate();
 
     // Held for the whole discard, so a mutation emitted while the screen is
     // being torn back down can't schedule a save against the deleted draft.
@@ -1574,7 +1611,7 @@ export function useElementEditor({
     onBeforeUnmount(removeNavigationGuard);
   }
 
-  onBeforeUnmount(invalidateUiRefreshes);
+  onBeforeUnmount(() => uiRefreshes.invalidate());
   onBeforeUnmount(autosave.cancel);
 
   return {

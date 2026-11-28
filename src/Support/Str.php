@@ -309,7 +309,8 @@ class Str extends \Illuminate\Support\Str
         $parts = explode('@', $email, 2);
 
         foreach ($parts as &$part) {
-            if (($part = idn_to_utf8($part, IDNA_DEFAULT, $variant)) === false) {
+            // An address that's still being typed, like `name@`, has an empty part, which idn_to_utf8() rejects.
+            if ($part !== '' && ($part = idn_to_utf8($part, IDNA_DEFAULT, $variant)) === false) {
                 return $email;
             }
         }

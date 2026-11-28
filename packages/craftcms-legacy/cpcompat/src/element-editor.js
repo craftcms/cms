@@ -1479,7 +1479,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (params && !$.isEmptyObject(params)) {
         data.push($.param(params));
       }
-      await this.updateFieldLayout(data.join('&'));
+      // The draft changed elsewhere, so its blocks' UIs can't be reused.
+      await this.updateFieldLayout(data.join('&'), {reuseUis: false});
     },
 
     isPreviewActive: function () {
@@ -1575,7 +1576,12 @@ Craft.ElementEditor = Garnish.Base.extend(
           'elements/save-draft',
           {
             signal: this.abortController.signal,
-            headers: this._saveHeaders,
+            // Creating the draft gives its nested elements new owners, which
+            // every nested UI shows, so that request asks for all of them.
+            headers: {
+              ...this._saveHeaders,
+              ...(this.settings.draftId ? this._uiReuseHeaders : {}),
+            },
             data: params.join('&'),
           }
         );
@@ -1814,9 +1820,12 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {Object} data
+     * @param {Object} [options]
+     * @param {boolean} [options.reuseUis=true] Whether the server can send
+     *   placeholders for the nested UIs the request didn't change.
      * @returns {Promise}
      */
-    updateFieldLayout: async function (data) {
+    updateFieldLayout: async function (data, {reuseUis = true} = {}) {
       // Ignore if we're already submitting the main form
       if (this.submittingForm) {
         throw 'Form already being submitted.';
@@ -1852,7 +1861,10 @@ Craft.ElementEditor = Garnish.Base.extend(
           'elements/update-field-layout',
           {
             signal: this.abortController.signal,
-            headers: this._saveHeaders,
+            headers: {
+              ...this._saveHeaders,
+              ...(reuseUis ? this._uiReuseHeaders : {}),
+            },
             data: preparedData,
           }
         );
@@ -1942,6 +1954,14 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       return headers;
+    },
+
+    /**
+     * Asks the server for placeholders in place of the nested UIs a request
+     * didn't change, which the UI host fills in from the ones it shows.
+     */
+    get _uiReuseHeaders() {
+      return this.getUiHost()?.uiReuseHeaders ?? {};
     },
 
     getDraftElementId(elementId) {

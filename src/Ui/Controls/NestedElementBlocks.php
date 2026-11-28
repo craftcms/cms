@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\NestedUiPayload;
 use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
@@ -54,7 +55,7 @@ class NestedElementBlocks extends Control
     /** @var list<string>|null */
     private ?array $createEntryTypes = null;
 
-    /** @var array<string, Ui> */
+    /** @var array<string, Ui|null> */
     private array $uis = [];
 
     /** @var array<string, array{label?: string, icon?: array<string, string>|null, color?: string|null, actions: list<array<string, mixed>>, data?: array<string, int|string>, error?: bool}> */
@@ -140,12 +141,17 @@ class NestedElementBlocks extends Control
         return $this;
     }
 
-    /** @param array<string, Ui> $uis */
+    /**
+     * Each block's fields, keyed by identity. `null` stands for a block the request didn't change, whose fields the
+     * client keeps from the UI it already shows. Only pass it when {@see UiContext::$reuseUnchanged} is set.
+     *
+     * @param  array<string, Ui|null>  $uis
+     */
     public function uis(array $uis): static
     {
         foreach ($uis as $uid => $ui) {
-            if (! is_string($uid) || $uid === '' || ! $ui instanceof Ui) {
-                throw new InvalidArgumentException('Matrix UI definitions require non-empty string identities and Ui values.');
+            if (! is_string($uid) || $uid === '' || ($ui !== null && ! $ui instanceof Ui)) {
+                throw new InvalidArgumentException('Matrix UI definitions require non-empty string identities and Ui or null values.');
             }
         }
 
@@ -295,6 +301,7 @@ class NestedElementBlocks extends Control
                 'scope' => ['entries', $uid],
                 'ui' => $this->uis[$uid],
                 'refreshable' => true,
+                'reused' => $this->uis[$uid] === null,
             ];
         }
 
@@ -319,7 +326,7 @@ class NestedElementBlocks extends Control
                 throw new InvalidArgumentException('Matrix entries require ordered identities and registered types.');
             }
 
-            if (! isset($this->uis[$uid])) {
+            if (! array_key_exists($uid, $this->uis)) {
                 throw new InvalidArgumentException("Matrix entry [{$uid}] requires a nested Ui.");
             }
         }

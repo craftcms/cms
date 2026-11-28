@@ -16,7 +16,7 @@ import type {
   UiValue,
   UiValues,
 } from '../types';
-import {cloneRaw, isWithin} from './uiTree';
+import {cloneRaw, isWithin, withMissingValues} from './uiTree';
 
 /**
  * The values a UI holds, measured against the baseline the server last
@@ -37,9 +37,8 @@ export function useUiValues(initial: UiPayload) {
    * use these to mark changes not yet reported by the server.
    */
   const changedPaths = ref(new Set<string>());
-  const controlBehaviors = reactive(
-    new Map<string, {path: string[]; behavior: UiControlBehavior}>()
-  );
+  type ControlBehavior = {path: string[]; behavior: UiControlBehavior};
+  const controlBehaviors = reactive(new Map<string, ControlBehavior>());
 
   rememberControls(initial.nodes);
 
@@ -97,6 +96,14 @@ export function useUiValues(initial: UiPayload) {
     rememberControls(nodes);
   }
 
+  /**
+   * Adds the values `source` has at `scope` to the baseline, where the
+   * baseline has none, such as for a nested UI the client hadn't shown yet.
+   */
+  function adoptBaseline(scope: string[], source: UiValues): void {
+    baseline = withMissingValues(baseline, scope, valueAt(source, scope));
+  }
+
   /** Seeds the values again from `source`, as mounting it would have. */
   function reset(source: UiPayload): void {
     touchedPaths.clear();
@@ -112,9 +119,16 @@ export function useUiValues(initial: UiPayload) {
     rememberControls(source.nodes);
   }
 
-  /** Takes `source` as what the server now holds, and drops the changes it settles. */
-  function rebase(source: UiValues): void {
-    baseline = cloneRaw(source);
+  /**
+   * Takes `source` as what the server now holds, and drops the changes it
+   * settles. The scopes in `kept` are placeholders the save left alone, so they
+   * keep the values the baseline already holds for them.
+   */
+  function rebase(source: UiValues, kept: string[][] = []): void {
+    baseline = kept.reduce(
+      (next, scope) => withMissingValues(next, scope, valueAt(baseline, scope)),
+      cloneRaw(source)
+    );
     changedPaths.value = new Set(
       [...changedPaths.value].filter((path) => {
         const segments = path.split('.');
@@ -239,8 +253,10 @@ export function useUiValues(initial: UiPayload) {
       const current = groupValue(values, path, editablePaths);
       const original = groupValue(baseline, path, editablePaths);
 
+      const include = included.has(JSON.stringify(path));
+
       if (
-        included.has(JSON.stringify(path)) ||
+        include ||
         groupCanonical(current, path) !== groupCanonical(original, path)
       ) {
         if (path.length === 0 && isRecord(current)) {
@@ -249,11 +265,116 @@ export function useUiValues(initial: UiPayload) {
           continue;
         }
 
-        setPathValue(result, path, current);
+        // A group the caller asks for whole, such as the owner of a nested
+        // element about to be edited, has to reach the server whole.
+        setPathValue(
+          result,
+          path,
+          include ? current : blocksDelta(current, original, path)
+        );
       }
     }
 
     return result;
+  }
+
+  /**
+   * The parts of a blocks value that differ from `original`, in the delta
+   * format the server reads: the whole sort order, and only the blocks that
+   * changed, each with only its changed keys and fields. The server keeps the
+   * blocks left out as they are and doesn't save them again, so editing one
+   * block of a large field saves only that block.
+   *
+   * Other values come back whole.
+   *
+   * `behaviors` are the control behaviors within `path`. Each level hands
+   * every block field only its own, so a layout with many blocks and tables
+   * isn't searched in full for each field.
+   */
+  function blocksDelta(
+    current: UiValue,
+    original: UiValue,
+    path: string[],
+    behaviors: ControlBehavior[] = [...controlBehaviors.values()].filter(
+      (entry) => isWithin(entry.path, path)
+    )
+  ): UiValue {
+    if (
+      knownControls.get(JSON.stringify(path))?.component !==
+        'craft:nested-element-blocks' ||
+      !isRecord(current) ||
+      !isRecord(original) ||
+      !isRecord(current.entries) ||
+      !isRecord(original.entries)
+    ) {
+      return current;
+    }
+
+    const entries: UiValues = {};
+    // Keyed by the segments after `entries`: a block's ID, then the key or
+    // field handle within it.
+    const byBlock = groupBy(behaviors, path.length + 1);
+
+    for (const [id, entry] of Object.entries(current.entries)) {
+      const before = original.entries[id];
+      const blockBehaviors = byBlock.get(id) ?? [];
+      const byKey = groupBy(blockBehaviors, path.length + 2);
+      const byField = groupBy(byKey.get('fields') ?? [], path.length + 3);
+
+      // The server hasn't seen a new block, so it gets all of it.
+      if (!isRecord(entry) || !isRecord(before)) {
+        entries[id] = entry;
+
+        continue;
+      }
+
+      const changed: UiValues = {};
+
+      for (const [key, value] of Object.entries(entry)) {
+        if (key !== 'fields' || !isRecord(value) || !isRecord(before.fields)) {
+          if (
+            differs(
+              value,
+              before[key],
+              [...path, 'entries', id, key],
+              byKey.get(key) ?? []
+            )
+          ) {
+            changed[key] = value;
+          }
+
+          continue;
+        }
+
+        const fields: UiValues = {};
+
+        for (const [handle, fieldValue] of Object.entries(value)) {
+          const beforeValue = before.fields[handle];
+          const fieldPath = [...path, 'entries', id, 'fields', handle];
+
+          const fieldBehaviors = byField.get(handle) ?? [];
+
+          if (differs(fieldValue, beforeValue, fieldPath, fieldBehaviors)) {
+            fields[handle] = blocksDelta(
+              fieldValue,
+              beforeValue,
+              fieldPath,
+              fieldBehaviors
+            );
+          }
+        }
+
+        if (Object.keys(fields).length) {
+          changed.fields = fields;
+        }
+      }
+
+      if (Object.keys(changed).length) {
+        entries[id] = changed;
+      }
+    }
+
+    return {...current, entries};
   }
 
   /** Every delta group of `nodes`, whatever its mode. */
@@ -283,6 +404,57 @@ export function useUiValues(initial: UiPayload) {
     }
 
     return result;
+  }
+
+  /**
+   * Whether `value` differs from `before`, as {@link groupCanonical} would
+   * compare them, checking only `behaviors`, the ones within `path`. A change
+   * only a control's comparison value shows, such as reordered keyed table
+   * rows, counts.
+   */
+  function differs(
+    value: UiValue,
+    before: UiValue,
+    path: string[],
+    behaviors: ControlBehavior[]
+  ): boolean {
+    if (canonical(value) !== canonical(before)) {
+      return true;
+    }
+
+    return behaviors.some(({path: controlPath, behavior}) => {
+      if (!behavior.comparisonValue) {
+        return false;
+      }
+
+      const relative = controlPath.slice(path.length);
+
+      return (
+        canonical(behavior.comparisonValue(valueAt(value, relative))) !==
+        canonical(behavior.comparisonValue(valueAt(before, relative)))
+      );
+    });
+  }
+
+  /** `behaviors`, grouped by the segment of their paths at `index`. */
+  function groupBy(
+    behaviors: ControlBehavior[],
+    index: number
+  ): Map<string | undefined, ControlBehavior[]> {
+    const groups = new Map<string | undefined, ControlBehavior[]>();
+
+    for (const entry of behaviors) {
+      const key = entry.path[index];
+      const group = groups.get(key);
+
+      if (group) {
+        group.push(entry);
+      } else {
+        groups.set(key, [entry]);
+      }
+    }
+
+    return groups;
   }
 
   /** Serializes a scope's values the way change detection compares them. */
@@ -380,6 +552,7 @@ export function useUiValues(initial: UiPayload) {
     recordEdit,
     adopt,
     adoptDeferred,
+    adoptBaseline,
     reset,
     rebase,
     settle,

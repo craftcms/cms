@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Ui\Contracts;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 
 interface Control
@@ -131,7 +132,10 @@ interface Control
     /**
      * Returns UIs owned by this Control, scoped relative to its path.
      *
-     * @return list<array{scope: string|list<string>, ui: Ui, refreshable: bool}>
+     * When the UI context has {@see UiContext::$reuseUnchanged} set, a control can return a `null` UI marked `reused`
+     * for a nested UI the request didn't change. The client then keeps the one it shows.
+     *
+     * @return list<array{scope: string|list<string>, ui: Ui|null, refreshable: bool, reused?: bool}>
      */
     public function nestedUis(mixed $value = null): array;
 }

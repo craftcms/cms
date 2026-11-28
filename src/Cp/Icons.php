@@ -117,13 +117,21 @@ readonly class Icons
 
     public static function resolveIconFamily(string $icon): string
     {
+        // Every action menu item on every Matrix block resolves its icon's family, so cache it to check the files once
+        // per icon.
+        static $families = [];
+
+        if (isset($families[$icon])) {
+            return $families[$icon];
+        }
+
         foreach (['custom-icons', 'solid', 'brands', 'regular'] as $family) {
             if (is_file(CmsAssets::resourcesPath("icons/$family/$icon.svg"))) {
-                return $family;
+                return $families[$icon] = $family;
             }
         }
 
-        return 'solid';
+        return $families[$icon] = 'solid';
     }
 
     /** @return array{name: string, family: string} */

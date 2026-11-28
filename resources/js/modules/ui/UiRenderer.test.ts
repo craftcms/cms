@@ -41,6 +41,11 @@ import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/t
 import Cp from '@/bootstrap/cp';
 import UiRenderer from './UiRenderer.vue';
 import {registerUiComponents} from './register';
+import {valueAt} from './runtime';
+import {
+  nestedBlockHeading,
+  nestedBlocksPayload,
+} from './nested-blocks.test-support';
 import type {UiValueChangeDetail} from './ui-values';
 import type {UiValueSnapshot} from './valueAccess';
 import type {
@@ -881,6 +886,244 @@ describe('UiRenderer', () => {
     expect(matrix().getAttribute('status')).toBeNull();
   });
 
+  it('submits only the nested blocks that changed, at every level', async () => {
+    const onMutation = vi.fn();
+    const group = ['fields', 'outer'];
+    const text = (path: string[]): UiPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: path.at(-1) ?? ''},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+        component: 'craft:text',
+        props: {inputType: 'text'},
+        path,
+        mode: 'editable',
+        deltaGroup: group,
+      },
+    });
+    const blocks = (
+      path: string[],
+      uids: string[],
+      nodes: (scope: string[]) => UiPayload['nodes']
+    ): UiPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: path.at(-1) ?? ''},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
+        component: 'craft:nested-element-blocks',
+        props: {
+          entryTypes: [{value: 'block', label: 'Block'}],
+          addLabel: 'Add an entry',
+          minEntries: null,
+          maxEntries: null,
+        },
+        path,
+        mode: 'editable',
+        deltaGroup: group,
+        uis: uids.map((uid) => ({
+          scope: [...path, 'entries', uid],
+          refreshable: true,
+          nodes: nodes([...path, 'entries', uid]),
+        })),
+      },
+    });
+    const inner = (uids: string[]) => ({
+      entries: Object.fromEntries(
+        uids.map((uid) => [
+          uid,
+          {type: 'block', enabled: true, fields: {heading: `Heading ${uid}`}},
+        ])
+      ),
+      sortOrder: uids,
+    });
+
+    app.unmount();
+    await mount(
+      {
+        scope: [],
+        refreshable: false,
+        nodes: [
+          blocks(group, ['a', 'b'], (scope) => [
+            text([...scope, 'fields', 'heading']),
+            blocks([...scope, 'fields', 'inner'], ['x', 'y'], (innerScope) => [
+              text([...innerScope, 'fields', 'heading']),
+            ]),
+          ]),
+        ],
+        values: {
+          fields: {
+            outer: {
+              entries: {
+                a: {
+                  type: 'block',
+                  enabled: true,
+                  fields: {heading: 'Heading a', inner: inner(['x', 'y'])},
+                },
+                b: {
+                  type: 'block',
+                  enabled: true,
+                  fields: {heading: 'Heading b', inner: inner(['x', 'y'])},
+                },
+              },
+              sortOrder: ['a', 'b'],
+            },
+          },
+        },
+        errors: [],
+        globalErrors: [],
+      },
+      {onMutation}
+    );
+
+    const input = required(
+      container.querySelector<HTMLInputElement>(
+        'input[name="fields[outer][entries][b][fields][inner][entries][y][fields][heading]"]'
+      ),
+      'Expected the inner block’s heading input.'
+    );
+    input.value = 'Changed';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    // The server keeps the blocks left out and saves only the ones posted, so
+    // the renderer must post both sort orders but not block a or inner block x.
+    expect(onMutation).toHaveBeenLastCalledWith(
+      {
+        fields: {
+          outer: {
+            entries: {
+              b: {
+                fields: {
+                  inner: {
+                    entries: {y: {fields: {heading: 'Changed'}}},
+                    sortOrder: ['x', 'y'],
+                  },
+                },
+              },
+            },
+            sortOrder: ['a', 'b'],
+          },
+        },
+      },
+      'typing'
+    );
+  });
+
+  it.each([
+    ['a block field', ['fields', 'rows']],
+    ['a control outside the block’s fields', ['rows']],
+  ])(
+    'submits a block whose keyed table rows were reordered, in %s',
+    async (_, rowsPath) => {
+      const onMutation = vi.fn();
+      const blocks = nestedBlocksPayload({a: 'Heading a', b: 'Heading b'});
+      const tablePath = ['fields', 'blocks', 'entries', 'a', ...rowsPath];
+      const control = required(blocks.nodes[0]?.control, 'Expected blocks.');
+      control.uis![0]!.nodes = [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Rows'},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
+            component: 'craft:table',
+            props: {columns: {label: {type: 'singleline'}}, keyed: true},
+            path: tablePath,
+            mode: 'editable',
+            deltaGroup: ['fields', 'blocks'],
+          },
+        },
+      ];
+      Object.assign(valueAt(blocks.values, tablePath.slice(0, -1)) as object, {
+        rows: {first: {label: 'First'}, second: {label: 'Second'}},
+      });
+      app.unmount();
+      await mount(blocks, {onMutation});
+
+      renderer.setValue(tablePath, {
+        second: {label: 'Second'},
+        first: {label: 'First'},
+      });
+      await nextTick();
+
+      expect(
+        Object.keys(
+          onMutation.mock.lastCall?.[0]?.fields?.blocks?.entries ?? {}
+        )
+      ).toEqual(['a']);
+    }
+  );
+
+  it('asks for the whole UI when a new payload reuses nested UIs it shows another way', async () => {
+    const readOnly = (payload: UiPayload): UiPayload => {
+      visitControls(payload.nodes, (control) =>
+        Object.assign(control, {mode: 'readOnly'})
+      );
+
+      return payload;
+    };
+    const refresh = vi.fn(async (_values: UiValues, _scope?: string[]) =>
+      readOnly(nestedBlocksPayload({a: 'A', b: 'B'}))
+    );
+    app.unmount();
+    await mount(nestedBlocksPayload({a: 'A', b: 'B'}), {refresh});
+
+    // The field has just become read-only, so the blocks it shows are editable.
+    currentPayload.value = readOnly(
+      nestedBlocksPayload({a: 'A', b: 'B'}, ['a', 'b'])
+    );
+    const heading = (uid: string) =>
+      container.querySelector<HTMLInputElement>(
+        `#ui-fields-blocks-entries-${uid}-fields-heading input`
+      );
+    await vi.waitFor(() => expect(heading('b')?.readOnly).toBe(true));
+
+    expect(refresh.mock.calls.map(([, scope]) => scope)).toEqual([[]]);
+    expect(heading('a')?.readOnly).toBe(true);
+  });
+
+  it('asks for the whole UI when it mounts with reused nested UIs', async () => {
+    const refresh = vi.fn(async (_values: UiValues, _scope?: string[]) =>
+      nestedBlocksPayload({a: 'A'})
+    );
+    const onMutation = vi.fn();
+    app.unmount();
+    await mount(nestedBlocksPayload({a: 'A'}, ['a']), {refresh, onMutation});
+
+    await vi.waitFor(() =>
+      expect(nestedBlockHeading(container, 'a')?.value).toBe('A')
+    );
+    expect(refresh).toHaveBeenCalledOnce();
+    // The filled block's values are what the server holds, not an edit.
+    expect(onMutation.mock.lastCall?.[0]).toEqual({});
+  });
+
+  it('keeps the nested UIs a new payload sends as reused', async () => {
+    const path = ['fields', 'blocks'];
+
+    app.unmount();
+    await mount(nestedBlocksPayload({a: 'Heading a', b: 'Heading b'}));
+
+    // What a server returns once block b is saved, leaving block a out.
+    currentPayload.value = nestedBlocksPayload({a: 'Heading a', b: 'Saved b'}, [
+      'a',
+    ]);
+    await nextTick();
+
+    expect(nestedBlockHeading(container, 'a')?.value).toBe('Heading a');
+    expect(
+      valueAt(renderer.currentValues(), [
+        ...path,
+        'entries',
+        'a',
+        'fields',
+        'heading',
+      ])
+    ).toBe('Heading a');
+  });
+
   it('submits all scoped settings when one setting in a shared delta group changes', async () => {
     const onMutation = vi.fn();
     const settingsField = (name: string): UiPayload['nodes'][number] => ({
@@ -1263,6 +1506,49 @@ describe('UiRenderer', () => {
     expect(container.textContent).not.toContain('Failed to render');
     expect(container.querySelectorAll('tbody > tr')).toHaveLength(0);
     expect(renderer.currentValues()).toEqual({details: null});
+  });
+
+  it('renders table columns in the order a new payload gives them', async () => {
+    const table = (columns: string[]): UiPayload => ({
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
+            component: 'craft:table',
+            props: {
+              columns: Object.fromEntries(
+                columns.map((key) => [
+                  key,
+                  {type: 'singleline', heading: `Column ${key}`},
+                ])
+              ),
+            },
+            path: ['details'],
+            mode: 'editable',
+            deltaGroup: ['details'],
+          },
+        },
+      ],
+      values: {details: null},
+      errors: [],
+      globalErrors: [],
+    });
+    const headings = () =>
+      [...container.querySelectorAll('thead th')]
+        .map((th) => th.textContent?.trim())
+        .filter((text) => text?.startsWith('Column'));
+    app.unmount();
+    await mount(table(['a', 'b']));
+
+    currentPayload.value = table(['b', 'a']);
+    await nextTick();
+
+    expect(headings()).toEqual(['Column b', 'Column a']);
   });
 
   it('renders table cell errors beside scalar values', async () => {
@@ -3482,6 +3768,53 @@ describe('UiRenderer', () => {
     expect(probePayload.nodes[1]?.control?.props).toEqual({label: 'Original'});
   });
 
+  it('re-renders only the controls a new payload changes', async () => {
+    const renders: string[] = [];
+    const probe = defineComponent({
+      props: {
+        control: {type: Object, required: true},
+        value: {type: null, default: undefined},
+      },
+      setup(props) {
+        return () => {
+          renders.push(props.control.props.label);
+
+          return h('span', {'data-probe': ''}, props.control.props.label);
+        };
+      },
+    });
+    const probed = (labels: string[]): UiPayload => {
+      const probePayload = clonePayload();
+      labels.forEach((label, index) =>
+        Object.assign(
+          required(
+            probePayload.nodes[index]?.control,
+            'Expected a field control.'
+          ),
+          {component: 'test:probe', props: {label}}
+        )
+      );
+
+      return probePayload;
+    };
+    app.unmount();
+    await mount(probed(['First', 'Second']), {
+      components: {'test:probe': probe},
+    });
+    renders.length = 0;
+
+    // A fresh copy from the server, the way an autosave returns the layout.
+    currentPayload.value = probed(['First', 'Second, renamed']);
+    await nextTick();
+
+    expect(renders).toEqual(['Second, renamed']);
+    expect(
+      [...container.querySelectorAll('[data-probe]')].map(
+        (probe) => probe.textContent
+      )
+    ).toEqual(['First', 'Second, renamed']);
+  });
+
   it('drops unsaved values inside nested UI definitions when the host resets', async () => {
     let mutation: UiPayload['values'] = {};
     const nested = clonePayload();
@@ -3654,12 +3987,16 @@ describe('UiRenderer', () => {
 
     renderer.setValue(sibling, 'After');
     await nextTick();
-    expect(mutation).toMatchObject({
+    // The renderer posts only the block's changed values, and the server
+    // keeps the rest.
+    expect(mutation).toEqual({
       settings: {
-        matrix: {entries: {'block-a': {heading: 'After', note: null}}},
+        matrix: {
+          entries: {'block-a': {heading: 'After'}},
+          sortOrder: ['block-a'],
+        },
       },
     });
-    expect(JSON.stringify(mutation)).not.toContain('"cards"');
 
     renderer.setValue(manager, '*');
     await nextTick();
@@ -4854,14 +5191,7 @@ describe('UiRenderer', () => {
     expect(mutation).toEqual({
       settings: {
         matrix: {
-          entries: {
-            'block-a': {
-              type: 'text',
-              heading: 'Changed',
-              content: {body: 'Nested body'},
-            },
-            'block-b': {type: 'text', heading: 'Second'},
-          },
+          entries: {'block-a': {heading: 'Changed'}},
           sortOrder: ['block-a', 'block-b'],
         },
       },

@@ -255,7 +255,7 @@ abstract class Control implements ControlContract
     }
 
     /**
-     * @return list<array{scope: string|list<string>, ui: Ui, refreshable: bool}>
+     * @return list<array{scope: string|list<string>, ui: Ui|null, refreshable: bool, reused?: bool}>
      */
     public function nestedUis(mixed $value = null): array
     {

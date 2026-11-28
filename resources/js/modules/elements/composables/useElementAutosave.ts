@@ -2,6 +2,7 @@ import {actionClient, isHttpError} from '@craftcms/ui';
 import {useDebounceFn} from '@vueuse/core';
 import type {InertiaForm} from '@inertiajs/vue3';
 import {computed, readonly, ref, shallowRef} from 'vue';
+import {UI_REUSE_HEADER} from '@/modules/ui/renderer/uiTree';
 import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
 
 export type AutosaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
@@ -30,6 +31,13 @@ export interface ElementAutosaveOptions {
    * the server needs to resolve it through the owner it's being edited in.
    */
   params?: () => UiValues;
+  /**
+   * Whether the host shows the whole UI payload of the draft being saved. A
+   * save to an existing draft then asks the server for placeholders in place
+   * of the nested UIs it didn't change, which the host's renderer fills in
+   * from what it shows.
+   */
+  reuseUi?: () => boolean;
   /** Adapts the editor's form state into the save request. */
   transform?: (data: object) => UiValues;
   /** How long to wait after the last edit before saving, per change kind. */
@@ -152,8 +160,12 @@ export function useElementAutosave<T extends object>(
     }
 
     try {
+      // Creating the draft gives its nested elements new owners, which every
+      // nested UI shows, so that request asks for all of them.
+      const reuse = draftId.value !== null && options.reuseUi?.();
       const {data} = await dependencies.post(options.url, payload, {
         signal: request.controller.signal,
+        ...(reuse && {headers: {[UI_REUSE_HEADER]: '1'}}),
       });
 
       // Canceled with the response already on its way: whatever the host has

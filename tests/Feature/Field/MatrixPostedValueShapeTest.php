@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Elements as ElementsService;
+use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -13,11 +17,19 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -30,8 +42,11 @@ use function Pest\Laravel\actingAs;
  * @see ElementHelper::nestedElementDelta()
  */
 
-/** @return array{0: EntryElement, 1: EntryType} */
-function matrixShapeFixture(): array
+/**
+ * @param  array<string, mixed>  $settings
+ * @return array{0: EntryElement, 1: EntryType}
+ */
+function matrixShapeFixture(array $settings = []): array
 {
     $innerField = Field::factory()->create([
         'name' => 'Inner Text',
@@ -51,7 +66,7 @@ function matrixShapeFixture(): array
         'name' => 'Shape Matrix',
         'handle' => 'shapeMatrix',
         'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$blockType->id]],
+        'settings' => ['entryTypes' => [$blockType->id], ...$settings],
     ]);
 
     $entryModel = Entry::factory()
@@ -235,4 +250,220 @@ it('only marks the nested fields whose posted values changed as dirty', function
 
     expect($firstBlock->getDirtyFields())->toBe(['shapeInnerText'])
         ->and($secondBlock->getDirtyFields())->toBe([]);
+});
+
+it('saves only the blocks a delta posts, and keeps the rest', function () {
+    [$entry, $blockType] = matrixShapeFixture();
+    [$first, $second] = [Str::uuid()->toString(), Str::uuid()->toString()];
+
+    saveMatrixShape($entry, [
+        'entries' => [
+            "uid:$first" => ['type' => $blockType->handle, 'title' => 'First', 'fields' => ['shapeInnerText' => 'One']],
+            "uid:$second" => ['type' => $blockType->handle, 'title' => 'Second', 'fields' => ['shapeInnerText' => 'Two']],
+        ],
+        'sortOrder' => ["uid:$first", "uid:$second"],
+    ]);
+
+    $saved = [];
+    Event::listen(ElementSaved::class, function (ElementSaved $event) use (&$saved) {
+        $saved[] = $event->element->uid;
+    });
+
+    /** @var EntryElement $owner */
+    $owner = entryQuery()->id($entry->id)->one();
+    saveMatrixShape($owner, [
+        'entries' => ["uid:$second" => ['fields' => ['shapeInnerText' => 'Edited']]],
+        'sortOrder' => ["uid:$first", "uid:$second"],
+    ]);
+
+    /** @var EntryElement $reloaded */
+    $reloaded = entryQuery()->id($entry->id)->status(null)->one();
+    $blocks = array_values($reloaded->getFieldValue('shapeMatrix')->status(null)->all());
+
+    expect($saved)->toContain($second)->not->toContain($first)
+        ->and(array_map(fn (EntryElement $block): array => [$block->title, $block->getFieldValue('shapeInnerText')], $blocks))
+        ->toBe([['First', 'One'], ['Second', 'Edited']]);
+});
+
+it('validates and renders nested blocks without a query for each outer block', function () {
+    $text = Field::factory()->create(['handle' => 'perBlockText', 'type' => PlainText::class]);
+    $innerType = EntryType::factory()->withField($text)
+        ->create(['handle' => 'perBlockInnerType', 'hasTitleField' => true]);
+    $inner = Field::factory()->create([
+        'handle' => 'perBlockInner',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$innerType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+    ]);
+    $outerType = EntryType::factory()->withField($inner)
+        ->create(['handle' => 'perBlockOuterType', 'hasTitleField' => true]);
+    $outer = Field::factory()->create([
+        'handle' => 'perBlockOuter',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$outerType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+    ]);
+    $layout = FieldLayout::factory()->forField($outer)->create();
+
+    $queriesFor = function (int $outerCount) use ($layout, $outerType, $innerType): int {
+        $owner = entryQuery()->id(Entry::factory()->withFieldLayout($layout)->create()->id)->one();
+        $outerBlocks = [];
+
+        for ($o = 0; $o < $outerCount; $o++) {
+            $innerBlocks = [];
+
+            for ($i = 0; $i < 2; $i++) {
+                $innerBlocks['uid:'.Str::uuid()->toString()] = [
+                    'type' => $innerType->handle,
+                    'title' => "Inner $o.$i",
+                    'fields' => ['perBlockText' => "Text $o.$i"],
+                ];
+            }
+
+            $outerBlocks['uid:'.Str::uuid()->toString()] = [
+                'type' => $outerType->handle,
+                'title' => "Outer $o",
+                'fields' => ['perBlockInner' => ['entries' => $innerBlocks, 'sortOrder' => array_keys($innerBlocks)]],
+            ];
+        }
+
+        $owner->setFieldValueFromRequest('perBlockOuter', ['entries' => $outerBlocks, 'sortOrder' => array_keys($outerBlocks)]);
+        expect(Elements::saveElement($owner))->toBeTrue();
+
+        $owner = entryQuery()->id($owner->id)->one();
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        expect($owner->validate())->toBeTrue();
+        $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
+
+        DB::disableQueryLog();
+
+        expect(Json::encode($ui))->toContain('Text '.($outerCount - 1).'.1');
+
+        return count(DB::getQueryLog());
+    };
+
+    // Warms up what every request loads once, so only per-block queries can differ.
+    $queriesFor(1);
+
+    expect($queriesFor(4))->toBe($queriesFor(2));
+});
+
+it('checks only the blocks a draft save writes', function () {
+    [$entry, $blockType] = matrixShapeFixture();
+    [$first, $second] = [Str::uuid()->toString(), Str::uuid()->toString()];
+
+    saveMatrixShape($entry, [
+        'entries' => [
+            "uid:$first" => ['type' => $blockType->handle, 'title' => 'Stale'],
+            "uid:$second" => ['type' => $blockType->handle, 'title' => 'Second'],
+        ],
+        'sortOrder' => ["uid:$first", "uid:$second"],
+    ]);
+
+    $draftId = app(Drafts::class)->createDraft(entryQuery()->id($entry->id)->one(), auth()->id(), provisional: true)->draftId;
+
+    // A rule added once the blocks are saved, which the first one now breaks.
+    Event::listen(function (ValidationRulesResolving $event) {
+        if ($event->subject instanceof EntryElement && $event->subject->ownerId !== null) {
+            $event->addRule('title', 'not_in:Stale,Rejected');
+        }
+    });
+    expect(entryQuery()->uid($first)->status(null)->one()->validate())->toBeFalse();
+
+    $saveDraft = function (?string $secondTitle) use ($draftId, $first, $second): bool {
+        /** @var EntryElement $draft */
+        $draft = entryQuery()->draftId($draftId)->provisionalDrafts()->status(null)->one();
+
+        if ($secondTitle === null) {
+            $draft->setDirtyFields(['shapeMatrix']);
+        } else {
+            $draft->setFieldValueFromRequest('shapeMatrix', [
+                'entries' => ["uid:$second" => ['title' => $secondTitle]],
+                'sortOrder' => ["uid:$first", "uid:$second"],
+            ]);
+        }
+
+        $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+
+        return Elements::saveElement($draft);
+    };
+
+    expect($saveDraft('Second, edited'))->toBeTrue()
+        ->and($saveDraft('Rejected'))->toBeFalse()
+        // Without posted blocks, the save writes every block.
+        ->and($saveDraft(null))->toBeFalse();
+});
+
+it('renders the blocks a Matrix field shows once its entries are validated', function () {
+    [$entry, $blockType] = matrixShapeFixture(['viewMode' => Matrix::VIEW_MODE_BLOCKS]);
+    $uid = Str::uuid()->toString();
+
+    saveMatrixShape($entry, [
+        'entries' => ["uid:$uid" => ['type' => $blockType->handle, 'title' => 'Block']],
+        'sortOrder' => ["uid:$uid"],
+    ]);
+
+    // A saved draft of the block, which validation checks but the block UI doesn't show.
+    app(Drafts::class)->createDraft(entryQuery()->uid($uid)->status(null)->one(), auth()->id(), 'Block draft');
+
+    // Fetched with another entry, since nested entries are only eager-loaded for more than one owner.
+    $owner = collect(entryQuery()->id([$entry->id, Entry::factory()->create()->id])->all())->firstWhere('id', $entry->id);
+    $owner->validate();
+    $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
+
+    expect($ui->values['fields']['shapeMatrix']['sortOrder'])->toBe([$uid]);
+});
+
+it('renders the blocks of each Matrix field that shares a handle with another', function () {
+    [$first, $blockType] = matrixShapeFixture(['viewMode' => Matrix::VIEW_MODE_BLOCKS]);
+    $other = Field::factory()->create([
+        'handle' => 'otherShapeMatrix',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+    ]);
+    $layout = FieldLayout::factory()
+        ->withContentTab([new CustomField(config: ['fieldUid' => $other->uid, 'handle' => 'shapeMatrix'])])
+        ->create();
+    $second = entryQuery()->id(Entry::factory()->withFieldLayout($layout)->create()->id)->one();
+    $uids = [];
+
+    foreach ([$first, $second] as $owner) {
+        $uids[$owner->id] = Str::uuid()->toString();
+        saveMatrixShape($owner, [
+            'entries' => ["uid:{$uids[$owner->id]}" => ['type' => $blockType->handle, 'title' => 'Block']],
+            'sortOrder' => ["uid:{$uids[$owner->id]}"],
+        ]);
+    }
+
+    foreach (entryQuery()->id(array_keys($uids))->all() as $owner) {
+        $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
+
+        expect($ui->values['fields']['shapeMatrix']['sortOrder'])->toBe([$uids[$owner->id]]);
+    }
+});
+
+it('renders each site’s own blocks for owners fetched across sites', function () {
+    [$entry, $blockType] = matrixShapeFixture(['viewMode' => Matrix::VIEW_MODE_BLOCKS, 'propagationMethod' => 'none']);
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create(['sectionId' => $entry->sectionId, 'siteId' => $secondSite->id, 'hasUrls' => true]);
+    Sections::refreshSections();
+    app(ElementsService::class)->propagateElement($entry, $secondSite->id);
+
+    foreach ([$entry->siteId, $secondSite->id] as $siteId) {
+        $uid = 'uid:'.Str::uuid()->toString();
+        saveMatrixShape(entryQuery()->id($entry->id)->siteId($siteId)->status(null)->one(), [
+            'entries' => [$uid => ['type' => $blockType->handle, 'title' => "Block for site $siteId"]],
+            'sortOrder' => [$uid],
+        ]);
+    }
+
+    $owners = entryQuery()->id($entry->id)->site('*')->status(null)->all();
+    expect($owners)->toHaveCount(2);
+
+    foreach ($owners as $owner) {
+        $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
+
+        expect(Json::encode($ui))->toContain("Block for site $owner->siteId");
+    }
 });

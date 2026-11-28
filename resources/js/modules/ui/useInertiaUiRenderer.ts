@@ -6,8 +6,10 @@ import {pathsMatch, visitControls} from './runtime';
 import {cloneRaw} from './renderer/uiTree';
 
 export interface UiRendererInstance {
+  /** The payload as the form shows it, with its own refreshes applied. */
+  payload?(): UiPayload;
   advanceBaseline(): void;
-  rebase?(values: UiPayload['values']): void;
+  rebase?(values: UiPayload['values'], kept?: string[][]): void;
   setSubmitting?(submitting: boolean): void;
   currentValues(): UiPayload['values'];
   mutation(includeGroups?: string[][]): UiPayload['values'];
@@ -150,8 +152,8 @@ export function useInertiaUiRenderer<
    * form holds only what differs from them. The renderer reports the new
    * mutation itself.
    */
-  function rebase(savedValues: UiPayload['values']): void {
-    renderer.value?.rebase?.(savedValues);
+  function rebase(savedValues: UiPayload['values'], kept?: string[][]): void {
+    renderer.value?.rebase?.(savedValues, kept);
   }
 
   /**

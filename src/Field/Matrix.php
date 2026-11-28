@@ -632,15 +632,23 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 'collapsed' => $entry->collapsed,
             ];
             $blocks[$uid] = $this->blockPresentation($entry, $uid, $creationTypes);
-            $uis[$uid] = app(FieldLayoutCompiler::class)->ui(
-                $entry->getFieldLayout(),
-                $entry,
-                new UiContext(
-                    namespace: [...$context->resolvedPath(), 'entries', $uid],
-                    mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
-                    preview: $context->ui->preview,
-                ),
-            );
+            $scope = [...$context->resolvedPath(), 'entries', $uid];
+            // The client already shows the fields of a saved block this request didn't post, so it gets a placeholder,
+            // unless the scope the request asked for is that block or inside it.
+            $uis[$uid] = $context->ui->reuseUnchanged &&
+                $entry->id &&
+                ! $entry->forceSave &&
+                $entry->errors()->isEmpty() &&
+                array_slice($context->ui->requiredScope, 0, count($scope)) !== $scope
+                ? null
+                : app(FieldLayoutCompiler::class)->ui(
+                    $entry->getFieldLayout(),
+                    $entry,
+                    $context->ui->nested(
+                        $scope,
+                        $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
+                    ),
+                );
             $sortOrder[] = $uid;
         }
 
@@ -724,6 +732,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ->canonicalsOnly()
                     ->status(null)
                     ->limit(null)
+                    // Its own alias, since validation eager-loads this field with other criteria, other fields can
+                    // share its handle, and owners from other sites load their own entries.
+                    ->eagerly($this->eagerLoadAlias('matrix-ui', $value))
                     ->all(),
             default => [],
         });
@@ -1647,19 +1658,38 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $value->count() === 0;
     }
 
+    /** @param EntryQuery<Entry> $query */
+    private function eagerLoadAlias(string $purpose, EntryQuery $query): string
+    {
+        return sprintf('%s:%s:%s:%s', $purpose, $this->id, $this->handle, implode(',', (array) $query->siteId));
+    }
+
     /** @param EntryQuery<Entry>|ElementCollection<int,Entry> $value */
     private function validateEntries(ElementInterface $element, string $attribute, EntryQuery|ElementCollection $value, Closure $fail): void
     {
         $new = 0;
 
         if ($value instanceof EntryQuery) {
+            $override = $value->getResultOverride();
             /** @var Entry[] $entries */
-            $entries = $value->getResultOverride() ?? (clone $value)
+            $entries = $override ?? (clone $value)
                 ->drafts(null)
                 ->savedDraftsOnly()
                 ->status(null)
                 ->limit(null)
+                ->eagerly($this->eagerLoadAlias('matrix-validation', $value))
                 ->all();
+
+            // A draft only checks the entries this save writes, as `NestedElementManager::saveNestedElements()` decides
+            // them. The rest haven't changed since they were saved.
+            if (
+                $override !== null &&
+                empty($element->newSiteIds) &&
+                $element->ruleset->getScenario() === ElementRules::SCENARIO_ESSENTIALS &&
+                ElementHelper::isDraft($element)
+            ) {
+                $entries = array_values(array_filter($entries, fn (Entry $entry) => ! $entry->id || $entry->forceSave));
+            }
 
             $invalidEntryIds = [];
             $scenario = $element->ruleset->getScenario();
@@ -1685,7 +1715,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
             if (! empty($invalidEntryIds)) {
                 // Just in case the entries weren't already cached
-                $value->setResultOverride($entries);
+                $value->setResultOverride($value->getResultOverride() ?? $entries);
                 $element->addInvalidNestedElementIds($invalidEntryIds);
 
                 if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
@@ -2121,6 +2151,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 $entry->setPrimaryOwner($element);
                 $entry->setOwner($element);
                 $entry->siteId = $element->siteId;
+                // Keeps the entry flagged once the save gives it an ID, so `uiControl()` builds its UI for the response.
+                $entry->forceSave = true;
 
                 // Use the provided UUID, so the block can persist across future autosaves
                 if ($uids) {

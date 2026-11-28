@@ -45,6 +45,10 @@
     disabledNodes,
     isWithin,
     readOnlyNodes,
+    reusedScopes,
+    shareEqual,
+    sharePayload,
+    withReusedUis,
     withControl,
     withNestedUi,
     withUis,
@@ -87,12 +91,16 @@
   }>();
   const slots = useSlots();
   const payload = shallowRef(props.payload);
-  const nodes = computed(() =>
-    props.disabled
-      ? disabledNodes(payload.value.nodes)
-      : props.readOnly
-        ? readOnlyNodes(payload.value.nodes)
-        : payload.value.nodes
+  const nodes = computed<UiNodePayload[]>((previous) =>
+    props.disabled || props.readOnly
+      ? // Copied for each payload, so only sharing keeps what didn't change.
+        shareEqual(
+          previous,
+          props.disabled
+            ? disabledNodes(payload.value.nodes)
+            : readOnlyNodes(payload.value.nodes)
+        )
+      : payload.value.nodes
   );
   /** Whether the form takes no changes for now. */
   const locked = computed(() => Boolean(props.disabled || props.readOnly));
@@ -219,6 +227,9 @@
       getValue: (path) => cloneRaw(valueAt(currentValues(), [...path])),
     };
     unregisterUiValueSource = registerUiValueSource(uiValueSource);
+    // A host can hand over placeholders nothing could fill, such as ones it
+    // received while it was detached.
+    fillReused();
   });
   onBeforeUnmount(() => {
     unregisterValueSource?.();
@@ -287,9 +298,14 @@
   }
 
   function reconcile(
-    refreshed: UiPayload,
+    received: UiPayload,
     scope: string[] = payload.value.scope
   ): void {
+    // Fills in placeholders before anything reads the payload, so adopting it
+    // keeps the values the server left out with them.
+    const refreshed = withReusedUis(payload.value, received);
+    const unfilled = reusedScopes(payload.value.nodes);
+
     if (!pathsMatch(refreshed.scope, scope)) {
       throw new Error(
         `Refreshed UI scope [${refreshed.scope.join('.')}] does not match [${scope.join('.')}].`
@@ -304,6 +320,12 @@
 
     const filled = filledTabs(payload.value.nodes, refreshed.nodes);
     valueState.adoptDeferred(filled, refreshed.values);
+    // A placeholder's values are what the server holds, like a deferred tab's.
+    for (const reused of unfilled) {
+      if (isWithin(reused, scope)) {
+        valueState.adoptBaseline(reused, refreshed.values);
+      }
+    }
     valueState.adopt(refreshed);
 
     // Settled before the mutation below, which would otherwise report the
@@ -317,9 +339,10 @@
       );
     }
 
-    payload.value = pathsMatch(scope, payload.value.scope)
+    const next = pathsMatch(scope, payload.value.scope)
       ? refreshed
       : withNestedUi(payload.value, scope, refreshed);
+    payload.value = sharePayload(payload.value, next);
 
     if (
       deferredSettlement &&
@@ -331,9 +354,21 @@
     emit('update:payload', payload.value);
     emitMutation();
     resetObservedValues(payload.value.nodes);
+    fillReused();
 
     if (restoreFocus) {
       nextTick(restoreFocus);
+    }
+  }
+
+  /**
+   * Asks for the whole UI again when it has placeholders this form couldn't
+   * fill. The host sends that request without asking for placeholders, as the
+   * payload it's for doesn't pass `canReuseUis()`.
+   */
+  function fillReused(): void {
+    if (reusedScopes(payload.value.nodes).length) {
+      refresher.fill(payload.value.scope);
     }
   }
 
@@ -436,8 +471,8 @@
    * it was before that save then still differs from the baseline and goes out
    * with the next one, and edits made while it was in flight stay unsaved.
    */
-  function rebase(source: UiPayload['values']): void {
-    valueState.rebase(source);
+  function rebase(source: UiPayload['values'], kept?: string[][]): void {
+    valueState.rebase(source, kept);
     emitMutation();
   }
 
@@ -606,6 +641,8 @@
   }
 
   defineExpose({
+    /** The payload as the form shows it, with its own refreshes applied. */
+    payload: () => payload.value,
     advanceBaseline,
     rebase,
     setSubmitting,

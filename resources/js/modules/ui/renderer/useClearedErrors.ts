@@ -1,6 +1,6 @@
 import {computed, reactive} from 'vue';
 import type {UiPayload} from '../types';
-import {isWithin} from './uiTree';
+import {isWithin, shareEqual} from './uiTree';
 
 /**
  * Errors a control has dismissed for everything inside it — a table whose
@@ -9,13 +9,18 @@ import {isWithin} from './uiTree';
  */
 export function useClearedErrors(errors: () => UiPayload['errors']) {
   const clearedScopes = reactive(new Map<string, string[]>());
-  const effectiveErrors = computed(() =>
-    errors().filter(
-      (error) =>
-        ![...clearedScopes.values()].some(
-          (scope) =>
-            error.path.length > scope.length && isWithin(error.path, scope)
-        )
+  const effectiveErrors = computed<UiPayload['errors']>((previous) =>
+    // The renderer passes these to every field, so the same errors keep the
+    // same array.
+    shareEqual(
+      previous,
+      errors().filter(
+        (error) =>
+          ![...clearedScopes.values()].some(
+            (scope) =>
+              error.path.length > scope.length && isWithin(error.path, scope)
+          )
+      )
     )
   );
 
