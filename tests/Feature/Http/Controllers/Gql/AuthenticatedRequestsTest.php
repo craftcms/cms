@@ -22,14 +22,18 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
+use Firebase\JWT\JWK;
+use Firebase\JWT\JWT;
 use Illuminate\Contracts\Auth\Factory;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 
 use function CraftCms\Cms\action_url;
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function (): void {
@@ -231,10 +235,26 @@ it('lets OAuth clients discover the API’s OAuth endpoints', function (bool $he
     $this->postJson($metadata['token_endpoint'])->assertStatus(400);
     $this->postJson($metadata['registration_endpoint'])->assertStatus(400);
     $this->get($metadata['authorization_endpoint'])->assertStatus(400);
+    $this->getJson($metadata['jwks_uri'])->assertOk();
 })->with([
     'in headless mode' => [true, false],
     'from its control panel action URL' => [false, true],
 ]);
+
+it('gives tokens created in the control panel the issuer that discovery advertises', function (): void {
+    actingAs(UserModel::query()->firstOrFail());
+    Session::passwordConfirmed();
+
+    $token = $this->postJson(cp_url('actions/users/create-token'), [
+        'name' => 'Build script',
+        'scopes' => ['graphql:read'],
+        'expiresIn' => 7,
+    ])->assertOk()->json('token');
+    $metadata = $this->getJson('/.well-known/oauth-authorization-server/actions/graphql')->assertOk()->json();
+    $keys = JWK::parseKeySet($this->getJson($metadata['jwks_uri'])->assertOk()->json());
+
+    expect(JWT::decode($token, $keys)->iss)->toBe($metadata['issuer']);
+});
 
 it('pairs X-Craft-Gql-Token headers with the user’s access token or session', function (): void {
     Cms::config()->enableGraphqlCaching = true;

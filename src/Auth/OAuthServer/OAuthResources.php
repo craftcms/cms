@@ -76,6 +76,24 @@ class OAuthResources
         return isset($this->factories[$handle]) ? ($this->factories[$handle])() : null;
     }
 
+    /**
+     * The first resource that owns one of the scopes.
+     *
+     * @param  list<string>  $scopes
+     */
+    public function forScopes(array $scopes): ?OAuthResource
+    {
+        foreach (array_keys($this->factories) as $handle) {
+            $resource = $this->get($handle);
+
+            if ($resource && array_any($scopes, $resource->owns(...))) {
+                return $resource;
+            }
+        }
+
+        return null;
+    }
+
     /** The resource whose OAuth routes are handling the request. */
     public function forRequest(Request $request): ?OAuthResource
     {

@@ -120,6 +120,8 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Added `CraftCms\Cms\Ui\Controls\Text::showCharsLeft()` and `CraftCms\Cms\Ui\Controls\Textarea::showCharsLeft()`. ([#21066](https://github.com/craftcms/cms/issues/21066), [#21076](https://github.com/craftcms/cms/pull/21076))
 - Added the `show-chars-left` attribute to `craft-input` and `craft-textarea`. ([#21066](https://github.com/craftcms/cms/issues/21066), [#21076](https://github.com/craftcms/cms/pull/21076))
 - Added `CraftCms\Cms\Element\Eloquent\EloquentElement::gqlScope()` and `gqlTypeName()`. ([#21014](https://github.com/craftcms/cms/pull/21014))
+- Added `/.well-known/jwks.json`, a JSON Web Key Set for verifying OAuth access tokens. ([#21026](https://github.com/craftcms/cms/pull/21026))
+- Added `kid` headers and `iss` claims to OAuth access tokens. ([#21026](https://github.com/craftcms/cms/pull/21026))
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `CraftCms\Cms\ProjectConfig\ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Added `CraftCms\Cms\Asset\Events\AssetFileChanged`, `CraftCms\Cms\Image\Events\DeletingTransformedImage::$disk`, `$url`, and `urls()`, and `CraftCms\Cms\Image\ImageTransformer::getTransformFolderUrl()`. ([#21048](https://github.com/craftcms/cms/pull/21048))
 - Added `CraftCms\Cms\Asset\Events\FolderRenamed::$oldPath`, `$oldSubfolderPaths`, and `prefixes()`, and `CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated::$oldUri` and `urls()`. ([#21048](https://github.com/craftcms/cms/pull/21048))
@@ -129,6 +131,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Added `CraftCms\Cms\Route\Routes::getAllProjectConfigRoutes()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Cp\Components\Input::prefix()` and `CraftCms\Cms\Ui\Controls\Text::prefix()`. ([#21063](https://github.com/craftcms/cms/pull/21063))
 - Asset selector modals’ index adapters now have `refresh()` and `selectElements()` methods. ([#21036](https://github.com/craftcms/cms/issues/21036))
+- Added `CraftCms\Cms\Auth\OAuthServer\AccessToken`, `CraftCms\Cms\Auth\OAuthServer\JsonWebKeys`, and `CraftCms\Cms\Auth\OAuthServer\OAuthResources::forScopes()`. ([#21026](https://github.com/craftcms/cms/pull/21026))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where elements selected in Link fields weren’t shown as chips, and couldn’t be edited, copied, replaced, or removed from an action menu. ([#21025](https://github.com/craftcms/cms/pull/21025))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.

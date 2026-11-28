@@ -196,6 +196,8 @@
 
 #### MCP
 - Dynamic OAuth client registration is now rate limited by the `oauth-registration` rate limiter, rather than the `registrationRateLimit` and `registrationRateLimitDuration` OAuth config settings. ([#20303](https://github.com/craftcms/cms/pull/20303))
+- Added `/.well-known/jwks.json`, a JSON Web Key Set for verifying OAuth access tokens. ([#21026](https://github.com/craftcms/cms/pull/21026))
+- Added `kid` headers and `iss` claims to OAuth access tokens. ([#21026](https://github.com/craftcms/cms/pull/21026))
 - Added the `guidance_get`, `skills_list`, and `skills_get` MCP tools, which return the AI guidance and skills. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added the `guidance_update`, `skills_create`, `skills_update`, and `skills_delete` MCP tools, which save the AI guidance for the sites the user can edit and manage skills, for users who can use the AI Guidance & Skills utility. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added the `guidance_update_personal` MCP tool, which saves the user’s own AI guidance. ([#20109](https://github.com/craftcms/cms/pull/20109))

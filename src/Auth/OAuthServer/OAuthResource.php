@@ -185,6 +185,7 @@ readonly class OAuthResource
             'issuer' => $this->issuer(),
             'authorization_endpoint' => $this->routeUrl('authorize'),
             'token_endpoint' => $this->url(route('passport.token', absolute: false)),
+            'jwks_uri' => $this->url(route('craft.oauth.jwks', absolute: false)),
             'registration_endpoint' => $this->routeUrl('register'),
             'token_endpoint_auth_methods_supported' => ['none', 'client_secret_basic', 'client_secret_post'],
             'response_types_supported' => ['code'],
