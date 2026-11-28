@@ -12,6 +12,8 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+use function CraftCms\Cms\renderString;
+
 it('installs Craft and the plugin with its install migration', function () {
     expect(Cms::isInstalled())->toBeTrue()
         ->and(app(Plugins::class)->getPlugin('bootstrap-plugin'))->toBeInstanceOf(Plugin::class)
@@ -41,4 +43,8 @@ it('saves and queries elements', function () {
 
     expect(app(Elements::class)->saveElement($user))->toBeTrue()
         ->and(User::find()->id($user->id)->one()?->email)->toBe('plugin-tester@example.com');
+});
+
+it('exposes Craft facades as Twig globals', function () {
+    expect(renderString('{{ Sites.getPrimarySite().handle }}'))->toBe(app(Sites::class)->getPrimarySite()->handle);
 });
