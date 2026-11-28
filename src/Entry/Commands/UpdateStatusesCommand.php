@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\Commands\UpdateElementStatusesCommand;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementResaving;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
 use DateTimeInterface;
@@ -20,7 +22,12 @@ use Override;
 use Throwable;
 
 /**
+ * Re-saves entries whose stored statuses no longer match their dates, for the deprecated `staticStatuses` config
+ * setting.
+ *
  * @since 6.0.0
+ * @deprecated in 6.0.0. Turn off `staticStatuses` and run Laravel’s scheduler, which runs
+ *             {@see UpdateElementStatusesCommand} every minute.
  */
 final class UpdateStatusesCommand extends Command implements Isolatable
 {
@@ -30,7 +37,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
     protected $signature = 'craft:update-statuses';
 
     #[Override]
-    protected $description = 'Updates statically-stored entry statuses.';
+    protected $description = 'Updates statically-stored entry statuses. Deprecated along with the `staticStatuses` config setting.';
 
     #[Override]
     protected $aliases = ['update-statuses', 'update-statuses:index', 'update-statuses/index'];
@@ -40,6 +47,8 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
     public function handle(): int
     {
+        Deprecator::log('craft:update-statuses', 'The `craft:update-statuses` command and the `staticStatuses` config setting are deprecated. Turn `staticStatuses` off and run Laravel’s scheduler. Entry queries will get statuses from post and expiry dates, and Craft will clear caches and dispatch `ElementStatusChanged` when those dates pass.');
+
         $now = Query::prepareDateForDb(now());
 
         foreach ($this->conditions($now) as $status => $condition) {

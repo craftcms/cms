@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Activity\ElementWriteActivity;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
 use CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand;
@@ -17,8 +18,11 @@ use CraftCms\Cms\Element\Commands\Resave\ResaveEntriesCommand;
 use CraftCms\Cms\Element\Commands\Resave\ResaveUsersCommand;
 use CraftCms\Cms\Element\Commands\RestoreCommand;
 use CraftCms\Cms\Element\Commands\SyncEloquentElementsCommand;
+use CraftCms\Cms\Element\Commands\UpdateElementStatusesCommand;
 use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Element\Listeners\BroadcastElementChanges;
+use CraftCms\Cms\Support\Facades\Updates;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Jobs\SyncJob;
@@ -43,6 +47,7 @@ class ElementServiceProvider extends ServiceProvider
         Event::subscribe(DraftActivity::class);
         Event::subscribe(ElementWriteActivity::class);
         Event::subscribe(BroadcastElementChanges::class);
+        Event::subscribe(ElementStatuses::class);
         Event::listen(BulkOpCompleted::class, fn (BulkOpCompleted $event) => app(BulkOpDeferrals::class)->replay($event->key));
 
         // Resolved while the app boots, so every Octane sandbox shares this instance and its pending tags, rather than
@@ -62,6 +67,23 @@ class ElementServiceProvider extends ServiceProvider
             }
         });
 
+        // Runs the same code as the craft:update-element-statuses command, in the scheduler’s process
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $schedule
+                ->call(fn (): int => app(ElementStatuses::class)->updateScheduled())
+                ->when(function (): bool {
+                    // Until the migration updates stored statuses, every outdated one would look like a new change
+                    if (! Cms::isInstalled() || Updates::isCraftUpdatePending()) {
+                        return false;
+                    }
+
+                    return Cms::config()->scheduleElementStatusUpdates;
+                })
+                ->name('craft:update-element-statuses')
+                ->everyMinute()
+                ->withoutOverlapping();
+        });
+
         if (! $this->app->runningInConsole()) {
             return;
         }
@@ -71,6 +93,7 @@ class ElementServiceProvider extends ServiceProvider
             DeleteAllOfTypeCommand::class,
             RestoreCommand::class,
             SyncEloquentElementsCommand::class,
+            UpdateElementStatusesCommand::class,
             ResaveAllCommand::class,
             ResaveEntriesCommand::class,
             ResaveAssetsCommand::class,

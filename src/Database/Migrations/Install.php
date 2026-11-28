@@ -1148,6 +1148,8 @@ class Install extends Migration
         Schema::createIndex(Table::ENTRIES, ['postDate']);
         Schema::createIndex(Table::ENTRIES, ['expiryDate']);
         Schema::createIndex(Table::ENTRIES, ['status']);
+        Schema::createIndex(Table::ENTRIES, ['status', 'postDate']);
+        Schema::createIndex(Table::ENTRIES, ['status', 'expiryDate']);
         Schema::createIndex(Table::ENTRIES, ['sectionId', 'postDate']);
         Schema::createIndex(Table::ENTRIES, ['typeId']);
         Schema::createIndex(Table::ENTRIES_AUTHORS, ['authorId']);

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Config;
 
 use Closure;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Element\Events\ElementStatusChanged;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
@@ -2029,6 +2030,24 @@ class GeneralConfig extends BaseConfig
     public bool $sanitizeSvgUploads = true;
 
     /**
+     * @var bool Whether Laravel’s scheduler should run the `craft:update-element-statuses` command every minute.
+     *
+     * When an entry’s post date or expiry date passes, the command updates its stored status, clears its caches and
+     * dispatches {@see ElementStatusChanged}. Entry queries don’t depend on it, so entries still go live and expire on
+     * time without it. Turn this off to avoid running it every minute, such as on usage-billed hosting, and schedule or
+     * run the command yourself. Each run catches up on every date that passed since the last one.
+     *
+     * ```php
+     * ->scheduleElementStatusUpdates(false)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public bool $scheduleElementStatusUpdates = true;
+
+    /**
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      *           [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      *
@@ -2147,14 +2166,18 @@ class GeneralConfig extends BaseConfig
     public mixed $softDeleteDuration = 2592000;
 
     /**
-     * @var bool Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
-     *           `update-statuses` command is executed.
+     * @var bool Whether entry queries should filter by entries’ stored statuses rather than their dates. Stored
+     *           statuses only change when entries are saved, or when the `craft:update-statuses` command re-saves
+     *           entries whose dates passed.
      *
      * ```php
      * ->staticStatuses()
      * ```
      *
      * @group System
+     *
+     * @deprecated in 6.0.0. Turn it off and run Laravel’s scheduler. Entry queries then get statuses from post and
+     *             expiry dates, and Craft clears caches and dispatches {@see ElementStatusChanged} when those dates pass.
      */
     public bool $staticStatuses = false;
 
@@ -5002,6 +5025,30 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Whether Laravel’s scheduler should run the `craft:update-element-statuses` command every minute.
+     *
+     * When an entry’s post date or expiry date passes, the command updates its stored status, clears its caches and
+     * dispatches {@see ElementStatusChanged}. Entry queries don’t depend on it, so entries still go live and expire on
+     * time without it. Turn this off to avoid running it every minute, such as on usage-billed hosting, and schedule or
+     * run the command yourself. Each run catches up on every date that passed since the last one.
+     *
+     * ```php
+     * ->scheduleElementStatusUpdates(false)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $scheduleElementStatusUpdates
+     */
+    public function scheduleElementStatusUpdates(bool $value = true): self
+    {
+        $this->scheduleElementStatusUpdates = $value;
+
+        return $this;
+    }
+
+    /**
      * Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      *
@@ -5170,8 +5217,8 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
-     * `update-statuses` command is executed.
+     * Whether entry queries should filter by entries’ stored statuses rather than their dates. Stored statuses only
+     * change when entries are saved, or when the `craft:update-statuses` command re-saves entries whose dates passed.
      *
      * ```php
      * ->staticStatuses()
@@ -5180,6 +5227,8 @@ class GeneralConfig extends BaseConfig
      * @group System
      *
      * @see $staticStatuses
+     * @deprecated in 6.0.0. Turn it off and run Laravel’s scheduler. Entry queries then get statuses from post and
+     *             expiry dates, and Craft clears caches and dispatches {@see ElementStatusChanged} when those dates pass.
      */
     public function staticStatuses(bool $value = true): self
     {
