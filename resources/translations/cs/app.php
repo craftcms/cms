@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Úloha byla restartována.',
     'Job retried.' => 'Úloha byla znovu spuštěna.',
     'Job' => 'Úloha',
+    'Keep all' => 'Ponechat vše',
     'Keep both' => 'Ponechat obojí',
     'Keep it' => 'Ponechat',
     'Keep me signed in' => 'Chci zůstat přihlášen/a',

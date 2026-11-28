@@ -14,11 +14,11 @@ import type {ConflictResolution} from './assetMover';
 @customElement('craft-asset-conflict-resolution')
 export class AssetConflictResolutionElement extends LitElement {
   /**
-   * Whether the conflict is with images an upload looks like a copy of, rather
-   * than a file with the same name, which offers Keep it instead of Keep both.
+   * Whether there's more than one file to keep alongside, such as images an
+   * upload looks like a copy of, which offers Keep all instead of Keep both.
    */
   @property({type: Boolean})
-  duplicate = false;
+  multiple = false;
 
   /**
    * Whether the choices are for an upload that's held until one is made, so
@@ -46,7 +46,7 @@ export class AssetConflictResolutionElement extends LitElement {
       >${this.discards ? t('Discard upload') : t('Cancel')}</craft-button
     >`;
     const keep = html`<craft-button @click=${() => this.resolve('keepBoth')}
-      >${this.duplicate ? t('Keep it') : t('Keep both')}</craft-button
+      >${this.multiple ? t('Keep all') : t('Keep both')}</craft-button
     >`;
     const replace = html`<craft-button
       variant="danger"

@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => '已重启作业。',
     'Job retried.' => '已重试作业。',
     'Job' => '作业',
+    'Keep all' => '全部保留',
     'Keep both' => '保留两个',
     'Keep it' => '保留',
     'Keep me signed in' => '保持登录',

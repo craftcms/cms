@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Feladat újraindítva.',
     'Job retried.' => 'Feladat újrapróbálva.',
     'Job' => 'Feladat',
+    'Keep all' => 'Az összes megtartása',
     'Keep both' => 'Mindkettő megőrzése',
     'Keep it' => 'Megtartás',
     'Keep me signed in' => 'Maradjak bejelentkezve',

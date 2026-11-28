@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Jobb startet på nytt.',
     'Job retried.' => 'Jobb forsøkt kjørt på nytt.',
     'Job' => 'Jobb',
+    'Keep all' => 'Behold alle',
     'Keep both' => 'Behold begge',
     'Keep it' => 'Behold den',
     'Keep me signed in' => 'Forbli innlogget',

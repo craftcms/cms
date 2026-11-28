@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Aufgabe neu gestartet.',
     'Job retried.' => 'Aufgabe erneut versucht.',
     'Job' => 'Aufgabe',
+    'Keep all' => 'Alle behalten',
     'Keep both' => 'Beide behalten',
     'Keep it' => 'Behalten',
     'Keep me signed in' => 'Angemeldet bleiben',

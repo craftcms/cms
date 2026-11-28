@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Keyrsla endurræst.',
     'Job retried.' => 'Keyrsla reynd aftur.',
     'Job' => 'Keyrsla',
+    'Keep all' => 'Halda öllum',
     'Keep both' => 'Haltu bæði',
     'Keep it' => 'Halda því',
     'Keep me signed in' => 'Hafðu mig innskráðan',

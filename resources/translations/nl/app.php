@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Taak opnieuw gestart.',
     'Job retried.' => 'Taak opnieuw geprobeerd.',
     'Job' => 'Taak',
+    'Keep all' => 'Alles behouden',
     'Keep both' => 'Beide behouden',
     'Keep it' => 'Behouden',
     'Keep me signed in' => 'Houd mij aangemeld',

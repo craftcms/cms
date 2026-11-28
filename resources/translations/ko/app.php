@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => '작업이 다시 시작되었습니다.',
     'Job retried.' => '작업을 다시 시도했습니다.',
     'Job' => '작업',
+    'Keep all' => '모두 유지',
     'Keep both' => '둘 다 유지',
     'Keep it' => '유지',
     'Keep me signed in' => '로그인 상태 유지',

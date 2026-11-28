@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'ジョブを再起動しました。',
     'Job retried.' => 'ジョブを再試行しました。',
     'Job' => 'ジョブ',
+    'Keep all' => 'すべて保持',
     'Keep both' => '両方を保持',
     'Keep it' => '保持',
     'Keep me signed in' => 'サインイン状態を維持する',

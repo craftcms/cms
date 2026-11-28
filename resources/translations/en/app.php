@@ -2153,6 +2153,7 @@ return [
     'Job restarted.' => 'Job restarted.',
     'Job retried.' => 'Job retried.',
     'Job' => 'Job',
+    'Keep all' => 'Keep all',
     'Keep both' => 'Keep both',
     'Keep it' => 'Keep it',
     'Keep me signed in' => 'Keep me signed in',

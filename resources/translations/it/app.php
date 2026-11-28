@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Attività riavviata.',
     'Job retried.' => 'Attività ripetuta.',
     'Job' => 'Attività',
+    'Keep all' => 'Mantieni tutte',
     'Keep both' => 'Mantieni entrambi',
     'Keep it' => 'Mantienilo',
     'Keep me signed in' => 'Mantienimi connesso',

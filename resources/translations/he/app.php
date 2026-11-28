@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'עבודה הופעלה מחדש.',
     'Job retried.' => 'עבודה נוסתה מחדש.',
     'Job' => 'עבודה',
+    'Keep all' => 'שמור הכל',
     'Keep both' => 'השאר את שניהם',
     'Keep it' => 'השאר אותו',
     'Keep me signed in' => 'השאר אותי מחובר',

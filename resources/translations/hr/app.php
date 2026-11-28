@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Zadatak je ponovno pokrenut.',
     'Job retried.' => 'Zadatak je ponovno pokušan.',
     'Job' => 'Zadatak',
+    'Keep all' => 'Zadrži sve',
     'Keep both' => 'Zadrži oboje',
     'Keep it' => 'Zadrži ga',
     'Keep me signed in' => 'Zadrži me prijavljenim',

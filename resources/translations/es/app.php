@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Trabajo reiniciado.',
     'Job retried.' => 'El trabajo se ha vuelto a intentar.',
     'Job' => 'Trabajo',
+    'Keep all' => 'Conservar todas',
     'Keep both' => 'Mantener ambos',
     'Keep it' => 'Conservar',
     'Keep me signed in' => 'No cerrar sesión',

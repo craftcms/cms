@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Tâche relancée.',
     'Job retried.' => 'Tâche relancée.',
     'Job' => 'Tâche',
+    'Keep all' => 'Tout conserver',
     'Keep both' => 'Conserver les deux',
     'Keep it' => 'Le conserver',
     'Keep me signed in' => 'Rester connecté',

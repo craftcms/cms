@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Ailgychwynnwyd y dasg.',
     'Job retried.' => 'Ailgynigiwyd y dasg.',
     'Job' => 'Tasg',
+    'Keep all' => 'Cadw’r cyfan',
     'Keep both' => 'Cadw’r ddau',
     'Keep it' => 'Ei gadw',
     'Keep me signed in' => 'Cadw fi wedi mewngofnodi',

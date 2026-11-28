@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Zadanie ponownie uruchomiono.',
     'Job retried.' => 'Ponowiono próbę wykonania zadania.',
     'Job' => 'Zadanie',
+    'Keep all' => 'Zachowaj wszystkie',
     'Keep both' => 'Zachowaj oba',
     'Keep it' => 'Zachowaj',
     'Keep me signed in' => 'Nie wylogowuj mnie',

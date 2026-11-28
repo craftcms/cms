@@ -2096,6 +2096,7 @@ return [
     'Job restarted.' => 'Tugas dimulai ulang.',
     'Job retried.' => 'Tugas dicoba ulang.',
     'Job' => 'Tugas',
+    'Keep all' => 'Pertahankan semua',
     'Keep both' => 'Pertahankan keduanya',
     'Keep it' => 'Pertahankan',
     'Keep me signed in' => 'Biarkan saya tetap masuk',
