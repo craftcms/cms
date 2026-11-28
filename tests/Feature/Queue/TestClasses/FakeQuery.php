@@ -12,14 +12,17 @@ class FakeQuery extends Builder
 {
     private Collection $result;
 
+    private ?int $count = null;
+
     public function __construct()
     {
         parent::__construct(DB::connection());
     }
 
-    public function setResult(Collection $result)
+    public function setResult(Collection $result, ?int $count = null)
     {
         $this->result = $result;
+        $this->count = $count;
 
         return $this;
     }
@@ -37,6 +40,6 @@ class FakeQuery extends Builder
     #[\Override]
     public function count($columns = '*')
     {
-        return $this->result->count();
+        return $this->count ?? $this->result->count();
     }
 }

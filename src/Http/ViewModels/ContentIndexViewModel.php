@@ -25,6 +25,7 @@ use CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -41,6 +42,7 @@ use Illuminate\Support\Facades\Gate;
 use Inertia\RenderContext;
 use Inertia\Support\Header;
 use ReflectionMethod;
+use WeakMap;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -113,6 +115,14 @@ abstract class ContentIndexViewModel extends ViewModel
 
     /** @var Collection<int, Site>|null */
     private ?Collection $selectableSites = null;
+
+    /**
+     * The capabilities {@see baseRowData()} checked for each row’s element, so the row’s chip or card reuses them
+     * instead of checking the same permissions again.
+     *
+     * @var WeakMap<ElementInterface, array{copyable: bool, duplicatable: bool, deletable: bool, comparable: bool}>
+     */
+    private WeakMap $rowCapabilities;
 
     public function __construct(
         /** @var class-string<ElementInterface> */
@@ -973,8 +983,52 @@ abstract class ContentIndexViewModel extends ViewModel
         };
     }
 
-    /** @param list<ElementInterface|array<string, mixed>> $elements */
-    protected function prepareElements(array $elements): void {}
+    /**
+     * Loads the transform indexes for the images in the rows' thumbnails and card covers with one query per size,
+     * rather than one per row.
+     *
+     * @param  list<ElementInterface|array<string, mixed>>  $elements
+     */
+    protected function prepareElements(array $elements): void
+    {
+        $cards = $this->mode() === ElementIndexViewMode::Cards->value;
+        $thumbs = [];
+        $covers = [];
+
+        foreach ($elements as $element) {
+            $thumb = $element instanceof ElementInterface ? $element->getThumb() : null;
+
+            if (! $asset = $thumb?->getAsset()) {
+                continue;
+            }
+
+            $mode = $thumb->getAssetTransformMode() ?? ImageTransformMode::Fit;
+            $thumbs[$mode->value][] = $asset;
+
+            // The same styles as ElementHtml::cardAttributes() shows covers for
+            $coverStyle = $element->getFieldLayout()?->getCardThumbStyle() ?? ($element instanceof Asset ? 'auto' : 'normal');
+
+            if ($cards && ($coverStyle === 'cover' || ($coverStyle === 'auto' && $asset->canCoverCard()))) {
+                $covers[] = $asset;
+            }
+        }
+
+        $sizes = match ($this->mode()) {
+            ElementIndexViewMode::Cards->value => [120, 240],
+            ElementIndexViewMode::Thumbs->value => [
+                $size = $this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE,
+                $size * 2,
+            ],
+            // Table rows show plain chips, whose small thumbnails are 30px
+            default => [$size = $this->thumbSize()->pixels() ?? 30, $size * 2],
+        };
+
+        foreach ($thumbs as $mode => $assets) {
+            Assets::preloadThumbs($assets, $sizes, ImageTransformMode::from($mode));
+        }
+
+        Assets::preloadThumbs($covers, [Asset::CARD_COVER_SIZE], ImageTransformMode::Crop);
+    }
 
     /** @return array<int, array<string, mixed>>|null */
     public function actions(): ?array
@@ -1781,6 +1835,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return app(ElementHtml::class)->elementChipHtml($element, [
             'autoReload' => false,
             'context' => static::RENDER_CONTEXT,
+            'capabilities' => $this->rowCapabilities[$element] ?? null,
             'appearance' => 'plain',
             'thumbSize' => $this->thumbSize(),
             ...$config,
@@ -1834,7 +1889,10 @@ abstract class ContentIndexViewModel extends ViewModel
             return [
                 'id' => $this->rowId($element),
                 ...$this->baseRowData($element, $elementHtml),
-                ...$elementHtml->elementCardData($element, $cardConfig),
+                ...$elementHtml->elementCardData($element, [
+                    ...$cardConfig,
+                    'capabilities' => $this->rowCapabilities[$element],
+                ]),
             ];
         }, $elements);
     }
@@ -1934,8 +1992,10 @@ abstract class ContentIndexViewModel extends ViewModel
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
         $elementHtml ??= app(ElementHtml::class);
+        $this->rowCapabilities ??= new WeakMap;
+        $this->rowCapabilities[$element] = $elementHtml->elementCapabilities($element, static::RENDER_CONTEXT);
         $capabilities = [
-            ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            ...$this->rowCapabilities[$element],
             ...$this->extraCapabilities($element),
         ];
 

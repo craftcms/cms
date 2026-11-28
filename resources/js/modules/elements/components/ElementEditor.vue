@@ -71,6 +71,7 @@
   import {openSlideout} from '@/common/slideouts';
   import {registerActions} from '@/modules/command-palette/registry';
   import type {CommandPaletteItem} from '@/modules/command-palette/types';
+  import {menuShortcutHotkey} from '@/modules/command-palette/keys';
   import {firstFocusableWithin} from '@/common/utils/dom';
   import {UiFieldIdScope} from '@/modules/ui/runtime';
 
@@ -510,6 +511,7 @@
           label: action.label,
           description,
           icon: 'floppy-disk',
+          shortcut: menuShortcutHotkey(action.shortcut),
           run: action.onClick,
         })),
         ...saveButtons.value

@@ -854,11 +854,12 @@ class Fields
             }
         }
 
+        // Sorted by ID, since the layouts query doesn’t order its rows
         return $this->_layouts()->whereIn('id', $layoutIds, true)->collect()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
             $layout->isFieldIncluded(fn (BaseField $layoutField) => (
                 $layoutField instanceof CustomField &&
                 $layoutField->getFieldUid() === $field->uid
-            )));
+            )))->sortBy('id')->values();
     }
 
     /**

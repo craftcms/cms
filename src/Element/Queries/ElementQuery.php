@@ -89,7 +89,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     use Concerns\CachesQueries;
-    use Concerns\CollectsCacheTags;
+    use Concerns\CollectsCacheInfo;
     use Concerns\FormatsResults;
 
     /** @use Concerns\HydratesElements<TElement> */
@@ -244,6 +244,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @see whereNestedElementQuery()
      */
     private bool $isNestedCondition = false;
+
+    /**
+     * Whether preparing the query skips its events and cache info collection, for a copy made only to look up when
+     * its statuses change.
+     */
+    private bool $preparesSilently = false;
 
     /**
      * @var bool Whether columns were added to the default select with addSelect() or its variants, so the
@@ -669,7 +675,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->getModels($columns));
         }
 
-        if (! is_null($result = $this->getResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             if ($this->with) {
                 Elements::eagerLoadElements($this->elementType, $result, $this->with);
             }
@@ -746,7 +752,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->pluck($column, $key));
         }
 
-        if (! is_null($result = $this->getResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             return collect($result)->pluck($this->attributeName($column), $key === null ? null : $this->attributeName($key));
         }
 
@@ -1089,8 +1095,13 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->count($columns));
         }
 
-        if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
+        if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->resolveResultOverride())) {
             return count($result);
+        }
+
+        // Use an eager-loaded count before preparing the query, as getModels() does, so it isn't prepared for nothing
+        if (($eagerLoadedCount = $this->eagerLoad(count: true, columns: $columns)) !== null) {
+            return $this->applyAfterQueryCallbacks($eagerLoadedCount);
         }
 
         try {
@@ -1099,13 +1110,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return 0;
         }
 
-        $eagerLoadedCount = $this->eagerLoad(count: true, columns: $columns);
         $cacheKeyColumns = $columns;
         $columns = is_array($columns) ? array_map($this->resolveColumn(...), $columns) : $this->resolveColumn($columns);
-
-        if ($eagerLoadedCount !== null) {
-            return $this->applyAfterQueryCallbacks($eagerLoadedCount);
-        }
 
         if ((int) $this->queryCacheDuration >= 0) {
             $result = $this->rememberQueryResult(
@@ -1174,7 +1180,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function nth(int $n, $columns = ['*']): ElementInterface|array|null
     {
-        if (! is_null($result = $this->getResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             return $result[$n] ?? null;
         }
 
@@ -1701,6 +1707,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * either of two sets of params, give each its own closure:
      * `->where(fn ($q) => $q->section('news'))->orWhere(fn ($q) => $q->featured(true))`.
      *
+     * A status set only within a closure doesn’t make `{% cache %}` tags and cached GraphQL results refresh when
+     * entries go live or expire. Set the status on the outer query instead.
+     *
      * @param  Closure|string|array<array-key, mixed>|Expression  $column
      */
     public function where($column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
@@ -1923,29 +1932,42 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         // Nested conditions leave the events to the query they belong to
-        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition;
+        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition && ! $this->preparesSilently;
         $originalWhereCount = count($this->query->wheres);
 
-        if ($dispatchesEvents) {
-            event(new ElementQueryPreparing($this));
+        try {
+            if ($dispatchesEvents) {
+                event(new ElementQueryPreparing($this));
+            }
+
+            $preparingWhereCount = count($this->query->wheres);
+
+            foreach ($this->beforeQueryCallbacks as $i => $callback) {
+                $callback($this);
+
+                unset($this->beforeQueryCallbacks[$i]);
+            }
+
+            $this->beforeQueryCallbacks = [];
+
+            $this->elementQueryBeforeQuery();
+
+            $paramWhereCount = count($this->query->wheres);
+
+            if ($dispatchesEvents) {
+                event(new ElementQueryPrepared($this));
+            }
+        } catch (QueryAbortedException $e) {
+            // An empty result still changes when elements are saved
+            if ($dispatchesEvents) {
+                $this->collectCacheTags();
+            }
+
+            throw $e;
         }
 
-        $preparingWhereCount = count($this->query->wheres);
-
-        foreach ($this->beforeQueryCallbacks as $i => $callback) {
-            $callback($this);
-
-            unset($this->beforeQueryCallbacks[$i]);
-        }
-
-        $this->beforeQueryCallbacks = [];
-
-        $this->elementQueryBeforeQuery();
-
-        $paramWhereCount = count($this->query->wheres);
-
         if ($dispatchesEvents) {
-            event(new ElementQueryPrepared($this));
+            $this->collectCacheInfo();
         }
 
         $wheres = $this->query->wheres;
@@ -1960,6 +1982,74 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $this->convertDateBindingsToUtc();
+        $this->straightJoinFromElementsForDraftAndRevisionLookups();
+    }
+
+    /**
+     * Reads `elements` before the element type’s table on MySQL when the query requires a canonical ID, draft ID or
+     * revision ID, such as a lookup of an entry’s drafts or revisions.
+     *
+     * The constructor straight-joins `elements` after the element type’s table, which keeps listings filtered on that
+     * table’s columns fast. With that order, a lookup by one of these columns reads every row of the element type’s
+     * table. Reading `elements` first lets MySQL use the index on that column instead.
+     *
+     * Element ID lookups don’t need this. MySQL copies the ID condition to the element type’s table through the join
+     * condition and reads that table by its primary key.
+     *
+     * Nested conditions keep the original order, because {@see whereNestedElementQuery()} throws when a nested
+     * condition’s joins differ from the outer query’s. So do queries whose source was replaced, such as with
+     * `fromSub()`, because the swap would drop that source, and queries with an index hint, which MySQL applies to
+     * the first table.
+     */
+    private function straightJoinFromElementsForDraftAndRevisionLookups(): void
+    {
+        if (
+            ! $this->hasElementSourceTable ||
+            $this->query->from !== $this->table ||
+            $this->query->indexHint !== null ||
+            $this->isNestedCondition ||
+            ! DB::isMysql() ||
+            ! self::requiresDraftOrRevisionIds($this->query->wheres)
+        ) {
+            return;
+        }
+
+        $elementsTable = Table::ELEMENTS.' as elements';
+
+        foreach ($this->query->joins as $i => $join) {
+            if ($join->type === 'straight_join' && $join->table === $elementsTable) {
+                // Clones of the query, such as the copy saved before preparing, share this join object, so change a copy
+                $join = clone $join;
+                $join->table = $this->table;
+                $this->query->joins[$i] = $join;
+                $this->query->from = $elementsTable;
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * Returns whether the where clauses require `elements.canonicalId`, `draftId` or `revisionId` to equal a value or
+     * be in a list of values.
+     *
+     * @param  array<int, array<string, mixed>>  $wheres
+     */
+    private static function requiresDraftOrRevisionIds(array $wheres): bool
+    {
+        // Laravel ignores the first clause’s boolean. An `or` on any later clause means no single clause has to match.
+        if (array_any(array_slice($wheres, 1), fn (array $where) => str_starts_with($where['boolean'], 'or'))) {
+            return false;
+        }
+
+        $columns = ['elements.canonicalId', 'elements.draftId', 'elements.revisionId'];
+
+        return array_any($wheres, fn (array $where) => ! str_ends_with($where['boolean'], 'not') && match ($where['type']) {
+            'Basic' => $where['operator'] === '=' && in_array($where['column'], $columns, true),
+            'In', 'InRaw' => in_array($where['column'], $columns, true),
+            'Nested' => self::requiresDraftOrRevisionIds($where['query']->wheres),
+            default => false,
+        });
     }
 
     /**

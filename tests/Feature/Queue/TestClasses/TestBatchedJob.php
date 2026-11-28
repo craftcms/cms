@@ -25,6 +25,11 @@ class TestBatchedJob extends BatchedJob
 
     public int $cancelAfterItem = -1;
 
+    /**
+     * The number of items the query should count, if different from the items it returns.
+     */
+    public ?int $count = null;
+
     public bool $jobDeleteCalled = false;
 
     private ?string $testUuid = null;
@@ -43,7 +48,7 @@ class TestBatchedJob extends BatchedJob
 
     protected function getQuery(): Builder
     {
-        return new FakeQuery()->setResult(collect($this->items));
+        return new FakeQuery()->setResult(collect($this->items), $this->count);
     }
 
     protected function processItem(mixed $item): void

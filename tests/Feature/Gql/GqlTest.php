@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
@@ -32,6 +33,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
@@ -41,8 +43,11 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+
+use function Pest\Laravel\travelTo;
 
 beforeEach(function () {
     app(Gql::class)->flushCaches();
@@ -519,4 +524,78 @@ it('does not read or write cached results with pending invalidations', function 
 
         expect(DependencyCache::get('newPendingInvalidationResult'))->toBeNull();
     });
+});
+
+it('refreshes cached results when a pending entry goes live', function () {
+    Cms::config()->enableGraphqlCaching = true;
+    travelTo(Date::parse('2026-01-01 09:30:00'));
+
+    $entryType = CraftCms\Cms\Entry\Models\EntryType::factory()->create(['handle' => 'article']);
+    $section = CraftCms\Cms\Section\Models\Section::factory()
+        ->withEntryTypes($entryType)
+        ->create(['handle' => 'news', 'type' => SectionType::Channel->value]);
+    Entry::factory()->forSection($section)->forEntryType($entryType)->create([
+        'postDate' => Date::parse('2026-01-01 10:00:30'),
+    ]);
+    $gql = app(Gql::class);
+    $gql->flushCaches();
+    $schema = GqlHelper::createFullAccessSchema();
+    $query = '{ entries(section: "news") { id } entryCount(section: "news") }';
+
+    expect($gql->executeQuery($schema, $query)['data'])->toBe(['entries' => [], 'entryCount' => 0]);
+
+    // Publish the entry without invalidating caches, so only a cached result still leaves it out
+    travelTo(Date::parse('2026-01-01 09:59:59'));
+    DB::table(Table::ENTRIES)->update(['postDate' => Query::prepareDateForDb(Date::parse('2026-01-01 09:00:00'))]);
+    expect($gql->executeQuery($schema, $query)['data']['entryCount'])->toBe(0);
+
+    travelTo(Date::parse('2026-01-01 10:00:00'));
+    expect($gql->executeQuery($schema, $query)['data']['entryCount'])->toBe(1);
+});
+
+it('only looks up when entries go live when results are cached', function (bool $caching, ?int $cacheDuration) {
+    Cms::config()->enableGraphqlCaching = $caching;
+    travelTo(Date::parse('2026-01-01 09:30:00'));
+
+    $entryType = CraftCms\Cms\Entry\Models\EntryType::factory()->create(['handle' => 'article']);
+    $section = CraftCms\Cms\Section\Models\Section::factory()
+        ->withEntryTypes($entryType)
+        ->create(['handle' => 'news', 'type' => SectionType::Channel->value]);
+    Entry::factory()->forSection($section)->forEntryType($entryType)->create([
+        'postDate' => Date::parse('2026-01-01 10:00:30'),
+    ]);
+    $gql = app(Gql::class);
+    $gql->flushCaches();
+    Event::listen(ExecutedGqlQuery::class, function (ExecutedGqlQuery $event) {
+        $this->executed = $event;
+    });
+
+    $gql->executeQuery(GqlHelper::createFullAccessSchema(), '{ entryCount(section: "news") }');
+
+    expect($this->executed->cacheTags)->toContain('element::'.EntryElement::class)
+        ->and($this->executed->cacheDuration)->toBe($cacheDuration);
+})->with([
+    'caching enabled' => [true, 1800],
+    'caching disabled' => [false, null],
+]);
+
+it('looks up when entries go live for an enclosing cache when results are not cached', function () {
+    Cms::config()->enableGraphqlCaching = false;
+    travelTo(Date::parse('2026-01-01 09:30:00'));
+
+    $entryType = CraftCms\Cms\Entry\Models\EntryType::factory()->create(['handle' => 'article']);
+    $section = CraftCms\Cms\Section\Models\Section::factory()
+        ->withEntryTypes($entryType)
+        ->create(['handle' => 'news', 'type' => SectionType::Channel->value]);
+    Entry::factory()->forSection($section)->forEntryType($entryType)->create([
+        'postDate' => Date::parse('2026-01-01 10:00:30'),
+    ]);
+    $gql = app(Gql::class);
+    $gql->flushCaches();
+
+    ElementCaches::startCollectingCacheInfo();
+    $gql->executeQuery(GqlHelper::createFullAccessSchema(), '{ entryCount(section: "news") }');
+    [, $cacheDuration] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($cacheDuration)->toBe(1800);
 });

@@ -167,3 +167,17 @@ it('lazily eager-loads every instance of a multi-instance relation field', funct
         }
     }
 });
+
+it('collects cache tags when a query uses elements eagerly loaded before collecting began', function (string $method) {
+    $entries = entryQuery()->id($this->sourceIds)->orderBy('elements.id')->all();
+    $entries[0]->getFieldValue('entriesField')->eagerly()->$method();
+
+    ElementCaches::startCollectingCacheInfo();
+    $query = $entries[1]->getFieldValue('entriesField')->eagerly();
+    $query->$method();
+    [$dependency] = ElementCaches::stopCollectingCacheInfo();
+
+    expect($query->wasEagerLoaded("eagerly:$query->eagerLoadHandle"))->toBeTrue()
+        ->and($dependency)->not->toBeNull()
+        ->and($dependency->tags)->toContain('element::'.Entry::class);
+})->with(['all', 'one']);

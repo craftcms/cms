@@ -312,6 +312,7 @@ class FieldsController
             'withGeneratedFields' => ['required', 'boolean'],
             'withCardViewDesigner' => ['required', 'boolean'],
             'cardViewDesignerOutlet' => ['nullable', 'string'],
+            'idNamespace' => ['nullable', 'string'],
         ]);
 
         return new JsonResponse([
@@ -324,6 +325,7 @@ class FieldsController
                 $data['withGeneratedFields'],
                 $data['withCardViewDesigner'],
                 $data['cardViewDesignerOutlet'] ?? null,
+                $data['idNamespace'] ?? null,
             ),
         ]);
     }

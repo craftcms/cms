@@ -397,7 +397,11 @@ export default defineConfig(async ({mode}) => {
             browser: {
               enabled: true,
               headless: true,
-              provider: playwright?.(),
+              // Headless Chromium hides scrollbars; showing them lets tests
+              // measure the room classic scrollbars take, as on Windows.
+              provider: playwright?.({
+                launchOptions: {ignoreDefaultArgs: ['--hide-scrollbars']},
+              }),
               instances: [{browser: 'chromium'}],
             },
           },
