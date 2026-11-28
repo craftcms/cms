@@ -165,16 +165,6 @@ class FieldLayoutCompiler
             $errors[$path] = $messages;
         }
 
-        return new UiContext(
-            namespace: $context->namespace,
-            values: $context->values,
-            errors: $errors,
-            globalErrors: $context->globalErrors,
-            mode: $context->mode,
-            refreshable: $context->refreshable,
-            preview: $context->preview,
-            reuseUnchanged: $context->reuseUnchanged,
-            requiredScope: $context->requiredScope,
-        );
+        return $context->with(errors: $errors);
     }
 }

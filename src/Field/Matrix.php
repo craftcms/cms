@@ -644,12 +644,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 : app(FieldLayoutCompiler::class)->ui(
                     $entry->getFieldLayout(),
                     $entry,
-                    new UiContext(
-                        namespace: $scope,
-                        mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
-                        preview: $context->ui->preview,
-                        reuseUnchanged: $context->ui->reuseUnchanged,
-                        requiredScope: $context->ui->requiredScope,
+                    $context->ui->nested(
+                        $scope,
+                        $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
                     ),
                 );
             $sortOrder[] = $uid;

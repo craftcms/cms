@@ -40,4 +40,29 @@ readonly class UiContext
     ) {
         $this->mode = is_string($mode) ? ControlMode::from($mode) : $mode;
     }
+
+    /**
+     * A copy of this context with the given properties changed, such as `$context->with(errors: $errors)`.
+     */
+    public function with(mixed ...$properties): static
+    {
+        return clone ($this, $properties);
+    }
+
+    /**
+     * A context for a nested UI at `$namespace`, such as a Matrix block’s field layout. It keeps the settings that
+     * apply to the whole request, and leaves out this context’s values and errors.
+     *
+     * @param  list<string>  $namespace
+     */
+    public function nested(array $namespace, ControlMode $mode = ControlMode::Editable): self
+    {
+        return new self(
+            namespace: $namespace,
+            mode: $mode,
+            preview: $this->preview,
+            reuseUnchanged: $this->reuseUnchanged,
+            requiredScope: $this->requiredScope,
+        );
+    }
 }
