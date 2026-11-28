@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Date;
@@ -99,7 +100,9 @@ class DependencyCollector implements CacheCollectorInterface
         }
 
         foreach ($tags as $tag) {
-            $this->tags[$tag] = true;
+            if ($tag !== '') {
+                $this->tags[$tag] = true;
+            }
         }
     }
 
@@ -210,9 +213,43 @@ class DependencyCollector implements CacheCollectorInterface
         }
     }
 
+    /**
+     * Returns the tags collected so far by the current collection and the collections it's nested in.
+     *
+     * @return list<string>
+     *
+     * @internal
+     */
+    public function collectedTags(): array
+    {
+        $tags = $this->tags ?? [];
+
+        foreach ($this->buffers as $buffer) {
+            $tags += $buffer['tags'];
+        }
+
+        return self::tagList($tags);
+    }
+
+    /**
+     * Returns the earliest expiry date collected so far by the current collection and the collections it's nested in.
+     *
+     * @internal
+     */
+    public function collectedExpiryDate(): ?DateTimeImmutable
+    {
+        $timestamps = array_filter([
+            $this->expiryTimestamp,
+            ...array_column($this->buffers, 'expiryTimestamp'),
+        ], is_int(...));
+
+        return $timestamps === [] ? null : new DateTimeImmutable('@'.min($timestamps));
+    }
+
     public function collectElement(ElementInterface $element): void
     {
-        if (! $this->isCollecting()) {
+        // Twig collects an element on every attribute read, so skip elements this collection already has.
+        if (! $this->isCollecting() || isset($this->tags["element::{$element->id}"])) {
             return;
         }
 
@@ -246,7 +283,7 @@ class DependencyCollector implements CacheCollectorInterface
             throw new RuntimeException('Element cache invalidation tags are not currently being collected.');
         }
 
-        $tags = array_keys($this->tags);
+        $tags = self::tagList($this->tags);
         $expiryTimestamp = $this->expiryTimestamp;
 
         if (! empty($this->buffers)) {
@@ -270,6 +307,17 @@ class DependencyCollector implements CacheCollectorInterface
         }
 
         return [new TagDependency($tags), $expiryTimestamp];
+    }
+
+    /**
+     * The tags in a set keyed by tag. Numeric tags become integer keys, so they're turned back into strings.
+     *
+     * @param  array<array-key, bool>  $tags
+     * @return list<string>
+     */
+    private static function tagList(array $tags): array
+    {
+        return array_map(strval(...), array_keys($tags));
     }
 
     /**

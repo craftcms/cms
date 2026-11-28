@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -40,15 +41,21 @@ readonly class ClearCachesController
         return $request->expectsJson() ? $this->asJsonSuccess(t('Caches cleared.')) : back();
     }
 
-    public function invalidateTags(Request $request): Response
+    public function invalidateTags(Request $request, ElementCaches $elementCaches): Response
     {
         $tags = $request->validate([
             'tags' => ['required', 'array'],
             'tags.*' => ['string'],
         ])['tags'];
 
-        foreach ($tags as $tag) {
-            TagDependency::invalidate($tag);
+        try {
+            $elementCaches->invalidateTagsOrFail(array_values($tags));
+        } catch (Throwable $e) {
+            report($e);
+            $message = t('Couldn’t invalidate the caches.');
+
+            // As validation errors, so the utility's form shows the failure instead of its success message.
+            return $this->asFailure($message, ['errors' => ['tags' => [$message]]]);
         }
 
         return back();

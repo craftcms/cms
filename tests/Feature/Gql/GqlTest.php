@@ -208,7 +208,11 @@ it('fills the cache when querying through the new service', function () {
     expect($cacheKey)->not->toBeNull()
         ->and($gql->getCachedResult($cacheKey))->toBeNull();
 
+    // The response gets the GraphQL tag on a miss, as it does on a hit.
+    ElementCaches::startCollectingCacheInfo();
     $result = $gql->executeQuery($schema, '{ping}');
+    [$dependency] = ElementCaches::stopCollectingCacheInfo();
+    expect($dependency?->tags)->toContain(Gql::CACHE_TAG);
 
     $gql->setActiveSchema(new GqlSchema);
     expect($gql->getCachedResult($cacheKey))->toBe($result);

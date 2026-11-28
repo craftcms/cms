@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\AuthenticateCraftSession;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
+use CraftCms\Cms\Http\Middleware\CollectCacheInfo;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
@@ -121,6 +122,8 @@ class RouteServiceProvider extends ServiceProvider
             HandleTokenRequest::class,
             StripSiteBasePath::class,
             HandleActionRequest::class,
+            // After the request is rewritten, and outside sessions and exception rendering, so it sees the final response
+            CollectCacheInfo::class,
             ...array_filter($globalMiddleware, fn (string $middleware): bool => ! $trustsProxies($middleware)),
         ]);
 

@@ -208,6 +208,7 @@ return [
     'Couldn’t generate a value for this field.' => 'Couldn’t generate a value for this field.',
     'Couldn’t generate alt text for this image.' => 'Couldn’t generate alt text for this image.',
     'Couldn’t generate alt text: {error}' => 'Couldn’t generate alt text: {error}',
+    'Couldn’t invalidate the caches.' => 'Couldn’t invalidate the caches.',
     'Couldn’t load activity.' => 'Couldn’t load activity.',
     'Couldn’t load table data.' => 'Couldn’t load table data.',
     'Couldn’t load this field.' => 'Couldn’t load this field.',

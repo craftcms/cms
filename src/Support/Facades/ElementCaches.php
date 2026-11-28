@@ -17,6 +17,7 @@ use Override;
  * @method static void setCacheExpiryDate(\DateTimeInterface $expiryDate)
  * @method static void collectCacheInfoForElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
  * @method static array stopCollectingCacheInfo()
+ * @method static array invalidateTags(string[] $tags)
  * @method static array invalidateAll()
  * @method static array invalidateForElementType(string $elementType)
  * @method static array invalidateForElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)

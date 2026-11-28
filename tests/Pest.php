@@ -19,9 +19,11 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Pest\Browser\Api\AwaitableWebpage;
@@ -349,4 +351,16 @@ function passportKey(): OpenSSLAsymmetricKey
     static $key = openssl_pkey_new(['private_key_bits' => 2048]);
 
     return $key;
+}
+
+/**
+ * Makes the dependency cache store fail to invalidate tags, and fakes exception reporting.
+ */
+function failCacheStore(): void
+{
+    Exceptions::fake();
+    // Only invalidation fails; everything else still reaches the real store.
+    $store = Mockery::mock(DependencyCache::store())->makePartial();
+    $store->shouldReceive('deleteMultiple')->andThrow(new RuntimeException('Cache store unavailable'));
+    DependencyCache::partialMock()->shouldReceive('store')->andReturn($store);
 }

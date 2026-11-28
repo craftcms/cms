@@ -369,6 +369,12 @@ class Gql
                     ->setErrorsHandler($this->handleQueryErrors(...))
                     ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : DebugFlag::NONE);
 
+                // So a site response that runs this query gets the tag on a miss too, as it does when a hit applies the
+                // stored tags.
+                if ($cacheKey) {
+                    $this->elementCaches->collectCacheTags([self::CACHE_TAG]);
+                }
+
                 [$dep, $duration] = $this->elementCaches->stopCollectingCacheInfo();
 
                 if (empty($result['errors']) && $cacheKey && $this->shouldCache($result)) {
@@ -395,7 +401,7 @@ class Gql
 
     public function invalidateCaches(): void
     {
-        TagDependency::invalidate(self::CACHE_TAG);
+        $this->elementCaches->invalidateTags([self::CACHE_TAG]);
     }
 
     /** @return array<string, mixed>|null */
@@ -451,7 +457,7 @@ class Gql
         $dependency ??= new TagDependency;
 
         // Add the global graphql cache tag
-        $dependency->tags[] = self::CACHE_TAG;
+        $dependency->tags = array_values(array_unique([...$dependency->tags, self::CACHE_TAG]));
 
         if ($this->elementCaches->hasPendingInvalidations($dependency->tags)) {
             return;

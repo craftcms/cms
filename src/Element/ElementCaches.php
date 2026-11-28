@@ -17,6 +17,12 @@ use RuntimeException;
 use Throwable;
 
 /**
+ * Collects the cache tags and expiry dates that caches depend on, and invalidates the caches tagged with them.
+ *
+ * Element tags, such as `element::5`, come from the elements a cache's content queries. Tags can also be custom,
+ * such as `nav` added with `CacheInfo::addTags()`. Both kinds are invalidated the same way, firing
+ * {@see ElementCachesInvalidated}.
+ *
  * @since 6.0.0
  */
 #[Singleton]
@@ -134,12 +140,7 @@ class ElementCaches
         try {
             TagDependency::invalidate($tags);
         } catch (Throwable $e) {
-            if (count($tags) <= self::MAX_RETRIED_TAGS) {
-                foreach ($tags as $tag) {
-                    $this->pendingTags[$tag] = true;
-                }
-            }
-
+            $this->retryLater($tags);
             report($e);
         }
     }
@@ -192,14 +193,66 @@ class ElementCaches
         return $this->dependencyCollector()->stop();
     }
 
-    /** @return list<string> */
-    public function invalidateAll(): array
+    /**
+     * Invalidates the caches tagged with any of the given tags, such as tags added with `CacheInfo::addTags()`.
+     *
+     * This clears `{% cache %}` blocks and data caches that depend on them, and fires {@see ElementCachesInvalidated}
+     * so cache integrations can purge the HTTP caches of the responses tagged with them.
+     *
+     * @param  list<string>  $tags
+     * @return list<string>
+     */
+    public function invalidateTags(array $tags): array
     {
-        $tags = $this->invalidateTags(['element']);
+        $tags = self::normalizeTags($tags);
+
+        if ($tags === []) {
+            return [];
+        }
+
+        $this->queueInvalidations($tags);
 
         event(new ElementCachesInvalidated($tags));
 
         return $tags;
+    }
+
+    /**
+     * Invalidates the caches tagged with any of the given tags like {@see invalidateTags()}, but right away, even
+     * inside a database transaction or a {@see deferInvalidations()} call, and throws if the cache store fails. For
+     * places where someone asked for the caches to be cleared and should hear if they weren't.
+     *
+     * If the cache store fails, the tags stay pending for the next flush, unless there were more than 1,000.
+     *
+     * @param  list<string>  $tags
+     *
+     * @throws Throwable if the cache store fails
+     *
+     * @internal
+     */
+    public function invalidateTagsOrFail(array $tags): void
+    {
+        $tags = self::normalizeTags($tags);
+
+        if ($tags === []) {
+            return;
+        }
+
+        try {
+            TagDependency::invalidate($tags);
+        } catch (Throwable $e) {
+            $this->retryLater($tags);
+
+            throw $e;
+        } finally {
+            event(new ElementCachesInvalidated($tags));
+        }
+    }
+
+    /** @return list<string> */
+    public function invalidateAll(): array
+    {
+        return $this->invalidateTags(['element']);
     }
 
     /**
@@ -208,11 +261,7 @@ class ElementCaches
      */
     public function invalidateForElementType(string $elementType): array
     {
-        $tags = $this->invalidateTags(["element::$elementType"]);
-
-        event(new ElementCachesInvalidated($tags));
-
-        return $tags;
+        return $this->invalidateTags(["element::$elementType"]);
     }
 
     /**
@@ -223,7 +272,8 @@ class ElementCaches
      */
     public function invalidateForElementAfterCommit(ElementInterface $element): void
     {
-        $tags = $this->invalidateTags($this->tagsForElement($element));
+        $tags = $this->tagsForElement($element);
+        $this->queueInvalidations($tags);
 
         DB::afterCommit(function () use ($tags, $element): void {
             // Flush before the event, because a listener that throws makes Laravel skip the flush queued after this
@@ -241,19 +291,42 @@ class ElementCaches
      */
     public function invalidateForElement(ElementInterface $element): array
     {
-        $tags = $this->invalidateTags($this->tagsForElement($element));
+        $tags = $this->tagsForElement($element);
+        $this->queueInvalidations($tags);
 
         event(new ElementCachesInvalidated($tags, $element));
 
         return $tags;
     }
 
-    /** @return list<string> */
     /**
-     * @param  string[]  $tags
-     * @return string[]
+     * @param  list<string>  $tags
      */
-    private function invalidateTags(array $tags): array
+    private function queueInvalidations(array $tags): void
+    {
+        $this->markPending($tags);
+
+        if ($this->deferDepth === 0) {
+            $this->flushPendingInvalidations();
+        }
+    }
+
+    /**
+     * Keeps tags the cache store failed to clear pending for the next flush, unless there are too many to retry.
+     *
+     * @param  list<string>  $tags
+     */
+    private function retryLater(array $tags): void
+    {
+        if (count($tags) <= self::MAX_RETRIED_TAGS) {
+            $this->markPending($tags);
+        }
+    }
+
+    /**
+     * @param  list<string>  $tags
+     */
+    private function markPending(array $tags): void
     {
         foreach ($tags as $tag) {
             $this->pendingTags[$tag] = true;
@@ -271,12 +344,15 @@ class ElementCaches
             });
             self::$registeredShutdownFlush = true;
         }
+    }
 
-        if ($this->deferDepth === 0) {
-            $this->flushPendingInvalidations();
-        }
-
-        return $tags;
+    /**
+     * @param  list<string>  $tags
+     * @return list<string>
+     */
+    private static function normalizeTags(array $tags): array
+    {
+        return array_values(array_unique(array_filter($tags, fn (string $tag) => $tag !== '')));
     }
 
     /** @return list<string> */

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Console\Command;
+use Throwable;
 
 use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
@@ -43,23 +44,30 @@ class InvalidateTagsCommand extends Command
         $tag = Str::after($this->signature, 'craft:invalidate-tags:');
 
         if ($tag === 'all') {
-            collect(ClearCaches::tagOptions())
-                ->flatMap(fn (array $option) => array_values(Arr::only($option, ['tag'])))
-                ->each(function (string $tag) {
-                    $this->call("craft:invalidate-tags:$tag");
-                });
+            $result = self::SUCCESS;
 
-            return self::SUCCESS;
+            foreach (array_column(ClearCaches::tagOptions(), 'tag') as $tag) {
+                if ($this->call("craft:invalidate-tags:$tag") !== self::SUCCESS) {
+                    $result = self::FAILURE;
+                }
+            }
+
+            return $result;
         }
 
         $option = collect(ClearCaches::tagOptions())->firstWhere('tag', $tag);
 
-        $this->components->task(
-            t('Invalidating:').' '.$option['label'],
-            function () use ($option) {
-                TagDependency::invalidate($option['tag']);
-            }
-        );
+        try {
+            // The task shows FAIL and rethrows if the closure throws.
+            $this->components->task(
+                t('Invalidating:').' '.$option['label'],
+                fn () => app(ElementCaches::class)->invalidateTagsOrFail([$option['tag']]),
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return self::FAILURE;
+        }
 
         return self::SUCCESS;
     }
@@ -86,11 +94,15 @@ class InvalidateTagsCommand extends Command
                 ->all(),
         );
 
+        $result = self::SUCCESS;
+
         foreach ($tags as $tag) {
-            $this->call("craft:invalidate-tags:$tag");
+            if ($this->call("craft:invalidate-tags:$tag") !== self::SUCCESS) {
+                $result = self::FAILURE;
+            }
         }
 
-        return self::SUCCESS;
+        return $result;
     }
 
     /**
