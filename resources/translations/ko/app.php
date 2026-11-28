@@ -2098,6 +2098,7 @@ return [
     'Job' => '작업',
     'Keep all' => '모두 유지',
     'Keep both' => '둘 다 유지',
+    'Keep it' => '유지',
     'Keep me signed in' => '로그인 상태 유지',
     'Keep them' => '해당 항목 유지',
     'Knowledge Base' => '지식 베이스',

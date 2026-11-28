@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Задание',
     'Keep all' => 'Оставить все',
     'Keep both' => 'Сохранить оба',
+    'Keep it' => 'Оставить',
     'Keep me signed in' => 'Не выходить из системы',
     'Keep them' => 'Сохранить',
     'Knowledge Base' => 'База знаний',

@@ -2098,6 +2098,7 @@ return [
     'Job' => 'ジョブ',
     'Keep all' => 'すべて保持',
     'Keep both' => '両方を保持',
+    'Keep it' => '保持',
     'Keep me signed in' => 'サインイン状態を維持する',
     'Keep them' => 'これらを保持',
     'Knowledge Base' => 'ナレッジベース',

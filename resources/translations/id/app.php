@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Tugas',
     'Keep all' => 'Pertahankan semua',
     'Keep both' => 'Pertahankan keduanya',
+    'Keep it' => 'Pertahankan',
     'Keep me signed in' => 'Biarkan saya tetap masuk',
     'Keep them' => 'Pertahankan',
     'Knowledge Base' => 'Basis Pengetahuan',

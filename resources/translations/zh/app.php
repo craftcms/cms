@@ -2098,6 +2098,7 @@ return [
     'Job' => '作业',
     'Keep all' => '全部保留',
     'Keep both' => '保留两个',
+    'Keep it' => '保留',
     'Keep me signed in' => '保持登录',
     'Keep them' => '保留',
     'Knowledge Base' => '知识库',

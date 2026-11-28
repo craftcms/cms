@@ -21,6 +21,11 @@ vi.mock('@craftcms/ui', () => ({
   actionClient: {post: ui.post},
 }));
 
+const compareModal = vi.hoisted(() => vi.fn());
+vi.mock('./open-upload-duplicates-modal', () => ({
+  openUploadDuplicatesModal: compareModal,
+}));
+
 const notices: HTMLElement[] = [];
 function displayNotice(message: string, {details}: {details: HTMLElement}) {
   const notice = document.createElement('div');
@@ -120,6 +125,15 @@ const chip = (id: number, title: string) => ({
   title,
   url: `/admin/assets/edit/${id}`,
   chipHtml: `<craft-chip data-id="${id}"><a class="label-link" href="/admin/assets/edit/${id}"><span>${title}</span></a></craft-chip>`,
+  thumbUrl: null,
+  filename: 'photo.png',
+  width: null,
+  height: null,
+  size: null,
+  extension: 'png',
+  location: 'Images',
+  dateCreated: null,
+  uploader: null,
 });
 const duplicated = {
   assetId: 12,
@@ -127,6 +141,7 @@ const duplicated = {
 };
 
 beforeEach(() => {
+  compareModal.mockReset();
   ui.on.mockReset().mockReturnValue(vi.fn());
   ui.visit.mockReset();
   transfers.length = 0;
@@ -237,43 +252,69 @@ it('holds uploads that look like images already uploaded, linking to them', asyn
   link.click();
   expect(ui.visit).toHaveBeenCalledWith('/admin/assets/edit/5');
 
-  await clickNotice(0, 'Keep both');
+  await clickNotice(0, 'Keep it');
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(ui.post).not.toHaveBeenCalled();
 });
 
-it('replaces the image an upload looks like a copy of, on request', async () => {
-  await uploadDuplicate();
-  await clickNotice(0, 'Replace');
+it.each([
+  [1, '“photo.png” looks like an image you already have.'],
+  [2, '“photo.png” looks like 2 images you already have.'],
+])(
+  'leaves discarding and replacing an upload that looks like a copy of %i to the comparison',
+  async (count, message) => {
+    await uploadDuplicate({
+      ...duplicated,
+      duplicates: [chip(5, 'Harbor at dusk'), chip(6, 'Harbor at night')].slice(
+        0,
+        count
+      ),
+    });
+    expect(notices[0]!.textContent).toContain(message);
+    expect(
+      [...notices[0]!.querySelectorAll('craft-button')].map((button) =>
+        button.textContent?.trim()
+      )
+    ).toEqual(['Keep it', 'Compare']);
+  }
+);
+
+it('replaces the image picked in the comparison, of several an upload looks like a copy of', async () => {
+  const duplicates = [...duplicated.duplicates, chip(6, 'Harbor at night')];
+  await uploadDuplicate({...duplicated, duplicates});
+  compareModal.mockResolvedValue({choice: 'replace', assetId: 6});
+
+  await clickNotice(0, 'Compare');
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
-  expect(ui.post).toHaveBeenCalledWith(
-    '/admin/actions/assets/resolve-upload-conflict',
-    {sourceAssetId: 12, assetId: 5}
-  );
-});
-
-it('offers to keep all, and not replace, when an upload looks like a copy of several', async () => {
-  await uploadDuplicate({
-    ...duplicated,
-    duplicates: [...duplicated.duplicates, chip(6, 'Harbor at night')],
+  expect(compareModal).toHaveBeenCalledWith({
+    file: expect.objectContaining({name: 'photo.png'}),
+    location: 'Images',
+    duplicates,
   });
-  expect(notices[0]!.textContent).toContain(
-    '“photo.png” looks like 2 images you already have.'
+  expect(ui.post).toHaveBeenCalledExactlyOnceWith(
+    '/admin/actions/assets/resolve-upload-conflict',
+    {sourceAssetId: 12, assetId: 6}
   );
-  const choices = notices[0]!.querySelector<LitElement>(
-    'craft-asset-conflict-resolution'
-  )!;
-  await choices.updateComplete;
-  expect(
-    [...choices.querySelectorAll('craft-button')].map((button) =>
-      button.textContent?.trim()
-    )
-  ).toEqual(['Cancel', 'Keep all']);
 });
 
-it('discards an upload that looks like a copy when canceled', async () => {
+it('keeps an upload held when its comparison is closed without a choice', async () => {
   await uploadDuplicate();
-  await clickNotice(0, 'Cancel');
+  compareModal.mockResolvedValue(undefined);
+
+  await clickNotice(0, 'Compare');
+  await vi.waitFor(() => expect(compareModal).toHaveBeenCalledOnce());
+  await Promise.resolve();
+  expect(queue.hasPending).toBe(true);
+  expect(ui.post).not.toHaveBeenCalled();
+
+  await clickNotice(0, 'Keep it');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
+});
+
+it('discards an upload that looks like a copy when its comparison discards it', async () => {
+  await uploadDuplicate();
+  compareModal.mockResolvedValue({choice: 'cancel', assetId: 5});
+  await clickNotice(0, 'Compare');
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(ui.post).toHaveBeenCalledWith('/admin/actions/assets/delete-asset', {
     assetId: 12,
@@ -290,7 +331,8 @@ it('holds a copy after keeping both files for its filename conflict', async () =
   );
   expect(queue.hasPending).toBe(true);
 
-  await clickNotice(0, 'Replace');
+  compareModal.mockResolvedValue({choice: 'replace', assetId: 5});
+  await clickNotice(0, 'Compare');
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(ui.post).toHaveBeenCalledWith(
     '/admin/actions/assets/resolve-upload-conflict',
@@ -389,7 +431,7 @@ it('retains a conflict and its error when replacement fails', async () => {
 
 it('discards the uploaded copy when canceling a conflict', async () => {
   await uploadConflict();
-  await clickNotice(0, 'Cancel');
+  await clickNotice(0, 'Discard upload');
   await vi.waitFor(() => expect(queue.hasPending).toBe(false));
   expect(ui.post).toHaveBeenCalledWith('/admin/actions/assets/delete-asset', {
     assetId: 21,

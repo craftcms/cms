@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Jobb',
     'Keep all' => 'Behåll alla',
     'Keep both' => 'Behåll båda',
+    'Keep it' => 'Behåll den',
     'Keep me signed in' => 'Logga inte ut mig',
     'Keep them' => 'Behåll dem',
     'Knowledge Base' => 'Kunskapsbas',

@@ -2098,6 +2098,7 @@ return [
     'Job' => 'İş',
     'Keep all' => 'Tümünü koru',
     'Keep both' => 'Her ikisini de koru',
+    'Keep it' => 'Koru',
     'Keep me signed in' => 'Oturumumu açık tut',
     'Keep them' => 'Öğeleri tut',
     'Knowledge Base' => 'Bilgi Tabanı',

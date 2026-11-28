@@ -10,6 +10,15 @@ const duplicate = (id: number, title: string): UploadDuplicate => ({
   title,
   url: `/admin/assets/edit/${id}`,
   chipHtml: `<craft-chip data-id="${id}"><a class="label-link" href="/admin/assets/edit/${id}"><span>${title}</span></a></craft-chip>`,
+  thumbUrl: null,
+  filename: 'photo.png',
+  width: null,
+  height: null,
+  size: null,
+  extension: 'png',
+  location: 'Images',
+  dateCreated: null,
+  uploader: null,
 });
 
 async function notification(count = 2): Promise<{
@@ -26,7 +35,9 @@ async function notification(count = 2): Promise<{
 
   return {
     element,
-    chips: [...element.querySelectorAll<HTMLElement>('.cp-chip-stack__chip')],
+    chips: [
+      ...element.querySelectorAll<HTMLElement>('.copied-chips > craft-chip'),
+    ],
     links: [...element.querySelectorAll('a')],
   };
 }
@@ -46,40 +57,23 @@ describe('craft-upload-duplicates-notification', () => {
     const {chips, links} = await notification(1);
 
     expect(chips).toHaveLength(1);
-    expect(chips[0]!.querySelector('craft-chip')!.dataset.id).toBe('5');
+    expect(chips[0]!.dataset.id).toBe('5');
     expect(links[0]!.getAttribute('href')).toBe('/admin/assets/edit/5');
-    expect(chips[0]!.inert).toBe(false);
-    expect(chips[0]!.hasAttribute('aria-hidden')).toBe(false);
   });
 
-  it('stacks other images faded behind it, out of reach', async () => {
-    const {chips} = await notification(3);
+  it('shows every image as a small rounded chip, side by side', async () => {
+    const {chips, links} = await notification(3);
 
-    expect(chips.map((chip) => chip.inert)).toEqual([false, true, true]);
-    expect(chips.map((chip) => chip.getAttribute('aria-hidden'))).toEqual([
-      null,
-      'true',
-      'true',
-    ]);
-    expect(
-      chips.map((chip) => [
-        chip.style.insetInlineStart,
-        chip.style.getPropertyValue('--overlay-opacity'),
-      ])
-    ).toEqual([
-      ['', ''],
-      ['4px', '0.4'],
-      ['8px', '0.55'],
-    ]);
-    expect(Number(chips[0]!.style.zIndex)).toBeGreaterThan(
-      Number(chips[1]!.style.zIndex)
+    expect(chips.map((chip) => chip.dataset.id)).toEqual(['5', '6', '7']);
+    expect(chips.every((chip) => chip.getAttribute('size') === 'xsmall')).toBe(
+      true
     );
-  });
-
-  it('stacks at most four images behind the closest one', async () => {
-    const {chips} = await notification(8);
-
-    expect(chips).toHaveLength(5);
+    expect(chips.every((chip) => chip.hasAttribute('rounded'))).toBe(true);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/admin/assets/edit/5',
+      '/admin/assets/edit/6',
+      '/admin/assets/edit/7',
+    ]);
   });
 
   it('leaves links to be followed unless the navigation is handled', async () => {

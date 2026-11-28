@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Feladat',
     'Keep all' => 'Az összes megtartása',
     'Keep both' => 'Mindkettő megőrzése',
+    'Keep it' => 'Megtartás',
     'Keep me signed in' => 'Maradjak bejelentkezve',
     'Keep them' => 'Megtartásuk',
     'Knowledge Base' => 'Tudásbázis',

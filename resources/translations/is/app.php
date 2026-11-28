@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Keyrsla',
     'Keep all' => 'Halda öllum',
     'Keep both' => 'Haltu bæði',
+    'Keep it' => 'Halda því',
     'Keep me signed in' => 'Hafðu mig innskráðan',
     'Keep them' => 'Haltu þeim',
     'Knowledge Base' => 'Þekkingargrunnur',

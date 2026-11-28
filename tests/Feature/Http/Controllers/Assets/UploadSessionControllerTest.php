@@ -381,6 +381,33 @@ describe('what the uploader read from the file', function () {
             ->and(array_column($copy['duplicates'], 'id'))->toBe([$original['assetId']]);
     });
 
+    it('gives the details to compare copies by', function () {
+        $subfolder = VolumeFolder::factory()->create([
+            'volumeId' => $this->volume->id,
+            'parentId' => $this->folder->id,
+            'name' => 'Harbor',
+            'path' => 'Harbor/',
+        ]);
+        $original = ($this->uploadImage)(['folderId' => $subfolder->id]);
+        $duplicate = ($this->uploadImage)(['folderId' => $this->folder->id])['duplicates'][0];
+
+        expect($duplicate)->toMatchArray([
+            'id' => $original['assetId'],
+            'filename' => 'photo.png',
+            'width' => 13,
+            'height' => 17,
+            'size' => AssetModel::findOrFail($original['assetId'])->size,
+            'extension' => 'png',
+            'location' => "{$this->volume->name} / Harbor",
+            'uploader' => User::findOne()->getName(),
+        ])
+            ->and($duplicate['size'])->toBeGreaterThan(0)
+            ->and($duplicate['dateCreated'])->toBeString()->not->toBeEmpty()
+            // Thumbnails are served for volumes without public URLs too
+            ->and($this->volume->hasUrls)->toBeFalse()
+            ->and($duplicate['thumbUrl'])->toBeString()->not->toBeEmpty();
+    });
+
     it('only lists copies the uploader can view', function () {
         ($this->uploadImage)(['folderId' => $this->folder->id]);
         Gate::before(fn ($user, string $ability, array $arguments) => $ability === 'view' && ($arguments[0] ?? null) instanceof Asset ? false : null);

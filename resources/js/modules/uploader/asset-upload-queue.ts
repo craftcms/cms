@@ -12,6 +12,7 @@ import {
   uploadDuplicatesMessage,
   createUploadCompleteNotification,
 } from './upload-notification';
+import {openUploadDuplicatesModal} from './open-upload-duplicates-modal';
 import {QueueService} from '@/modules/queue/queue';
 import {showError} from '@/modules/messages/messages';
 
@@ -161,16 +162,36 @@ export class AssetUploadQueue extends UploadQueue<
         {
           duplicates,
           navigate: (url) => router.visit(url),
-          // With several, there's no one image for it to replace
-          multiple: duplicates.length > 1,
+          onCompare: () => {
+            void this.compare(job);
+          },
         }
       )
     );
   }
 
+  /** Compares a held upload with the images it looks like a copy of, and resolves it with the choice made there. */
+  private async compare(job: QueuedAssetUpload): Promise<void> {
+    const result = await openUploadDuplicatesModal({
+      file: job.upload.file,
+      location: job.context.destination.label,
+      duplicates: job.result!.duplicates!,
+    });
+    if (result) {
+      await this.resolve(job, result.choice, result.assetId).catch(
+        (error: Error) => showError(error.message)
+      );
+    }
+  }
+
+  /**
+   * @param duplicateId The image Replace replaces, for an upload that looks
+   * like a copy of several. Defaults to the closest one.
+   */
   private async resolve(
     job: QueuedAssetUpload,
-    choice: ConflictResolution
+    choice: ConflictResolution,
+    duplicateId?: number
   ): Promise<void> {
     if (!this.jobs.has(job) || job.context.resolving) {
       return;
@@ -187,7 +208,7 @@ export class AssetUploadQueue extends UploadQueue<
         await actionClient.post(ResolveUploadConflictController.url(), {
           sourceAssetId: job.result!.assetId,
           ...(reason === 'duplicates'
-            ? {assetId: job.result!.duplicates![0]!.id}
+            ? {assetId: duplicateId ?? job.result!.duplicates![0]!.id}
             : job.result!.conflictingAssetId
               ? {assetId: job.result!.conflictingAssetId}
               : {targetFilename: job.result!.filename}),

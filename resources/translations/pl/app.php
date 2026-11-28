@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Zadanie',
     'Keep all' => 'Zachowaj wszystkie',
     'Keep both' => 'Zachowaj oba',
+    'Keep it' => 'Zachowaj',
     'Keep me signed in' => 'Nie wylogowuj mnie',
     'Keep them' => 'Zachowaj je',
     'Knowledge Base' => 'Baza wiedzy',

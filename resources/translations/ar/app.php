@@ -2098,6 +2098,7 @@ return [
     'Job' => 'مهمة',
     'Keep all' => 'الاحتفاظ بالكل',
     'Keep both' => 'الاحتفاظ بالاثنين',
+    'Keep it' => 'الاحتفاظ به',
     'Keep me signed in' => 'الإبقاء على تسجيل دخولي',
     'Keep them' => 'حفظهم',
     'Knowledge Base' => 'قاعدة المعرفة',

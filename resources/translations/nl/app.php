@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Taak',
     'Keep all' => 'Alles behouden',
     'Keep both' => 'Beide behouden',
+    'Keep it' => 'Behouden',
     'Keep me signed in' => 'Houd mij aangemeld',
     'Keep them' => 'Behouden',
     'Knowledge Base' => 'Kennisbank',

@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Job',
     'Keep all' => 'Keep all',
     'Keep both' => 'Keep both',
+    'Keep it' => 'Keep it',
     'Keep me signed in' => 'Keep me signed in',
     'Keep them' => 'Keep them',
     'Knowledge Base' => 'Knowledge Base',

@@ -2098,6 +2098,7 @@ return [
     'Job' => 'עבודה',
     'Keep all' => 'שמור הכל',
     'Keep both' => 'השאר את שניהם',
+    'Keep it' => 'השאר אותו',
     'Keep me signed in' => 'השאר אותי מחובר',
     'Keep them' => 'שמור אותם',
     'Knowledge Base' => 'מאגר ידע',

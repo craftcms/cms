@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Úloha',
     'Keep all' => 'Ponechat vše',
     'Keep both' => 'Ponechat obojí',
+    'Keep it' => 'Ponechat',
     'Keep me signed in' => 'Chci zůstat přihlášen/a',
     'Keep them' => 'Ponechat je',
     'Knowledge Base' => 'Znalostní báze',

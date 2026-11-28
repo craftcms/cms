@@ -55,9 +55,9 @@ class UploadResult implements Arrayable
     public private(set) array $errors;
 
     /**
-     * Images the uploaded one looks like a copy of, which the uploader can view.
+     * Images the uploaded one looks like a copy of, which the uploader can view, with the details to compare them by.
      *
-     * @var list<array{id: int, title: string, url: string, chipHtml: string}>
+     * @var list<array{id: int, title: string, url: string, chipHtml: string, thumbUrl: string|null, filename: string, width: int|null, height: int|null, size: int|null, extension: string, location: string, dateCreated: string|null, uploader: string|null}>
      */
     public private(set) array $duplicates;
 

@@ -2098,6 +2098,7 @@ return [
     'Job' => 'Zadatak',
     'Keep all' => 'Zadrži sve',
     'Keep both' => 'Zadrži oboje',
+    'Keep it' => 'Zadrži ga',
     'Keep me signed in' => 'Zadrži me prijavljenim',
     'Keep them' => 'Zadrži ih',
     'Knowledge Base' => 'Baza znanja',
