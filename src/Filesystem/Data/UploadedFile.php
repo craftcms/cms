@@ -75,23 +75,30 @@ class UploadedFile
             throw new RuntimeException('Unable to create a temporary upload file.');
         }
 
-        $this->localPath = $path;
-
         try {
-            $source = $this->openStream();
-
             try {
-                if (stream_copy_to_stream($source, $target) !== $this->size()) {
-                    throw new RuntimeException('Unable to read the complete uploaded file.');
+                $source = $this->openStream();
+
+                try {
+                    if (stream_copy_to_stream($source, $target) !== $this->size()) {
+                        throw new RuntimeException('Unable to read the complete uploaded file.');
+                    }
+                } finally {
+                    fclose($source);
                 }
             } finally {
-                fclose($source);
+                fclose($target);
             }
-        } finally {
-            fclose($target);
+
+            $hash = hash_file('sha256', $path) ?: throw new RuntimeException('Unable to checksum the uploaded file.');
+        } catch (Throwable $e) {
+            File::delete($path);
+
+            throw $e;
         }
 
-        $this->localHash = hash_file('sha256', $path) ?: throw new RuntimeException('Unable to checksum the uploaded file.');
+        $this->localPath = $path;
+        $this->localHash = $hash;
 
         return $path;
     }
