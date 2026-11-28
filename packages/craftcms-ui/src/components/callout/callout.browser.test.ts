@@ -149,3 +149,24 @@ it('adds no space for an empty action, however narrow', async () => {
     )
   ).toBe(0);
 });
+
+it.each([
+  // Taller than the gap between wrapped lines.
+  ['', '10px'],
+  // An inline pill keeps its tight box.
+  ['inline', '2px'],
+  // An explicit padding still wins.
+  ['padding="sm"', '2px'],
+])('pads the block axis (%s)', async (attrs, expected) => {
+  document.body.innerHTML = `
+    <div style="--c-spacing: 4px; --c-spacing-sm: 2px">
+      <craft-callout ${attrs}>Showing your unsaved changes.</craft-callout>
+    </div>`;
+  const callout = document.querySelector<CraftCallout>('craft-callout')!;
+  await callout.updateComplete;
+  const {paddingBlockStart, paddingBlockEnd} = getComputedStyle(
+    callout.shadowRoot!.querySelector('.callout')!
+  );
+
+  expect([paddingBlockStart, paddingBlockEnd]).toEqual([expected, expected]);
+});

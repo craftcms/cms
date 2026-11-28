@@ -532,6 +532,12 @@ CP Checkbox Select items with a bare checkbox and label, as legacy code renders
   display: none;
 }
 
+/* Tips in forms (field layout tips and other info callouts from UI nodes) sit
+   among the fields, so their fill blends most of the way toward the surface. */
+craft-callout[data-ui-node][variant='info'] {
+  --c-callout-fill-mute: 70%;
+}
+
 /**
 Component select chips, spaced like relational fields' chips
  */
